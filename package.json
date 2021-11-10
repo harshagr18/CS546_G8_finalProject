@@ -1,0 +1,22 @@
+{
+  "name": "my_parking_assistant",
+  "version": "1.0.0",
+  "description": "CS546_G8_Final_Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/harshagr18/CS546_G8_finalProject.git"
+  },
+  "author": "Harsh Agrawal, Shreyas Vispute, Harshal Vaidya, Shivani Maurya",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/harshagr18/CS546_G8_finalProject/issues"
+  },
+  "homepage": "https://github.com/harshagr18/CS546_G8_finalProject#readme",
+  "dependencies": {
+    "mongodb": "^4.1.4"
+  }
+}
