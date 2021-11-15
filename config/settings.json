@@ -1,6 +1,6 @@
 {
   "mongoConfig": {
     "serverUrl": "mongodb://localhost:27017/",
-    "database": "Harsh_Agrawal_lab6"
+    "database": "CS546_G8_finalProject"
   }
 }

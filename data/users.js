@@ -61,7 +61,7 @@ let exportedMethods = {
     if (!emailRegex.test(email)) {
       throw `Incorrect email format`;
     }
-    if (!zipRegex.test(zipRegex)) {
+    if (!zipRegex.test(zip)) {
       throw `Incorrect zip code`;
     }
 
@@ -150,6 +150,19 @@ let exportedMethods = {
     if (insertInfo.insertedCount === 0) throw `Could not add user`;
 
     return newUser;
+  },
+
+  async getUser(id = checkParameters()) {
+    id = id.trim();
+    id = ObjectId(id);
+
+    const userCollection = await users();
+    const userId = await userCollection.findOne({ _id: id });
+
+    if (userId === null) throw "No user found";
+    userId._id = userId._id.toString();
+
+    return userId;
   },
 };
 
