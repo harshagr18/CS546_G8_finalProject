@@ -1,7 +1,7 @@
 const userData = require("./users");
-const parkingsData = require("./parkings");
+const listingData = require("./listings");
 
 module.exports = {
   users: userData,
-  parkings: parkingsData,
+  listings: listingData
 };
