@@ -19,7 +19,6 @@ async function getParking(id = checkParameters()) {
 //create parkings
 async function createParkings(
   listerId,
-  listing,
   parkingImg,
   address,
   city,
@@ -74,6 +73,90 @@ async function createParkings(
   return newParkingData;
 }
 
+async function updateParking(
+  parkingId,
+  listerId,
+  parkingImg,
+  address,
+  city,
+  state,
+  zip,
+  longitude,
+  latitude,
+  category = checkParameters()
+) {
+  //trim values to reject blank spaces or empty
+  listerId = listerId.trim();
+  parkingImg = parkingImg.trim();
+  state = state.trim();
+  zip = zip.trim();
+  longitude = longitude.trim(); //optional to be filled by Geolocation API
+  latitude = latitude.trim(); ////optional to be filled by Geolocation API
+
+  validateID(parkingId);
+  validateID(listerId);
+
+  validate(
+    parkingImg,
+    address,
+    city,
+    state,
+    zip,
+    longitude,
+    latitude,
+    category
+  );
+
+  parkingId = ObjectId(parkingId);
+
+  const parkingCollection = await parkings();
+  const checkParking = await parkingCollection.findOne({ _id: parkingId });
+
+  if (!checkParking) throw "Parking not available";
+
+  let updateParkingObj = {
+    listerId: listerId,
+    parkingImg: parkingImg,
+    address: address,
+    city: city,
+    state: state,
+    zip: zip,
+    longitude: longitude,
+    latitude: latitude,
+    category: category,
+  };
+
+  const updateParking = await parkingCollection.updateOne(
+    { _id: parkingId },
+    { $set: updateParkingObj }
+  );
+  if (updateParking.modifiedCount === 0) throw "Parking could not be updated";
+
+  const newParking = await getParking(parkingId.toString());
+
+  return newParking;
+}
+
+async function deleteParking(parkingId = checkParameters()) {
+  validateID(parkingId);
+  parkingId = parkingId.trim();
+  let result = {};
+  parkingId = ObjectId(parkingId);
+
+  const parkingCollection = await parkings();
+  const checkparking = await getParking(parkingId.toString());
+  if (!checkparking) throw "Parking info does not exists ";
+
+  const deleteParking = await parkingCollection.deleteOne({ _id: parkingId });
+  if (deleteParking.deletedCount == 0) {
+    throw "Could not delete the parking";
+  } else {
+    result.parkingId = checkparking._id;
+    result.deleted = true;
+  }
+  return result;
+}
+
 //validate inputs
 function validate(
   parkingImg,
@@ -83,8 +166,8 @@ function validate(
   zip,
   longitude,
   latitude,
-  category,
-  parkingReviews
+  category
+  // parkingReviews
 ) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
@@ -122,12 +205,25 @@ function validate(
       });
     } else throw "vehicle type must be array of length atleast 1";
   } else throw "category must be an object";
-  if (Array.isArray(parkingReviews)) {
-    parkingReviews.forEach((x) => {
-      if (typeof x != "string") throw "review id must be a string";
-      if (x.trim().length === 0) throw "review id cannot be empty or blanks";
-      if (!ObjectId.isValid(id)) throw "Object Id is not valid";
-    });
+
+  // if (Array.isArray(parkingReviews)) {
+  //   parkingReviews.forEach((x) => {
+  //     if (typeof x != "string") throw "review id must be a string";
+  //     if (x.trim().length === 0) throw "review id cannot be empty or blanks";
+  //     if (!ObjectId.isValid(id)) throw "Object Id is not valid";
+  //   });
+  // }
+}
+
+function validateID(id) {
+  if (typeof id != "string") {
+    throw "Argument of type string expected";
+  }
+  if (id.trim().length === 0) {
+    throw "String cannot be blanks or empty";
+  }
+  if (!ObjectId.isValid(id)) {
+    throw "Object Id is not valid";
   }
 }
 
@@ -138,4 +234,7 @@ function checkParameters() {
 
 module.exports = {
   createParkings,
+  getParking,
+  updateParking,
+  deleteParking,
 };
