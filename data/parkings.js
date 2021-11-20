@@ -73,6 +73,7 @@ async function createParkings(
   return newParkingData;
 }
 
+//update parkings with parameters
 async function updateParking(
   parkingId,
   listerId,
@@ -109,6 +110,7 @@ async function updateParking(
 
   parkingId = ObjectId(parkingId);
 
+  //check if parking exists
   const parkingCollection = await parkings();
   const checkParking = await parkingCollection.findOne({ _id: parkingId });
 
@@ -126,6 +128,7 @@ async function updateParking(
     category: category,
   };
 
+  //update parkings
   const updateParking = await parkingCollection.updateOne(
     { _id: parkingId },
     { $set: updateParkingObj }
@@ -137,6 +140,7 @@ async function updateParking(
   return newParking;
 }
 
+//delete parkings with id
 async function deleteParking(parkingId = checkParameters()) {
   validateID(parkingId);
   parkingId = parkingId.trim();
@@ -144,9 +148,12 @@ async function deleteParking(parkingId = checkParameters()) {
   parkingId = ObjectId(parkingId);
 
   const parkingCollection = await parkings();
+
+  //check if parking exists
   const checkparking = await getParking(parkingId.toString());
   if (!checkparking) throw "Parking info does not exists ";
 
+  //delete parking
   const deleteParking = await parkingCollection.deleteOne({ _id: parkingId });
   if (deleteParking.deletedCount == 0) {
     throw "Could not delete the parking";
@@ -172,6 +179,7 @@ function validate(
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
 
+  //string and trim length checks
   if (
     typeof parkingImg != "string" ||
     typeof address != "string" ||
@@ -187,6 +195,17 @@ function validate(
   ) {
     throw "Parameter cannot be blank spaces or empty values";
   }
+
+  //state validator
+  if (typeof state === "string") {
+    for (let i = 0; i < stateList.length; i++) {
+      if (state != stateList[i]) {
+        throw "State not found";
+      }
+    }
+  }
+
+  //zip code validator
   if (!zipRegex.test(zip)) {
     throw "Incorrect zip code";
   }
@@ -195,6 +214,7 @@ function validate(
   //     throw "longitude and latitude should be numbers";
   //   }
 
+  //vehicle type validator
   if (typeof category == "object") {
     if (
       Array.isArray(category.vehicleType) &&
@@ -231,6 +251,61 @@ function validateID(id) {
 function checkParameters() {
   throw "Expected arguments not found";
 }
+
+const stateList = [
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "DC",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "PR",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+];
 
 module.exports = {
   createParkings,
