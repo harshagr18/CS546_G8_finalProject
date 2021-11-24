@@ -14,6 +14,16 @@ app.set("view engine", "handlebars");
 
 configRoutes(app);
 
+//middlewares
+//Upload file middleware - sv
+const multer = require("multer");
+
+const upload = multer({
+  limits: {
+    fileSize: 4 * 1024 * 1024,
+  },
+});
+
 app.listen(3000, () => {
   console.log("We've now got a server!");
   console.log("Your routes will be running on http://localhost:3000");
