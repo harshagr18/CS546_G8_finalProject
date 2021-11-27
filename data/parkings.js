@@ -26,8 +26,7 @@ async function createParkings(
   zip,
   longitude,
   latitude,
-  category,
-  parkingReviews = checkParameters()
+  category = checkParameters()
 ) {
   //trim values to reject blank spaces or empty
   listerId = listerId.trim();
@@ -45,8 +44,7 @@ async function createParkings(
     zip,
     longitude,
     latitude,
-    category,
-    parkingReviews
+    category
   );
   listerId = ObjectId(listerId);
   let newParking = {
@@ -117,7 +115,7 @@ async function updateParking(
   if (!checkParking) throw "Parking not available";
 
   let updateParkingObj = {
-    listerId: listerId,
+    listerId: ObjectId(listerId),
     parkingImg: parkingImg,
     address: address,
     city: city,
@@ -198,10 +196,8 @@ function validate(
 
   //state validator
   if (typeof state === "string") {
-    for (let i = 0; i < stateList.length; i++) {
-      if (state != stateList[i]) {
-        throw "State not found";
-      }
+    if (stateList.indexOf(state) == -1) {
+      throw "State not found";
     }
   }
 

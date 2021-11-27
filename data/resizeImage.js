@@ -1,7 +1,7 @@
 //function reused from https://appdividend.com/2019/02/14/node-express-image-upload-and-resize-tutorial-example/
-//resize image feature for uplioading images
+//resize image feature for uploading images
 const sharp = require("sharp");
-const uuidv4 = require("uuid/v4");
+const uuidv4 = require("uuid");
 const path = require("path");
 
 class Resize {
