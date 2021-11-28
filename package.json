@@ -20,7 +20,7 @@
   "homepage": "https://github.com/harshagr18/CS546_G8_finalProject#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "express-handlebars": "^6.0.1",
-    "mongodb": "^4.2.0"
+    "express-handlebars": "^5.3.4",
+    "mongodb": "^4.1.4"
   }
 }

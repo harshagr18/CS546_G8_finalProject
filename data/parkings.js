@@ -138,4 +138,5 @@ function checkParameters() {
 
 module.exports = {
   createParkings,
+  getParking
 };
