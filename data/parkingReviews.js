@@ -132,7 +132,28 @@ let exportedMethods = {
         return parkingSpace;
     },
 
-    async getAllReviews(parkingId) {
+    async getReview(reviewId) {
+        checkId(reviewId);
+
+        let resultData = {};
+        const parkingCollection = await parkings()
+        const parking = await parkingCollection.find({}).toArray();
+
+        if(parking === null)
+            throw 'No review present with that ID';
+
+        parking.forEach(element => {
+            element.parkingReviews.forEach(data => {
+                if(data._id.toString() === reviewId.toString()) {
+                    resultData = {"_id": data._id, "parkingId": data.parkingId, "userId": data.userId, "rating": data.rating, "dateOfReview": data.dateOfReview, "comment": data.comment};
+                }
+            })
+        });
+        resultData._id = resultData._id.toString();
+        return resultData;
+    },
+
+    async getAllReviewsOfParking(parkingId) {
         checkId(parkingId);
 
         const parkingCollection = await parkings();
@@ -147,8 +168,8 @@ let exportedMethods = {
         return parking.parkingReviews;
     },
 
-    async getReview(reviewId) {
-        checkId(reviewId);
+    async getAllReviewsOfUser(listerId) {
+        checkId(listerId);
 
         let resultData = {};
         const parkingCollection = await parkings()
@@ -159,7 +180,7 @@ let exportedMethods = {
 
         parking.forEach(element => {
             element.parkingReviews.forEach(data => {
-                if(data._id.toString() === reviewId.toString()) {
+                if(data.userId.toString() === listerId.toString()) {
                     resultData = {"_id": data._id, "parkingId": data.parkingId, "userId": data.userId, "rating": data.rating, "dateOfReview": data.dateOfReview, "comment": data.comment};
                 }
             })
@@ -208,7 +229,6 @@ let exportedMethods = {
             throw 'Update of the rating has been failed';
 
         resultData = {"reviewId": reviewId, "deleted": true};
-        console.log(resultData);    
         return resultData;
     },
 
