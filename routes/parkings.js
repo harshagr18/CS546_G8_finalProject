@@ -5,9 +5,42 @@ const path = require("path");
 
 const parkingsData = require("../data/parkings");
 const resize = require("../data/resizeImage");
-const { strictEqual } = require("assert");
 
 //added by sv
+router.get("/", async (req, res) => {
+  try {
+    // if (req.session.username) {
+    //   return res.redirect("/private");
+    // }
+
+    //username calls user table and fetches lister id to get parkings from logged in user
+    //hardcoded for testing
+    const getData = await parkingsData.getParkingsOfLister(
+      "6164f085181bfcb0325557c6"
+    );
+    res.render("pages/parkings/getParkings", {
+      parkdata: getData,
+      title: "My Parkings",
+    });
+  } catch (error) {
+    res.status(404).json({ message: "Page not found" });
+  }
+});
+
+router.get("/create", async (req, res) => {
+  try {
+    // if (req.session.username) {
+    //   return res.redirect("/private");
+    // }
+    res.render("pages/parkings/createParkings", {
+      title: "Create Parkings",
+      states: stateList,
+    });
+  } catch (error) {
+    res.status(404).json({ message: "Page not found" });
+  }
+});
+
 //get parkings
 router.get("/:id", async (req, res) => {
   if (!req.params.id) {

@@ -1,0 +1,15 @@
+<div class="container">
+  <a href="parkings/create" id="createParkings" class="">Create a new parking</a>
+  {{#each parkdata}}
+    <div class="card" style="width: 18rem;">
+      <img src="" class="card-img-top" alt="..." />
+      <div class="card-body">
+        <h5 class="card-title">{{address}}</h5>
+        <p class="card-text">{{zip}}</p>
+        <a href="#" class="btn btn-primary">Go Here</a>
+        <a href="#" id="editParkings" class="btn btn-primary">Edit</a>
+        <input type="hidden" id="parkingID" name="parkingID" value={{_id}} />
+      </div>
+    </div>
+  {{/each}}
+</div>

@@ -2,6 +2,22 @@ const { ObjectId } = require("bson");
 const mongoCollections = require("../config/mongoCollections");
 const parkings = mongoCollections.parkings;
 
+//get Parking based on listerid
+async function getParkingsOfLister(id = checkParameters()) {
+  id = id.trim();
+  id = ObjectId(id);
+
+  const parkingCollection = await parkings();
+  const listedParkings = await parkingCollection
+    .find({ listerId: id })
+    .toArray();
+
+  if (listedParkings === null) throw "No parking found";
+  //parkingId._id = parkingId._id.toString();
+
+  return listedParkings;
+}
+
 //get Parking based on id
 async function getParking(id = checkParameters()) {
   id = id.trim();
@@ -308,4 +324,5 @@ module.exports = {
   getParking,
   updateParking,
   deleteParking,
+  getParkingsOfLister,
 };
