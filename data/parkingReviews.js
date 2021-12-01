@@ -1,45 +1,20 @@
 const mongoCollections = require('../config/mongoCollections');
 const parkings = mongoCollections.parkings;
-// const parkingReviews = mongoCollections.parkingReviews
+const errorCheck = require('./errorHandling');
 const { ObjectId } = require('mongodb');
-
-function checkId(id) {
-    if (!id)
-        throw 'You must provide valid input for your review';
-
-    if (typeof id !== 'string')
-        throw 'Please enter a valid string for your review input';
-
-    if(!id.trim().replace(/\s/g, "").length)
-        throw 'Only empty spaces in the review input strings are not allowed';
-
-    if(!ObjectId.isValid(id))
-        throw 'The ID is not a valid Object ID';
-}
 
 let exportedMethods = {
     async createReview(parkingId, userId, rating, dateOfReview, comment) {
-        if (!parkingId || !userId || !rating || !dateOfReview || !comment)
-            throw 'You must provide all valid inputs for your review';
+        if(!errorCheck.checkId(parkingId)) throw 'parkingId is not a valid input';
+        if(!errorCheck.checkId(userId)) throw 'userId is not a valid input';
+        if(!errorCheck.checkRating(rating)) throw 'Rating is not a valid input';
+        if(!errorCheck.checkString(dateOfReview)) throw 'Date is not a valid input';
+        if(!errorCheck.checkString(comment)) throw 'Comment is not a valid input';
 
-        if (typeof parkingId !== 'string' || typeof userId !== 'string' || typeof dateOfReview !== 'string' || typeof comment !== 'string')
-            throw 'Please enter a valid string for your review inputs';
-
-        if(!parkingId.trim().replace(/\s/g, "").length || !userId.trim().replace(/\s/g, "").length ||  !dateOfReview.trim().replace(/\s/g, "").length || !comment.trim().replace(/\s/g, "").length)
-            throw 'Only empty spaces in the review input strings are not allowed';
-
-        if(!ObjectId.isValid(parkingId))
-            throw 'The ID is not a valid Object ID';
-
-        if(typeof rating !== 'number' || rating < 0 || rating > 5)
-            throw 'Please enter a valid rating';
-
-        let pattern = /^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$/;
         let arrayOfObject = [];
         let avgRating = 0;
 
-        if(!pattern.test(dateOfReview.trim()))
-            throw 'The date provided is not a valid date. Please enter a valid date';
+        if(!errorCheck.checkDate(dateOfReview)) throw 'The date provided is not a valid date. Please enter a valid date of today';
 
         let compareDate = dateOfReview.replace(/\//g, "");
 
@@ -133,7 +108,7 @@ let exportedMethods = {
     },
 
     async getReview(reviewId) {
-        checkId(reviewId);
+        if(!errorCheck.checkId(reviewId)) throw 'Review Id is not a valid input';
 
         let resultData = {};
         const parkingCollection = await parkings()
@@ -154,7 +129,7 @@ let exportedMethods = {
     },
 
     async getAllReviewsOfParking(parkingId) {
-        checkId(parkingId);
+        if(!errorCheck.checkId(parkingId)) throw 'Parking Id is not a valid input';
 
         const parkingCollection = await parkings();
         const parking = await parkingCollection.findOne({_id: ObjectId(parkingId)})
@@ -169,7 +144,7 @@ let exportedMethods = {
     },
 
     async getAllReviewsOfUser(listerId) {
-        checkId(listerId);
+        if(!errorCheck.checkId(listerId)) throw 'Lister Id is not a valid input';
 
         let resultData = {};
         const parkingCollection = await parkings()
@@ -190,7 +165,7 @@ let exportedMethods = {
     },
 
     async removeReview(reviewId) {
-        checkId(reviewId);
+        if(!errorCheck.checkId(reviewId)) throw 'Review Id is not a valid input';
 
         let avgRating = 0;
         let resultData = {};        
@@ -233,19 +208,9 @@ let exportedMethods = {
     },
 
     async updateReview(reviewId, rating, comment) {
-        checkId(reviewId);
-
-        if (!rating || !comment)
-            throw 'You must provide valid reviewId input for your review';
-        
-        if (typeof comment !== 'string')
-            throw 'Please enter a valid string for your reviewId inputs';
-
-        if(!comment.trim().replace(/\s/g, "").length)
-            throw 'Only empty spaces in the reviewId input is not allowed';
-
-        if(typeof rating !== 'number' || rating < 0 || rating > 5)
-            throw 'Please enter a valid rating';
+        if(!errorCheck.checkId(reviewId)) throw 'Review Id is not a valid input';
+        if(!errorCheck.checkRating(rating)) throw 'Rating is not a valid input';
+        if(!errorCheck.checkString(comment)) throw 'Comment is not a valid input';
 
         avgRating = 0;
         const parkingCollection = await parkings();
