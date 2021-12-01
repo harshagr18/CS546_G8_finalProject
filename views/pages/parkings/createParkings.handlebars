@@ -1,23 +1,29 @@
 <div class="container">
-  <form method="POST" id="createParkingForm" action="/">
+  <form method="POST" id="createParkingForm" action="/parkings/post">
     <div class="form-row">
       <div class="form-group col-md-6">
-        <label for="inputEmail4">Lister Id</label>
+        <label for="listerId">Lister Id</label>
         <input
           type="text"
           class="form-control"
-          id="inputEmail4"
+          id="listerId"
+          name="listerId"
           placeholder="Lister"
         />
       </div>
       <div class="form-group col-md-6">
-        <label for="customImg">Upload Image</label>
-        <input type="file" class="form-control" id="customImg" />
+        <label for="parkingImg">Upload Image</label>
+        <input
+          type="file"
+          class="form-control"
+          id="parkingImg"
+          name="parkingImg"
+        />
       </div>
     </div>
     <div class="form-row">
       <div class="form-group col-md-6">
-        <label for="inputPassword4">Longitude</label>
+        <label for="longitude">Longitude</label>
         <input
           type="text"
           class="form-control"
@@ -32,30 +38,52 @@
           type="text"
           class="form-control"
           id="latitude"
+          name="latitude"
           placeholder="Latitude"
         />
       </div>
     </div>
+
     <div class="form-row">
 
       <div class="form-group col-md-6">
-        <label for="inputAddress">Address</label>
+        <label for="address">Address</label>
         <input
           type="text"
           class="form-control"
-          id="inputAddress"
+          id="address"
+          name="address"
           placeholder="1234 Main St"
         />
       </div>
+      <div class="form-group col-md-4">
+        <label for="category">Vehicle Category</label>
+        <input
+          type="text"
+          class="form-control"
+          id="category"
+          name="category"
+          placeholder="Sedan, SUV, Coupe..."
+        />
+      </div>
+      <div class="form-group col-md-2">
+        <label for="parkingType">Parking Type</label>
+        <select id="state" name="state" class="form-control">
+          <option selected>Select type...</option>
+          <option>Open</option>
+          <option>Closed</option>
+        </select>
+      </div>
     </div>
+
     <div class="form-row">
       <div class="form-group col-md-6">
-        <label for="inputCity">City</label>
-        <input type="text" class="form-control" id="inputCity" />
+        <label for="city">City</label>
+        <input type="text" class="form-control" id="city" name="city" />
       </div>
       <div class="form-group col-md-4">
-        <label for="inputState">State</label>
-        <select id="inputState" class="form-control">
+        <label for="state">State</label>
+        <select id="state" name="state" class="form-control">
           <option selected>Select State...</option>
 
           {{#each states}}
@@ -65,11 +93,15 @@
         </select>
       </div>
       <div class="form-group col-md-2">
-        <label for="inputZip">Zip</label>
-        <input type="text" class="form-control" id="inputZip" />
+        <label for="zip">Zip</label>
+        <input type="text" class="form-control" id="zip" name="zip" />
       </div>
     </div>
-    <button type="submit" class="btn btn-primary">Create</button>
+    <button
+      type="submit"
+      id="btnCreateParking"
+      class="btn btn-primary"
+    >Create</button>
   </form>
 
 </div>
