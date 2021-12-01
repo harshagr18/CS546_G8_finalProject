@@ -1,6 +1,6 @@
 {
   "mongoConfig": {
     "serverUrl": "mongodb://localhost:27017/",
-    "database": "CS546_G8_finalProject"
+    "database": "CS546_G8"
   }
 }

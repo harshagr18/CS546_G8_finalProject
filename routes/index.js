@@ -1,9 +1,14 @@
+const parkingRoutes = require("./parkings");
 const userRoutes = require("./users");
+const dashboardRoutes = require("./dashboard");
 
 const constructorMethod = (app) => {
+  app.use("/", dashboardRoutes);
   app.use("/users", userRoutes);
+  app.use("/parkings", parkingRoutes);
+
   app.use("*", (req, res) => {
-    res.status(200).json({ thingIs: "Ye banana baaki hai" });
+    res.status(404).json({ error: "Path Not Found" });
   });
 };
 
