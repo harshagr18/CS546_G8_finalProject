@@ -1,12 +1,38 @@
 const express = require("express");
 const router = express.Router();
 const { ObjectId } = require("bson");
+const parkingsData = require("../data/parkings");
 const path = require("path");
 
-const parkingsData = require("../data/parkings");
-const resize = require("../data/resizeImage");
-
 //added by sv
+
+//image saving logic
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: "./public/images",
+  filename: function (req, file, callback) {
+    const fullName = file.fieldname + "-" + Date.now() + ".jpg";
+    callback(null, fullName);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    const fileTypes = /png|jpeg|jpg/;
+    const extName = fileTypes.test(path.extname(file.originalname));
+    file.originalname.toLowerCase();
+    const mimeType = fileTypes.test(file.mimetype);
+    if (extName && mimeType) {
+      cb(null, true);
+    } else {
+      cb("Error: only png, jpeg, and jpg are allowed!");
+    }
+  },
+});
+
+//get the lister id
 router.get("/", async (req, res) => {
   try {
     // if (req.session.username) {
@@ -33,7 +59,7 @@ router.get("/create", async (req, res) => {
     //   return res.redirect("/private");
     // }
     res.render("pages/parkings/createParkings", {
-      title: "Create Parkings",
+      title: "Create Parking",
       states: stateList,
     });
   } catch (error) {
@@ -65,15 +91,10 @@ router.get("/:id", async (req, res) => {
 });
 
 //post parkings route
-router.post("/", async function (req, res) {
-  const imgPath = path.join(__dirname, "/public/images");
+router.post("/post", upload.single("parkingImg"), async function (req, res) {
   const parkingPostData = req.body;
   if (!parkingPostData.listerId) {
     res.status(400).json({ error: "You must provide lister Id" });
-    return;
-  }
-  if (!parkingPostData.parkingImg) {
-    res.status(400).json({ error: "You must provide parking image" });
     return;
   }
   if (!parkingPostData.address) {
@@ -107,7 +128,6 @@ router.post("/", async function (req, res) {
   try {
     const {
       listerId,
-      parkingImg,
       address,
       city,
       state,
@@ -126,7 +146,6 @@ router.post("/", async function (req, res) {
     }
 
     let validateString = validateArguments(
-      parkingImg,
       address,
       city,
       state,
@@ -141,14 +160,7 @@ router.post("/", async function (req, res) {
       return;
     }
 
-    //needs file control values
-    // const fileUpload = new resize(imgPath);
-    // if (!req.file) {
-    //   res.status(401).json({ error: "Please provide an image" });
-    //   return;
-    // }
-    // parkingImg = await fileUpload.save(req.file.buffer);
-
+    let parkingImg = req.file.path;
     const postParkings = await parkingsData.createParkings(
       listerId,
       parkingImg,
@@ -274,7 +286,6 @@ function validate(id) {
 
 //validate inputs
 function validateArguments(
-  parkingImg,
   address,
   city,
   state,
@@ -288,19 +299,16 @@ function validateArguments(
   var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
 
   //string and trim length checks
+  //      typeof parkingImg != "string" ||
+
   if (
-    typeof parkingImg != "string" ||
     typeof address != "string" ||
     typeof city != "string" ||
     typeof state != "string"
   ) {
     return "Parameter of defined type not found";
-  } else if (
-    parkingImg.length === 0 ||
-    address.length === 0 ||
-    city.length === 0 ||
-    state.length === 0
-  ) {
+    //        parkingImg.length === 0 ||
+  } else if (address.length === 0 || city.length === 0 || state.length === 0) {
     return "Parameter cannot be blank spaces or empty values";
   }
 
@@ -321,17 +329,17 @@ function validateArguments(
   //   }
 
   //vehicle type validator
-  if (typeof category === "object") {
-    if (
-      Array.isArray(category.vehicleType) &&
-      category.vehicleType.length > 0
-    ) {
-      const isString = (x) => typeof x == "string" && x.trim().length != 0;
-      if (!category.vehicleType.every(isString)) {
-        return "Vehicle type must be a string";
-      }
-    } else return "Vehicle type must be array of length atleast 1";
-  } else return "Category must be an object";
+  // if (typeof category === "object") {
+  //   if (
+  //     Array.isArray(category.vehicleType) &&
+  //     category.vehicleType.length > 0
+  //   ) {
+  //     const isString = (x) => typeof x == "string" && x.trim().length != 0;
+  //     if (!category.vehicleType.every(isString)) {
+  //       return "Vehicle type must be a string";
+  //     }
+  //   } else return "Vehicle type must be array of length atleast 1";
+  // } else return "Category must be an object";
 
   // if (Array.isArray(parkingReviews)) {
   //   parkingReviews.forEach((x) => {

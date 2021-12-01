@@ -2,7 +2,12 @@
   box-sizing: border-box;
 }
 
-/* nav bar design */
-.mt-md-0 {
-  margin-bottom: 5px;
+.form-inline {
+  justify-content: center;
+}
+.maintag {
+  text-align: center;
+}
+.card {
+  width: 18rem;
 }
