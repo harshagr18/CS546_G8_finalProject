@@ -1,6 +1,6 @@
 const reviewRoutes = require('./parkingReviews');
 
-const contructorMethod = (app) => {
+const constructorMethod = (app) => {
     app.use ('/reviews', reviewRoutes);
 
     app.use("*", (req, res) => {
@@ -8,4 +8,4 @@ const contructorMethod = (app) => {
     });
 };
 
-module.exports = contructorMethod;
+module.exports = constructorMethod;

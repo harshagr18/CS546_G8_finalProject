@@ -57,10 +57,11 @@ const main = async () => {
 
    // console.log(firstReview);
 
-    let sameReview = await parkingReviews.getAllReviews(firstParking._id);
+    let sameReview = await parkingReviews.getAllReviewsOfParking(firstParking._id);
     console.log(sameReview);
     let oneReview = await parkingReviews.getReview(sameReview[0]._id);
     console.log(oneReview);
+    let userReview = await parkingReviews.getAllReviewsOfUser(sameReview[0]._id); 
     let reviewUpdate = await parkingReviews.updateReview(sameReview[0]._id, 4, "This is an average space")
     let reviewRemove = await parkingReviews.removeReview(sameReview[0]._id);
 
