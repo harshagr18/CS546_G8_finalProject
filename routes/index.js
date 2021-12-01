@@ -1,10 +1,10 @@
 const parkingRoutes = require("./parkings");
+const userRoutes = require("./users");
 const dashboardRoutes = require("./dashboard");
-//added by sv
 const constructorMethod = (app) => {
-  app.use("/", dashboardRoutes);
+  app.use("/users", userRoutes);
   app.use("/parkings", parkingRoutes);
-
+  app.use("/", dashboardRoutes);
   app.use("*", (req, res) => {
     res.status(404).json({ error: "Path Not Found" });
   });
