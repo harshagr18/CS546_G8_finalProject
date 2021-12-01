@@ -42,7 +42,7 @@ router.get("/", async (req, res) => {
     //username calls user table and fetches lister id to get parkings from logged in user
     //hardcoded for testing
     const getData = await parkingsData.getParkingsOfLister(
-      "6164f085181bfcb0325557c6"
+      "6164f085181bfcb0325557c7"
     );
     res.render("pages/parkings/getParkings", {
       parkdata: getData,

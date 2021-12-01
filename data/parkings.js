@@ -143,6 +143,7 @@ async function createParkings(
     address,
     city,
     zip,
+    state,
     longitude,
     latitude,
     category,
