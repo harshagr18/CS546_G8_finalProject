@@ -1,5 +1,6 @@
 const { json } = require("express");
 const connection = require("../config/mongoConnection");
+const parkingReviews  = require("../data/parkingReviews");
 const parkings = require("../data/parkings");
 
 const main = async () => {
@@ -41,6 +42,21 @@ const main = async () => {
       { vehicleType: ["sedan"] }
     );
     console.log(updateParking);
+
+let firstReview = await parkingReviews.createReview(
+        firstParking._id,
+        "7174f085181bfcb0325557c8",
+        5,
+        "11/27/2021",
+        "This is a very nice space"
+      );
+
+let sameReview = await parkingReviews.getAllReviewsOfParking(createParking._id);
+let oneReview = await parkingReviews.getReview(sameReview[0]._id);
+let userReview = await parkingReviews.getAllReviewsOfUser(sameReview[0]._id); 
+let reviewUpdate = await parkingReviews.updateReview(sameReview[0]._id, 4, "This is an average space")
+let reviewRemove = await parkingReviews.removeReview(sameReview[0]._id);
+
 
     // delete parking
     firstRestaurant = await parkings.deleteParking("61909dddc5745f08acbbeca0");
