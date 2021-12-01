@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const data = require("../data");
 const userData = data.users;
+const { ObjectId } = require("mongodb");
 
 function validate(id) {
   if (typeof id != "string") {
@@ -54,13 +55,6 @@ router.put("/:id", async (req, res) => {
       .json({ error: "Id must be a valid string and an Object Id" });
     return;
   }
-  let validUserId = validate(userInfo.userId);
-  if (!validUserId) {
-    res
-      .status(400)
-      .json({ error: "Lister Id must be a valid string and an Object Id" });
-    return;
-  }
 
   try {
     await userData.getUser(req.params.id);
@@ -104,6 +98,7 @@ router.delete("/:id", async (req, res) => {
     const deleteData = await userData.deleteUser(req.params.id);
     res.json(deleteData);
   } catch (error) {
+    console.log(error);
     res.status(404).json({ message: "Data not found " });
   }
 });

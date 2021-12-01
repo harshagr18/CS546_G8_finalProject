@@ -170,7 +170,6 @@ let exportedMethods = {
 
     const userCollection = await users();
     const userId = await userCollection.findOne({ _id: id });
-
     if (userId === null) throw "No user found";
     userId._id = userId._id.toString();
 
@@ -317,7 +316,6 @@ let exportedMethods = {
     if (updateUser.modifiedCount === 0) throw "Parking could not be updated";
 
     const newUser = await this.getUser(userId.toString());
-
     return newUser;
   },
 
@@ -329,7 +327,7 @@ let exportedMethods = {
 
     const userCollection = await users();
 
-    const checkUser = await getUser(userId.toString());
+    const checkUser = await this.getUser(userId.toString());
     if (!checkUser) throw "User info does not exists ";
 
     const deleteUser = await userCollection.deleteOne({ _id: userId });
