@@ -17,6 +17,18 @@ function checkIsProperString(val) {
   }
 }
 
+function validateID(id) {
+  if (typeof id != "string") {
+    throw "Argument of type string expected";
+  }
+  if (id.trim().length === 0) {
+    throw "String cannot be blanks or empty";
+  }
+  if (!ObjectId.isValid(id)) {
+    throw "Object Id is not valid";
+  }
+}
+
 let exportedMethods = {
   async createUser(
     firstName,
@@ -61,7 +73,7 @@ let exportedMethods = {
     if (!emailRegex.test(email)) {
       throw `Incorrect email format`;
     }
-    if (!zipRegex.test(zipRegex)) {
+    if (!zipRegex.test(zip)) {
       throw `Incorrect zip code`;
     }
 
@@ -150,6 +162,182 @@ let exportedMethods = {
     if (insertInfo.insertedCount === 0) throw `Could not add user`;
 
     return newUser;
+  },
+
+  async getUser(id = checkParameters()) {
+    id = id.trim();
+    id = ObjectId(id);
+
+    const userCollection = await users();
+    const userId = await userCollection.findOne({ _id: id });
+    if (userId === null) throw "No user found";
+    userId._id = userId._id.toString();
+
+    return userId;
+  },
+
+  async updateUser(
+    userId,
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    username,
+    address,
+    city,
+    state,
+    zip
+  ) {
+    if (
+      !firstName ||
+      !lastName ||
+      !email ||
+      !phoneNumber ||
+      !username ||
+      !address ||
+      !city ||
+      !state ||
+      !zip
+    ) {
+      throw `Missing parameter`;
+    }
+
+    validateID(userId);
+    checkIsProperString(firstName);
+    checkIsProperString(lastName);
+    checkIsProperString(address);
+    checkIsProperString(city);
+    checkIsProperString(username);
+
+    const phoneRegex = /^\d{10}$/im;
+    const emailRegex =
+      /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+
+    const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
+
+    if (!phoneRegex.test(phoneNumber)) {
+      throw `Incorrect phone number format`;
+    }
+    if (!emailRegex.test(email)) {
+      throw `Incorrect email format`;
+    }
+    if (!zipRegex.test(zip)) {
+      throw `Incorrect zip code`;
+    }
+
+    stateList = [
+      "AL",
+      "AK",
+      "AZ",
+      "AR",
+      "CA",
+      "CO",
+      "CT",
+      "DE",
+      "DC",
+      "FL",
+      "GA",
+      "HI",
+      "ID",
+      "IL",
+      "IN",
+      "IA",
+      "KS",
+      "KY",
+      "LA",
+      "ME",
+      "MD",
+      "MA",
+      "MI",
+      "MN",
+      "MS",
+      "MO",
+      "MT",
+      "NE",
+      "NV",
+      "NH",
+      "NJ",
+      "NM",
+      "NY",
+      "NC",
+      "ND",
+      "OH",
+      "OK",
+      "OR",
+      "PA",
+      "PR",
+      "RI",
+      "SC",
+      "SD",
+      "TN",
+      "TX",
+      "UT",
+      "VT",
+      "VA",
+      "WA",
+      "WV",
+      "WI",
+      "WY",
+    ];
+
+    found = false;
+
+    for (let i = 0; i < stateList.length; i++) {
+      if (state == stateList[i]) found = true;
+    }
+
+    if (found == false) {
+      throw `State not found`;
+    }
+
+    userId = ObjectId(userId);
+
+    let updatedUser = {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phoneNumber: phoneNumber,
+      username: username,
+      address: address,
+      city: city,
+      state: state,
+      zip: zip,
+      listings: [],
+      bookings: [],
+      reviews: [],
+    };
+
+    const userCollection = await users();
+
+    const updateUser = await userCollection.updateOne(
+      { _id: userId },
+      { $set: updatedUser }
+    );
+    if (updateUser.modifiedCount === 0) throw "Parking could not be updated";
+
+    const newUser = await this.getUser(userId.toString());
+    return newUser;
+  },
+
+  async deleteUser(userId = checkParameters()) {
+    validateID(userId);
+    userId = userId.trim();
+    let result = {};
+    userId = ObjectId(userId);
+
+    const userCollection = await users();
+
+    const checkUser = await this.getUser(userId.toString());
+    if (!checkUser) throw "User info does not exists ";
+
+    const deleteUser = await userCollection.deleteOne({ _id: userId });
+    if (deleteUser.deletedCount == 0) {
+      throw "Could not delete the User";
+    } else {
+      result.parkingId = checkUser._id;
+      result.deleted = true;
+    }
+    return result;
   },
 };
 
