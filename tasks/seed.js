@@ -1,13 +1,17 @@
 const { json } = require("express");
 const connection = require("../config/mongoConnection");
+const parkingReviews  = require("../data/parkingReviews");
 const parkings = require("../data/parkings");
-const users = require("../data/users");
-const listings = require("../data/listings");
-const reviews = require("../data/reviews");
 
 const main = async () => {
   //parkings CRUD operations
   try {
+    //added by sv
+
+    //get parkings
+    let getParking = await parkings.getParking("6164f085181bfcb0325557c6");
+    console.log(getParking);
+
     //create parkings
     let createParking = await parkings.createParkings(
       "6164f085181bfcb0325557c6",
@@ -22,27 +26,41 @@ const main = async () => {
       { vehicleType: ["sedan"] },
       []
     );
+    console.log(createParking);
 
-    let createdUser = await users.createUser(
-      "Harsh",
-      "Agrawal",
-      "123@gmail.com",
-      1234567890,
-      "floatyOtter",
-      "123 Central Ave",
-      "Hoboken",
+    // update parking
+    let updateParking = await parkings.updateParking(
+      "61909dddc5745f08acbbeca0",
+      "6164f085181bfcb0325557c6",
+      "abc.jpg",
+      "abc abc",
+      "ahc ahs",
       "NJ",
-      "07306"
+      "07307",
+      "",
+      "",
+      { vehicleType: ["sedan"] }
     );
+    console.log(updateParking);
 
-    let createListing = await listings.createListing(
-      "61a7885c5c659d453db6d179",
-      "11/29/2021",
-      "11/29/2021",
-      "10:00:00",
-      "12:00:00",
-      20
-    );
+let firstReview = await parkingReviews.createReview(
+        firstParking._id,
+        "7174f085181bfcb0325557c8",
+        5,
+        "11/27/2021",
+        "This is a very nice space"
+      );
+
+let sameReview = await parkingReviews.getAllReviewsOfParking(createParking._id);
+let oneReview = await parkingReviews.getReview(sameReview[0]._id);
+let userReview = await parkingReviews.getAllReviewsOfUser(sameReview[0]._id); 
+let reviewUpdate = await parkingReviews.updateReview(sameReview[0]._id, 4, "This is an average space")
+let reviewRemove = await parkingReviews.removeReview(sameReview[0]._id);
+
+
+    // delete parking
+    firstRestaurant = await parkings.deleteParking("61909dddc5745f08acbbeca0");
+    console.log(firstRestaurant);
 
     const db = await connection();
     await db._connection.close();
