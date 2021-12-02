@@ -1,19 +1,19 @@
 (function ($) {
   //error functions
 
-  let error = $(".error");
+  $("#uiError").hide();
   //edit parkings
-  $("#editParkings").click(function (e) {
-    e.preventDefault();
-    let parkingId = $("#parkingID").val();
-    let requestConfig = {
-      method: "PUT",
-      url: window.location.href + "/" + parkingId,
-    };
-    $.ajax(requestConfig).then(function (response) {
-      console.log(response);
-    });
-  });
+  // $("#editParkings").click(function (e) {
+  //   e.preventDefault();
+  //   let parkingId = $("#parkingID").val();
+  //   let requestConfig = {
+  //     method: "PUT",
+  //     url: window.location.href + "/" + parkingId,
+  //   };
+  //   $.ajax(requestConfig).then(function (response) {
+  //     console.log(response);
+  //   });
+  // });
 
   //   $("#createParkings").click(function (e) {
   //     e.preventDefault();
@@ -45,6 +45,7 @@
   //       url: location.href,
   //     };
   //   });
+  //
 })(jQuery);
 
 function checkAlphanumerics(phrase) {
@@ -55,4 +56,17 @@ function checkAlphanumerics(phrase) {
   }
 
   return false;
+}
+//form validation before submit
+function searchValidation(event) {
+  let citysearch = $("#citySearch").val();
+  let statesearch = $("#stateSearch").val();
+  let zipsearch = $("#zipSearch").val();
+  if (!citysearch && !statesearch && !zipsearch) {
+    event.preventDefault();
+    $("#uiError").show();
+    $("#uiError").html("Search atleast by city, zipcode or state");
+    return false;
+  }
+  return true;
 }
