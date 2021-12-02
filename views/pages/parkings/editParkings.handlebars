@@ -1,0 +1,147 @@
+<div class="container">
+  <form
+    method="POST"
+    id="editParkingForm"
+    action="/parkings/edit"
+    enctype="multipart/form-data"
+  >
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="listerId">Lister Id</label>
+        <input
+          type="text"
+          class="form-control"
+          id="listerId"
+          name="listerId"
+          placeholder="Lister Id"
+          readonly
+          value="{{data._id}}"
+        />
+      </div>
+      <div class="form-group col-md-6">
+        <label class="" for="parkingImg">Upload Image</label>
+        <input
+          type="file"
+          class="form-control"
+          id="parkingImg"
+          name="parkingImg"
+          value="{{data.parkingImg}}"
+        />
+      </div>
+
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="longitude">Longitude</label>
+        <input
+          type="text"
+          class="form-control"
+          id="longitude"
+          name="longitude"
+          placeholder="Longitude"
+          value="{{data.longitude}}"
+        />
+      </div>
+      <div class="form-group col-md-6">
+        <label for="latitude">Latitude</label>
+        <input
+          type="text"
+          class="form-control"
+          id="latitude"
+          name="latitude"
+          placeholder="Latitude"
+          value="{{data.latitude}}"
+        />
+      </div>
+    </div>
+
+    <div class="form-row">
+
+      <div class="form-group col-md-6">
+        <label for="address">Address</label>
+        <input
+          type="text"
+          class="form-control"
+          id="address"
+          name="address"
+          placeholder="1234 Main St"
+          value="{{data.address}}"
+        />
+      </div>
+      <div class="form-group col-md-4">
+        <label for="category">Vehicle Category</label>
+        <select
+          id="category"
+          name="category"
+          class="form-control"
+          multiple
+          size="2"
+          aria-label="multiple vehicle type"
+        >
+
+          <option>Sedan</option>
+          <option>SUV</option>
+          <option>Coupe</option>
+          <option>Pickup Truck</option>
+          <option>Minivan</option>
+          <option>Station Wagon</option>
+          <option>Hatchback</option>
+        </select>
+      </div>
+      <div class="form-group col-md-2">
+        <label for="parkingType">Parking Type</label>
+        <select id="parkingType" name="parkingType" class="form-control">
+          <option selected>{{data.parkingType}}</option>
+          <option>open</option>
+          <option>closed</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <label for="city">City</label>
+        <input
+          type="text"
+          class="form-control"
+          id="city"
+          name="city"
+          value="{{data.city}}"
+        />
+      </div>
+      <div class="form-group col-md-4">
+        <label for="state">State</label>
+        <select id="state" name="state" class="form-control">
+          <option selected>{{data.state}}</option>
+
+          {{#each states}}
+            <option>{{this}}</option>
+          {{/each}}
+
+        </select>
+      </div>
+      <div class="form-group col-md-2">
+        <label for="zip">Zip</label>
+        <input
+          type="text"
+          class="form-control"
+          id="zip"
+          name="zip"
+          value="{{data.zip}}"
+        />
+      </div>
+    </div>
+    <button
+      type="submit"
+      id="btnEditParking"
+      class="btn btn-primary"
+    >Update</button>
+  </form>
+  {{#if success}}
+    <div class="alert alert-success" role="alert">
+      Parking successfully update!
+    </div>
+  {{/if}}
+  <a href="/parkings" id="viewParkings" class="">View my parkings</a>
+
+</div>
