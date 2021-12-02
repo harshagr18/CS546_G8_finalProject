@@ -1,0 +1,13 @@
+* {
+  box-sizing: border-box;
+}
+
+.form-inline {
+  justify-content: center;
+}
+.maintag {
+  text-align: center;
+}
+.card {
+  width: 18rem;
+}
