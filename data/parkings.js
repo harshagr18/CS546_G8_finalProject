@@ -19,40 +19,38 @@ async function getParking(id = checkParameters()) {
 //create parkings
 async function createParkings(
   listerId,
-  // parkingImg,
+  parkingImg,
   address,
   city,
   state,
   zip,
   longitude,
   latitude,
-  category,
-  parkingReviews = checkParameters()
+  category = checkParameters()
 ) {
   //trim values to reject blank spaces or empty
   listerId = listerId.trim();
-  // parkingImg = parkingImg.trim();
+  parkingImg = parkingImg.trim();
   state = state.trim();
   zip = zip.trim();
   longitude = longitude.trim(); //optional to be filled by Geolocation API
   latitude = latitude.trim(); ////optional to be filled by Geolocation API
 
   validate(
-    // parkingImg,
+    parkingImg,
     address,
     city,
     state,
     zip,
     longitude,
     latitude,
-    category,
-    parkingReviews
+    category
   );
   listerId = ObjectId(listerId);
   let newParking = {
     listerId,
     listing: [],
-    // parkingImg,
+    parkingImg,
     overallRating: 0,
     address,
     city,
@@ -77,7 +75,7 @@ async function createParkings(
 async function updateParking(
   parkingId,
   listerId,
-  // parkingImg,
+  parkingImg,
   address,
   city,
   state,
@@ -88,7 +86,7 @@ async function updateParking(
 ) {
   //trim values to reject blank spaces or empty
   listerId = listerId.trim();
-  // parkingImg = parkingImg.trim();
+  parkingImg = parkingImg.trim();
   state = state.trim();
   zip = zip.trim();
   longitude = longitude.trim(); //optional to be filled by Geolocation API
@@ -98,7 +96,7 @@ async function updateParking(
   validateID(listerId);
 
   validate(
-    // parkingImg,
+    parkingImg,
     address,
     city,
     state,
@@ -117,8 +115,8 @@ async function updateParking(
   if (!checkParking) throw "Parking not available";
 
   let updateParkingObj = {
-    listerId: listerId,
-    // parkingImg: parkingImg,
+    listerId: ObjectId(listerId),
+    parkingImg: parkingImg,
     address: address,
     city: city,
     state: state,
@@ -181,14 +179,14 @@ function validate(
 
   //string and trim length checks
   if (
-    // typeof parkingImg != "string" ||
+    typeof parkingImg != "string" ||
     typeof address != "string" ||
     typeof city != "string" ||
     typeof state != "string"
   ) {
     throw "Parameter of defined type not found";
   } else if (
-    // parkingImg.length === 0 ||
+    parkingImg.length === 0 ||
     address.length === 0 ||
     city.length === 0 ||
     state.length === 0
@@ -198,10 +196,8 @@ function validate(
 
   //state validator
   if (typeof state === "string") {
-    for (let i = 0; i < stateList.length; i++) {
-      if (state != stateList[i]) {
-        throw "State not found";
-      }
+    if (stateList.indexOf(state) == -1) {
+      throw "State not found";
     }
   }
 

@@ -1,6 +1,7 @@
 const { json } = require("express");
 const connection = require("../config/mongoConnection");
 const parkings = require("../data/parkings");
+const listings = require("../data/listings");
 
 const main = async () => {
   //parkings CRUD operations
@@ -41,6 +42,8 @@ const main = async () => {
       { vehicleType: ["sedan"] }
     );
     console.log(updateParking);
+
+    // let createListing = await listings.createListing("61a2eb490b44342c5afbcd40", "11/29/2021", "11/29/2021", "10:00:00", "12:00:00", 20);
 
     // delete parking
     firstRestaurant = await parkings.deleteParking("61909dddc5745f08acbbeca0");

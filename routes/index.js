@@ -1,4 +1,4 @@
-const parkingsRoutes = require('./parkings');
+// const parkingsRoutes = require('./parkings');
 const listingsRoutes = require('./listings');
 
 const constructerMethod = (app) => {

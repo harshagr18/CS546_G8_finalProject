@@ -1,0 +1,20 @@
+<main>
+{{!-- <h1>{{title}}</h1>
+<h2>{{searchTerm}}</h2> --}}
+
+{{#if listings.length}}
+<ul>
+    {{#each listing}}
+    <li>
+        <a href="/getListing/{{id}}">{{name}}</a>
+    </li>
+    {{/each}}
+</ul>
+{{else}}
+    <p class="not-found">We're sorry, but no results were found</p>  
+    {{!-- for {{searchTerm}}. --}}
+{{/if}}
+</main>
+<div>
+    <a href="/">Back to parking</a>
+</div>
