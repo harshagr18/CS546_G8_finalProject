@@ -41,6 +41,11 @@ router.post("/createUser", async (req, res) => {
   }
 });
 
+router.get("/logout", async (req, res) => {
+  req.session.destroy();
+  res.redirect("/users/login");
+});
+
 router.post("/login", async (req, res) => {
   try {
     let userInfo = req.body;
