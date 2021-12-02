@@ -4,6 +4,7 @@
     id="searchZip"
     method="POST"
     action="/search"
+    onsubmit="searchValidation(event);"
   >
     <div class="form-row">
       <div class="form-group col-md-12">
@@ -51,6 +52,9 @@
       {{error}}
     </div>
   {{/if}}
+  <div class="alert alert-danger error" id="uiError" role="alert">
+  </div>
+
 </div>
 
 {{#if listingsData}}
@@ -64,6 +68,7 @@
             <h5 class="card-title">{{address}}</h5>
             <p class="card-text">{{zip}}</p>
             <a href="#" class="btn btn-primary">Go Here</a>
+            <a href="/bookParking" class="btn btn-primary">Book</a>
             <input
               type="hidden"
               id="listingId"
