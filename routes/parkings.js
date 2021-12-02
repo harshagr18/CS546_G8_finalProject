@@ -93,10 +93,6 @@ router.get("/:id", async (req, res) => {
 //post parkings route
 router.post("/post", upload.single("parkingImg"), async function (req, res) {
   const parkingPostData = req.body;
-  if (!parkingPostData.listerId) {
-    res.status(400).json({ error: "You must provide lister Id" });
-    return;
-  }
   if (!parkingPostData.address) {
     res.status(400).json({ error: "You must provide address" });
     return;
@@ -125,9 +121,13 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     res.status(400).json({ error: "You must provide category" });
     return;
   }
+  if (!parkingPostData.parkingType) {
+    res.status(400).json({ error: "You must provide parking type" });
+    return;
+  }
+
   try {
     const {
-      listerId,
       address,
       city,
       state,
@@ -135,15 +135,8 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       longitude,
       latitude,
       category,
+      parkingType,
     } = parkingPostData;
-
-    let validListerId = validate(listerId);
-    if (!validListerId) {
-      res
-        .status(400)
-        .json({ error: "Id must be a valid string and an Object Id" });
-      return;
-    }
 
     let validateString = validateArguments(
       address,
@@ -152,7 +145,8 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       zip,
       longitude,
       latitude,
-      category
+      category,
+      parkingType
     );
 
     if (validateString != undefined) {
@@ -162,7 +156,6 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
 
     let parkingImg = req.file.path;
     const postParkings = await parkingsData.createParkings(
-      listerId,
       parkingImg,
       address,
       city,
@@ -170,7 +163,8 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       zip,
       longitude,
       latitude,
-      category
+      category,
+      parkingType.toLowerCase()
     );
 
     return res.status(200).json(postParkings);
@@ -292,8 +286,8 @@ function validateArguments(
   zip,
   longitude,
   latitude,
-  category
-  // parkingReviews
+  category,
+  parkingType
 ) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
@@ -328,26 +322,23 @@ function validateArguments(
   //     throw "longitude and latitude should be numbers";
   //   }
 
-  //vehicle type validator
-  // if (typeof category === "object") {
-  //   if (
-  //     Array.isArray(category.vehicleType) &&
-  //     category.vehicleType.length > 0
-  //   ) {
-  //     const isString = (x) => typeof x == "string" && x.trim().length != 0;
-  //     if (!category.vehicleType.every(isString)) {
-  //       return "Vehicle type must be a string";
-  //     }
-  //   } else return "Vehicle type must be array of length atleast 1";
-  // } else return "Category must be an object";
-
-  // if (Array.isArray(parkingReviews)) {
-  //   parkingReviews.forEach((x) => {
-  //     if (typeof x != "string") throw "review id must be a string";
-  //     if (x.trim().length === 0) throw "review id cannot be empty or blanks";
-  //     if (!ObjectId.isValid(id)) throw "Object Id is not valid";
-  //   });
+  //vehicletype validator
+  // if (Array.isArray(category) && category.length >= 1) {
+  //   const isString = (x) => typeof x == "string" && x.trim().length != 0;
+  //   if (!category.every(isString)) {
+  //     return "vehicletype must contain strings!";
+  //   }
+  // } else {
+  //   return "vehicletype must be an array having atleast 1 string!";
   // }
+
+  //parkingtype validator
+  if (
+    !parkingType.toLowerCase() === "open" ||
+    !parkingType.toLowerCase() === "close"
+  ) {
+    throw "Parking type only accepts open and close as values";
+  }
 }
 const stateList = [
   "AL",
