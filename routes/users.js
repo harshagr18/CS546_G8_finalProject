@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const data = require("../data");
 const userData = data.users;
+const parkingData = data.parkings;
 const { ObjectId } = require("mongodb");
 
 function validate(id) {
@@ -14,9 +15,9 @@ function validate(id) {
   } else return true;
 }
 
-router.post("/", async (req, res) => {
+router.post("/createUser", async (req, res) => {
   let userInfo = req.body;
-
+  console.log(userInfo);
   try {
     const newUser = await userData.createUser(
       userInfo.firstName,
@@ -24,22 +25,68 @@ router.post("/", async (req, res) => {
       userInfo.email,
       userInfo.phoneNumber,
       userInfo.username,
+      userInfo.password,
       userInfo.address,
       userInfo.city,
       userInfo.state,
       userInfo.zip
     );
-    res.json(newUser);
+    res.redirect("/users/login");
   } catch (e) {
     console.log(e);
-    res.status(400).json({ error: "Improper data" });
+    res.render("pages/users/createUsers", {
+      error: e,
+      title: "Create Profile",
+    });
+  }
+});
+
+router.get("/logout", async (req, res) => {
+  req.session.destroy();
+  res.redirect("/users/login");
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    let userInfo = req.body;
+    let user = await userData.checkUser(userInfo.username, userInfo.password);
+    req.session.user = { username: user.username, userId: user._id.toString() };
+    res.redirect("/");
+  } catch (e) {
+    console.log(e);
+    res.status(400).render("pages/users/login", { error: e });
+  }
+});
+
+router.get("/createProfile", async (req, res) => {
+  try {
+    res.render("pages/users/createUsers", { title: "Create Profile" });
+  } catch (e) {
+    console.log(e);
+    res.status(404).json({ error: "Internal error" });
+  }
+});
+
+router.get("/login", async (req, res) => {
+  try {
+    res.render("pages/users/login", { title: "Login" });
+  } catch (e) {
+    console.log(e);
+    res.status(404).json({ error: "Internal Error" });
   }
 });
 
 router.get("/:id", async (req, res) => {
   try {
     let user = await userData.getUser(req.params.id);
-    res.json(user);
+    let parkings = await parkingData.getParkingsOfLister(req.params.id);
+    console.log(parkings);
+    res.render("pages/users/getUsers", {
+      user: user,
+      title: "My Profile",
+      parkings: parkings,
+    });
+    return;
   } catch (e) {
     console.log(e);
     res.status(404).json({ error: "User not found" });

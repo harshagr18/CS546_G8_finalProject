@@ -1,6 +1,79 @@
 const { ObjectId } = require("bson");
+const { type } = require("os");
 const mongoCollections = require("../config/mongoCollections");
 const parkings = mongoCollections.parkings;
+
+//get parkings by city/state/zipcode - Dashboard Route
+async function getParkingsByCityStateZip(
+  city,
+  state,
+  zipcode = checkParameters()
+) {
+  const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
+  //string and trim length checks
+  if (
+    typeof zipcode != "string" ||
+    typeof city != "string" ||
+    typeof state != "string"
+  ) {
+    throw "Parameter of defined type not found";
+  }
+  //state validator
+  if (city != "") {
+    if (city.trim().length === 0) throw "City cannot be blanks";
+  }
+
+  //state validator+
+  if (state != "") {
+    if (stateList.indexOf(state) == -1) {
+      throw "State not found";
+    }
+  }
+
+  //zip code validator
+  if (zipcode != "") {
+    if (!zipRegex.test(zipcode)) {
+      throw "Incorrect zip code";
+    }
+  }
+
+  const cityFilter = {
+    $or: [
+      {
+        city: new RegExp(city),
+      },
+      {
+        state: state,
+      },
+      {
+        zip: zipcode,
+      },
+    ],
+  };
+  const noCityFilter = {
+    $or: [
+      {
+        state: state,
+      },
+      {
+        zip: zipcode,
+      },
+    ],
+  };
+
+  const parkingCollection = await parkings();
+  let listedParkings;
+  if (city != "") {
+    listedParkings = await parkingCollection.find(cityFilter).toArray();
+  } else {
+    listedParkings = await parkingCollection.find(noCityFilter).toArray();
+  }
+
+  if (listedParkings === null) throw "No parking found";
+  //parkingId._id = parkingId._id.toString();
+
+  return listedParkings;
+}
 
 //get Parking based on listerid
 async function getParkingsOfLister(id = checkParameters()) {
@@ -34,7 +107,6 @@ async function getParking(id = checkParameters()) {
 
 //create parkings
 async function createParkings(
-  listerId,
   parkingImg,
   address,
   city,
@@ -42,15 +114,16 @@ async function createParkings(
   zip,
   longitude,
   latitude,
-  category = checkParameters()
+  vehicleType,
+  parkingType = checkParameters()
 ) {
   //trim values to reject blank spaces or empty
-  listerId = listerId.trim();
   parkingImg = parkingImg.trim();
   state = state.trim();
   zip = zip.trim();
   longitude = longitude.trim(); //optional to be filled by Geolocation API
   latitude = latitude.trim(); ////optional to be filled by Geolocation API
+  parkingType = parkingType.trim();
 
   validate(
     parkingImg,
@@ -60,20 +133,22 @@ async function createParkings(
     zip,
     longitude,
     latitude,
-    category
+    vehicleType,
+    parkingType
   );
-  listerId = ObjectId(listerId);
   let newParking = {
-    listerId,
+    listerId: new ObjectId(),
     listing: [],
     parkingImg,
     overallRating: 0,
     address,
     city,
     zip,
+    state,
     longitude,
     latitude,
-    category,
+    vehicleType,
+    parkingType,
     parkingReviews: [],
   };
 
@@ -187,8 +262,8 @@ function validate(
   zip,
   longitude,
   latitude,
-  category
-  // parkingReviews
+  vehicleType,
+  parkingType
 ) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
@@ -198,14 +273,16 @@ function validate(
     typeof parkingImg != "string" ||
     typeof address != "string" ||
     typeof city != "string" ||
-    typeof state != "string"
+    typeof state != "string" ||
+    typeof parkingType != "string"
   ) {
     throw "Parameter of defined type not found";
   } else if (
     parkingImg.length === 0 ||
     address.length === 0 ||
     city.length === 0 ||
-    state.length === 0
+    state.length === 0 ||
+    parkingType.length === 0
   ) {
     throw "Parameter cannot be blank spaces or empty values";
   }
@@ -227,24 +304,32 @@ function validate(
   //   }
 
   //vehicle type validator
-  if (typeof category == "object") {
-    if (
-      Array.isArray(category.vehicleType) &&
-      category.vehicleType.length > 0
-    ) {
-      category.vehicleType.forEach((x) => {
-        if (typeof x !== "string") throw "vehicle type must be a string";
-      });
-    } else throw "vehicle type must be array of length atleast 1";
-  } else throw "category must be an object";
+  // if (typeof category == "object") {
+  //   if (
+  //     Array.isArray(category.vehicleType) &&
+  //     category.vehicleType.length > 0
+  //   ) {
+  //     category.vehicleType.forEach((x) => {
+  //       if (typeof x !== "string") throw "vehicle type must be a string";
+  //     });
+  //   } else throw "vehicle type must be array of length atleast 1";
+  // } else throw "category must be an object";
 
-  // if (Array.isArray(parkingReviews)) {
-  //   parkingReviews.forEach((x) => {
+  //vehicletype validator
+  // if (Array.isArray(vehicleType)) {
+  //   vehicleType.forEach((x) => {
   //     if (typeof x != "string") throw "review id must be a string";
   //     if (x.trim().length === 0) throw "review id cannot be empty or blanks";
-  //     if (!ObjectId.isValid(id)) throw "Object Id is not valid";
   //   });
   // }
+
+  //parkingtype validator
+  if (
+    !parkingType.toLowerCase() === "open" ||
+    !parkingType.toLowerCase() === "close"
+  ) {
+    throw "Parking type only accepts open and close as values";
+  }
 }
 
 function validateID(id) {
@@ -325,4 +410,5 @@ module.exports = {
   updateParking,
   deleteParking,
   getParkingsOfLister,
+  getParkingsByCityStateZip,
 };
