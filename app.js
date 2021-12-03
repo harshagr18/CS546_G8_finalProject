@@ -34,15 +34,29 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
 app.use(
   session({
     name: "AuthCookie",
-    secret: "some secret string!",
+    secret: "Beer Battered chicken wings with salsa!",
     resave: false,
     saveUninitialized: true,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }, //cookie day timeout
   })
 );
 
-app.use((req, res, next) => {
-  console.log("Path is", req._parsedOriginalUrl.pathname.toString());
-  console.log("Current user is", req.session.user);
+app.use(function (req, res, next) {
+  userStatus = !req.session.user
+    ? "Non-Authenticated User"
+    : "Authenticated User";
+  console.log(
+    "[" +
+      new Date().toUTCString() +
+      "]:" +
+      " " +
+      req.method +
+      " " +
+      req.originalUrl +
+      " (" +
+      userStatus +
+      ")"
+  );
   next();
 });
 
@@ -50,9 +64,9 @@ app.use("/", (req, res, next) => {
   if (
     !req.session.user &&
     !(
-      req._parsedOriginalUrl.pathname.toString() == "/users/createProfile" ||
-      req._parsedOriginalUrl.pathname.toString() == "/users/login" ||
-      req._parsedOriginalUrl.pathname.toString() == "/users/createUser"
+      req.url == "/users/createProfile" ||
+      req.url == "/users/login" ||
+      req.url == "/users/createUser"
     )
   ) {
     res.redirect("/users/login");
@@ -64,9 +78,9 @@ app.use("/", (req, res, next) => {
 app.use("/", (req, res, next) => {
   if (
     req.session.user &&
-    (req._parsedOriginalUrl.pathname.toString() == "/users/createProfile" ||
-      req._parsedOriginalUrl.pathname.toString() == "/users/login" ||
-      req._parsedOriginalUrl.pathname.toString() == "/users/createUser")
+    (req.url == "/users/createProfile" ||
+      req.url == "/users/login" ||
+      req.url == "/users/createUser")
   ) {
     res.redirect("/");
     return;
