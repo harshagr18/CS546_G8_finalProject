@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const data = require("../data");
 const userData = data.users;
+const parkingData = data.parkings;
 const { ObjectId } = require("mongodb");
-const { getUser } = require("../data/users");
 
 function validate(id) {
   if (typeof id != "string") {
@@ -41,6 +41,11 @@ router.post("/createUser", async (req, res) => {
   }
 });
 
+router.get("/logout", async (req, res) => {
+  req.session.destroy();
+  res.redirect("/users/login");
+});
+
 router.post("/login", async (req, res) => {
   try {
     let userInfo = req.body;
@@ -74,7 +79,13 @@ router.get("/login", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     let user = await userData.getUser(req.params.id);
-    res.render("pages/users/getUsers", { user: user, title: "My Profile" });
+    let parkings = await parkingData.getParkingsOfLister(req.params.id);
+    console.log(parkings);
+    res.render("pages/users/getUsers", {
+      user: user,
+      title: "My Profile",
+      parkings: parkings,
+    });
     return;
   } catch (e) {
     console.log(e);

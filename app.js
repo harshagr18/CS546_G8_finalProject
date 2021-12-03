@@ -41,7 +41,36 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  console.log(req.session.user);
+  console.log("Path is", req._parsedOriginalUrl.pathname.toString());
+  console.log("Current user is", req.session.user);
+  next();
+});
+
+app.use("/", (req, res, next) => {
+  if (
+    !req.session.user &&
+    !(
+      req._parsedOriginalUrl.pathname.toString() == "/users/createProfile" ||
+      req._parsedOriginalUrl.pathname.toString() == "/users/login" ||
+      req._parsedOriginalUrl.pathname.toString() == "/users/createUser"
+    )
+  ) {
+    res.redirect("/users/login");
+    return;
+  }
+  next();
+});
+
+app.use("/", (req, res, next) => {
+  if (
+    req.session.user &&
+    (req._parsedOriginalUrl.pathname.toString() == "/users/createProfile" ||
+      req._parsedOriginalUrl.pathname.toString() == "/users/login" ||
+      req._parsedOriginalUrl.pathname.toString() == "/users/createUser")
+  ) {
+    res.redirect("/");
+    return;
+  }
   next();
 });
 
