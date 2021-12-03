@@ -67,6 +67,62 @@ router.get("/create", async (req, res) => {
   }
 });
 
+router.get("/edit/:id", async (req, res) => {
+  try {
+    let validId = validate(req.params.id);
+    if (!validId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
+    //session user id
+    const getData = await parkingsData.getParkingbyUser(
+      "6164f085181bfcb0325557c7",
+      req.params.id
+    );
+
+    let vehicleType = [
+      "sedan",
+      "suv",
+      "hatchback",
+      "station wagon",
+      "coupe",
+      "minivan",
+      "pickup truck",
+    ];
+    const filteredArray = vehicleType.filter((value) =>
+      getData.category.includes(value)
+    );
+    let option = {};
+
+    vehicleType.forEach((x) => {
+      filteredArray.forEach((y) => {
+        if (x == y) {
+          option[x] = true;
+        } else {
+          option[x] = false;
+        }
+      });
+    });
+
+    res.render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      states: stateList,
+      data: getData,
+      parkingType: getData.parkingType,
+      vehicleType: option,
+      error: false,
+    });
+  } catch (error) {
+    res.status(404).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      error: true,
+      errormsg: "No data found",
+    });
+  }
+});
+
 //get parkings
 router.get("/:id", async (req, res) => {
   if (!req.params.id) {
@@ -157,32 +213,30 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     let parkingImg = req.file.path;
     const postParkings = await parkingsData.createParkings(
       parkingImg,
-      address,
-      city,
-      state,
+      address.toLowerCase(),
+      city.toLowerCase(),
+      state.toUpperCase(),
       zip,
       longitude,
       latitude,
       category,
       parkingType.toLowerCase()
     );
-
-    return res.status(200).json(postParkings);
+    res.render("pages/parkings/createParkings", {
+      title: "Create Parking",
+      states: stateList,
+      success: true,
+    });
+    return;
+    //return res.status(200).json(postParkings);
   } catch (e) {
     res.status(500).json({ error: e });
   }
 });
 
 //update parkings
-router.put("/:id", async (req, res) => {
+router.put("/update", upload.single("parkingImg"), async (req, res) => {
   const updatedData = req.body;
-  let validId = validate(req.params.id);
-  if (!validId) {
-    res
-      .status(400)
-      .json({ error: "Id must be a valid string and an Object Id" });
-    return;
-  }
   let validListerId = validate(updatedData.listerId);
   if (!validListerId) {
     res
@@ -190,30 +244,35 @@ router.put("/:id", async (req, res) => {
       .json({ error: "Lister Id must be a valid string and an Object Id" });
     return;
   }
+  if (!req.file) {
+    updatedData.parkingImg = updatedData.parkingImghidden;
+  } else {
+    updatedData.parkingImg = req.file.path;
+  }
 
   if (
-    !updatedData.listerId ||
-    !updatedData.parkingImg ||
     !updatedData.address ||
     !updatedData.city ||
     !updatedData.state ||
     !updatedData.zip ||
     !updatedData.longitude ||
     !updatedData.latitude ||
-    !updatedData.category
+    !updatedData.category ||
+    !updatedData.parkingType
   ) {
     res.status(400).json({ error: "You must supply all fields" });
     return;
   }
+
   let validateString = validateArguments(
-    updatedData.parkingImg,
     updatedData.address,
     updatedData.city,
     updatedData.state,
     updatedData.zip,
     updatedData.longitude,
     updatedData.latitude,
-    updatedData.category
+    updatedData.category,
+    updatedData.parkingType
   );
 
   if (validateString != undefined) {
@@ -222,26 +281,65 @@ router.put("/:id", async (req, res) => {
   }
 
   try {
-    await parkingsData.getParking(req.params.id);
+    await parkingsData.getParkingbyUser(
+      updatedData.listerId,
+      updatedData.parkingId
+    );
   } catch (e) {
-    res.status(404).json({ error: "Parking not found" });
+    res.status(404).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      error: true,
+      errormsg: e,
+    });
     return;
   }
 
   try {
     const updatedParking = await parkingsData.updateParking(
-      req.params.id,
+      updatedData.parkingId,
       updatedData.listerId,
       updatedData.parkingImg,
-      updatedData.address,
-      updatedData.city,
-      updatedData.state,
+      updatedData.address.toLowerCase(),
+      updatedData.city.toLowerCase(),
+      updatedData.state.toUpperCase(),
       updatedData.zip,
       updatedData.longitude,
       updatedData.latitude,
-      updatedData.category
+      updatedData.category,
+      updatedData.parkingType.toLowerCase()
     );
-    res.json(updatedParking);
+    let vehicleType = [
+      "sedan",
+      "suv",
+      "hatchback",
+      "station wagon",
+      "coupe",
+      "minivan",
+      "pickup truck",
+    ];
+    const filteredArray = vehicleType.filter((value) =>
+      updatedParking.category.includes(value)
+    );
+    let option = {};
+
+    vehicleType.forEach((x) => {
+      filteredArray.forEach((y) => {
+        if (x == y) {
+          option[x] = true;
+        } else {
+          option[x] = false;
+        }
+      });
+    });
+
+    res.render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      error: false,
+      data: updatedParking,
+      success: true,
+      parkingType: updatedParking.parkingType,
+      vehicleType: option,
+    });
   } catch (e) {
     res.status(500).json({ error: e });
   }

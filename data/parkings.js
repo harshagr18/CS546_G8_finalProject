@@ -1,5 +1,5 @@
 const { ObjectId } = require("bson");
-const { type } = require("os");
+const { FindCursor, ConnectionCheckOutFailedEvent } = require("mongodb");
 const mongoCollections = require("../config/mongoCollections");
 const parkings = mongoCollections.parkings;
 
@@ -75,9 +75,30 @@ async function getParkingsByCityStateZip(
   return listedParkings;
 }
 
+//get parkings of logged in users
+async function getParkingbyUser(userId, parkingId = checkParameters()) {
+  userId = userId.trim();
+  parkingId = parkingId.trim();
+
+  validateID(userId);
+  validateID(parkingId);
+
+  userId = ObjectId(userId);
+  parkingId = ObjectId(parkingId);
+
+  const parkingCollection = await parkings();
+  const parkingsbyUser = await parkingCollection.findOne({
+    _id: parkingId,
+    listerId: userId,
+  });
+  if (parkingsbyUser === null) throw "No parkings found";
+  return parkingsbyUser;
+}
+
 //get Parking based on listerid
 async function getParkingsOfLister(id = checkParameters()) {
   id = id.trim();
+  validateID(id);
   id = ObjectId(id);
 
   const parkingCollection = await parkings();
@@ -119,17 +140,17 @@ async function createParkings(
 ) {
   //trim values to reject blank spaces or empty
   parkingImg = parkingImg.trim();
-  state = state.trim();
+  state = state.trim().toUpperCase();
   zip = zip.trim();
   longitude = longitude.trim(); //optional to be filled by Geolocation API
   latitude = latitude.trim(); ////optional to be filled by Geolocation API
-  parkingType = parkingType.trim();
+  parkingType = parkingType.trim().toLowerCase;
 
   validate(
     parkingImg,
-    address,
-    city,
-    state,
+    address.toLowerCase(),
+    city.toLowerCase(),
+    state.toUpperCase(),
     zip,
     longitude,
     latitude,
@@ -173,12 +194,13 @@ async function updateParking(
   zip,
   longitude,
   latitude,
-  category = checkParameters()
+  category,
+  parkingType = checkParameters()
 ) {
   //trim values to reject blank spaces or empty
   listerId = listerId.trim();
   parkingImg = parkingImg.trim();
-  state = state.trim();
+  state = state.trim().toUpperCase();
   zip = zip.trim();
   longitude = longitude.trim(); //optional to be filled by Geolocation API
   latitude = latitude.trim(); ////optional to be filled by Geolocation API
@@ -194,16 +216,16 @@ async function updateParking(
     zip,
     longitude,
     latitude,
-    category
+    category,
+    parkingType
   );
-
-  parkingId = ObjectId(parkingId);
 
   //check if parking exists
   const parkingCollection = await parkings();
-  const checkParking = await parkingCollection.findOne({ _id: parkingId });
+  const checkParking = await getParkingbyUser(listerId, parkingId);
 
   if (!checkParking) throw "Parking not available";
+  parkingId = ObjectId(parkingId);
 
   let updateParkingObj = {
     listerId: ObjectId(listerId),
@@ -215,6 +237,7 @@ async function updateParking(
     longitude: longitude,
     latitude: latitude,
     category: category,
+    parkingType: parkingType,
   };
 
   //update parkings
@@ -411,4 +434,5 @@ module.exports = {
   deleteParking,
   getParkingsOfLister,
   getParkingsByCityStateZip,
+  getParkingbyUser,
 };
