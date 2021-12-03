@@ -237,6 +237,34 @@ let exportedMethods = {
 
   async updateListingByUser(listerId, listingId, bookerId, numberPlate, userCarCategory) {},
 
+  async bookListing(listerId, listingId) {  //, bookerId, numberPlate
+    console.log("Lister Id in data:",listerId);
+    console.log("Listing Id in data:",listingId);
+    const updateListing = {
+      booked: true
+      // bookerId: bookerId,
+      // numberPlate: numberPlate
+    };
+
+    const updatedListings = await parkingsCollection.updateOne(
+      {
+        _id: ObjectId(listerId),
+        "listing._id": ObjectId(listingId),
+      },
+      { $set: updateListing }
+      // { upsert: true }
+    );
+    // Pending
+    // Error: matched count = 1, modified count = 0
+    // console.log(updatedListings.upsertedId);
+    if (updatedListings.modifiedCount === 0)
+      throw `Could not update listing successfully.`;
+
+    // return updatedListings;
+    // return await getListing(listingId);
+    return true;
+  },
+
   // async listingDetail(bookerId, startDate, endDate, startTime, endTime, booked, numberPlate, price) {
   //   if (
   //     !bookerId ||

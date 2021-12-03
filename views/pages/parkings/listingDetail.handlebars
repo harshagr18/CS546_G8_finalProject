@@ -1,0 +1,18 @@
+<div class="container">
+    <form action="/listings/bookListing/{{data._id}}", method="post" id="listBooking">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="startDate">Start date</label>
+                <input
+                type="text"
+                class="form-control"
+                id="startDate"
+                name="startDate"
+                value="{{data.startDate}}"
+                readonly
+                />
+            </div>
+        </div>
+        <input type="submit" value="Book">
+    </form>
+</div>

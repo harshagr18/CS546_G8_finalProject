@@ -109,17 +109,18 @@ router.get("/getAllListing", async (req, res) => {
 });
 
 router.get("/getListing/:id", async (req, res) => {
+  console.log("listing id: ",req.params.id);
   try {
     const data = await listingsData.getListing(req.params.id);
     if (!data) {
       res
         .status(404)
-        .render("users/login", { error: "Error 404 :No data found." });
+        .render("pages/parkings/listingDetail", { error: "Error 404 :No data found." });
       return;
     }
-    res.render("users/login", { data: data, title: "Create Listing" });
+    res.render("pages/parkings/listingDetail", { data: data, title: "Book Listing" });
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res.status(400).render("pages/parkings/listingDetail", { error: e });
   }
 });
 
@@ -163,6 +164,37 @@ router.put("/updateByLister/:id", async (req, res) => {
       price
     );
     res.render("users/login", { data: data, title: "Create Listing" });
+  } catch (e) {
+    res.status(400).render("users/login", { error: e });
+  }
+});
+
+router.put("/bookListing/:id", async (req, res) => {
+  // console.log("lister id from req param: ", req.data.listerId);
+  const requestBody = req.body;
+  let listerId;
+  let listingId = req.params.id;
+
+    console.log("Listing Id in data:",listingId);
+
+  try {
+    const userData = await usersData.getUser(req.session.user);
+    listerId = userData.listerId.toString();
+  console.log("Lister Id in data:",listerId);
+
+  } catch (e) {
+    res.status(400).render("users/login", { error: e });
+  }
+
+  // Pending: error handling for params that are not null, i.e. 
+  // whose values has been passed to be updated rest can be ignored
+  try {
+    const data = await listingsData.bookListing(
+      listerId, listingId
+      // , bookerId, numberPlate
+    );
+    // res.render("users/login", { data: data, title: "Create Listing" });
+    res.json({success: true});
   } catch (e) {
     res.status(400).render("users/login", { error: e });
   }

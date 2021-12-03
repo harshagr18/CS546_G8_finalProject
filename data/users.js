@@ -1,5 +1,15 @@
 const { users } = require("./../config/mongoCollections");
 const { ObjectId } = require("mongodb");
+const bcrypt = require("bcrypt");
+const saltRounds = 16;
+
+async function get(username) {
+  const userCollection = await users();
+  const user = await userCollection.findOne({
+    username: username,
+  });
+  return user;
+}
 
 function checkIsProperString(val) {
   if (!val) {
@@ -36,6 +46,7 @@ let exportedMethods = {
     email,
     phoneNumber,
     username,
+    password,
     address,
     city,
     state,
@@ -47,6 +58,7 @@ let exportedMethods = {
       !email ||
       !phoneNumber ||
       !username ||
+      !password ||
       !address ||
       !city ||
       !state ||
@@ -60,6 +72,7 @@ let exportedMethods = {
     checkIsProperString(address);
     checkIsProperString(city);
     checkIsProperString(username);
+    checkIsProperString(password);
 
     const phoneRegex = /^\d{10}$/im;
     const emailRegex =
@@ -132,6 +145,8 @@ let exportedMethods = {
       "WY",
     ];
 
+    const hash = await bcrypt.hash(password, saltRounds);
+
     found = false;
 
     for (let i = 0; i < stateList.length; i++) {
@@ -148,6 +163,7 @@ let exportedMethods = {
       email: email,
       phoneNumber: phoneNumber,
       username: username,
+      password: hash,
       address: address,
       city: city,
       state: state,
@@ -161,7 +177,7 @@ let exportedMethods = {
     const insertInfo = await userCollection.insertOne(newUser);
     if (insertInfo.insertedCount === 0) throw `Could not add user`;
 
-    return newUser;
+    return insertInfo.insertedId.toString();
   },
 
   async getUser(id = checkParameters()) {
@@ -170,7 +186,6 @@ let exportedMethods = {
 
     const userCollection = await users();
     const userId = await userCollection.findOne({ _id: id });
-
     if (userId === null) throw "No user found";
     userId._id = userId._id.toString();
 
@@ -184,6 +199,7 @@ let exportedMethods = {
     email,
     phoneNumber,
     username,
+    password,
     address,
     city,
     state,
@@ -195,6 +211,7 @@ let exportedMethods = {
       !email ||
       !phoneNumber ||
       !username ||
+      !password ||
       !address ||
       !city ||
       !state ||
@@ -209,6 +226,7 @@ let exportedMethods = {
     checkIsProperString(address);
     checkIsProperString(city);
     checkIsProperString(username);
+    checkIsProperString(password);
 
     const phoneRegex = /^\d{10}$/im;
     const emailRegex =
@@ -317,7 +335,6 @@ let exportedMethods = {
     if (updateUser.modifiedCount === 0) throw "Parking could not be updated";
 
     const newUser = await this.getUser(userId.toString());
-
     return newUser;
   },
 
@@ -329,7 +346,7 @@ let exportedMethods = {
 
     const userCollection = await users();
 
-    const checkUser = await getUser(userId.toString());
+    const checkUser = await this.getUser(userId.toString());
     if (!checkUser) throw "User info does not exists ";
 
     const deleteUser = await userCollection.deleteOne({ _id: userId });
@@ -340,6 +357,26 @@ let exportedMethods = {
       result.deleted = true;
     }
     return result;
+  },
+
+  async checkUser(username, password) {
+    checkIsProperString(username);
+    username = username.toLowerCase();
+    if (username.trim().length <= 4) {
+      throw `Please chose a longer username`;
+    }
+    if (password.trim().length <= 6) {
+      throw `Please chose a longer password`;
+    }
+    checkIsProperString(password);
+    let user = await get(username);
+    if (user === null) {
+      throw `Username not found`;
+    }
+    let compare = await bcrypt.compare(password, user.password);
+    if (compare) {
+      return user;
+    } else throw `Incorrect Password`;
   },
 };
 
