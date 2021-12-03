@@ -84,7 +84,10 @@ router.get("/:id", async (req, res) => {
 
   try {
     const getData = await parkingsData.getParking(req.params.id);
-    res.json(getData);
+    res.render("pages/parkings/singleParking", {
+      parkdata: getData,
+      title: "Parking",
+    });
   } catch (error) {
     res.status(404).json({ message: "Data not found " });
   }
