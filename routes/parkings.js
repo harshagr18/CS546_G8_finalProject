@@ -35,15 +35,19 @@ const upload = multer({
 //get the lister id
 router.get("/", async (req, res) => {
   try {
-    // if (req.session.username) {
-    //   return res.redirect("/private");
-    // }
-
+    if (!req.session.user) {
+      return res.redirect("/users/login");
+    }
+    const listerId = req.session.user.userId;
+    let validId = validate(listerId);
+    if (!validId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
     //username calls user table and fetches lister id to get parkings from logged in user
-    //hardcoded for testing
-    const getData = await parkingsData.getParkingsOfLister(
-      "6164f085181bfcb0325557c7"
-    );
+    const getData = await parkingsData.getParkingsOfLister(listerId);
     res.render("pages/parkings/getParkings", {
       parkdata: getData,
       title: "My Parkings",
@@ -76,9 +80,21 @@ router.get("/edit/:id", async (req, res) => {
         .json({ error: "Id must be a valid string and an Object Id" });
       return;
     }
+    if (!req.session.user) {
+      return res.redirect("/users/login");
+    }
+    const listerId = req.session.user.userId;
+    let validListerId = validate(listerId);
+    if (!validListerId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
+
     //session user id
     const getData = await parkingsData.getParkingbyUser(
-      "6164f085181bfcb0325557c7",
+      listerId,
       req.params.id
     );
 
@@ -92,7 +108,7 @@ router.get("/edit/:id", async (req, res) => {
       "pickup truck",
     ];
     const filteredArray = vehicleType.filter((value) =>
-      getData.category.includes(value)
+      getData.vehicleType.includes(value)
     );
     let option = {};
 
@@ -210,8 +226,21 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       return;
     }
 
+    if (!req.session.user) {
+      return res.redirect("/users/login");
+    }
+    const listerId = req.session.user.userId;
+    let validListerId = validate(listerId);
+    if (!validListerId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
+
     let parkingImg = req.file.path;
     const postParkings = await parkingsData.createParkings(
+      listerId,
       parkingImg,
       address.toLowerCase(),
       city.toLowerCase(),

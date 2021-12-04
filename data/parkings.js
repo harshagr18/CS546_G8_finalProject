@@ -128,6 +128,7 @@ async function getParking(id = checkParameters()) {
 
 //create parkings
 async function createParkings(
+  listerId,
   parkingImg,
   address,
   city,
@@ -144,8 +145,11 @@ async function createParkings(
   zip = zip.trim();
   longitude = longitude.trim(); //optional to be filled by Geolocation API
   latitude = latitude.trim(); ////optional to be filled by Geolocation API
-  parkingType = parkingType.trim().toLowerCase;
+  parkingType = parkingType.trim().toLowerCase();
 
+  validateID(listerId);
+
+  listerId = ObjectId(listerId);
   validate(
     parkingImg,
     address.toLowerCase(),
@@ -157,8 +161,9 @@ async function createParkings(
     vehicleType,
     parkingType
   );
+
   let newParking = {
-    listerId: new ObjectId(),
+    listerId: listerId,
     listing: [],
     parkingImg,
     overallRating: 0,
@@ -339,12 +344,12 @@ function validate(
   // } else throw "category must be an object";
 
   //vehicletype validator
-  // if (Array.isArray(vehicleType)) {
-  //   vehicleType.forEach((x) => {
-  //     if (typeof x != "string") throw "review id must be a string";
-  //     if (x.trim().length === 0) throw "review id cannot be empty or blanks";
-  //   });
-  // }
+  if (Array.isArray(vehicleType)) {
+    vehicleType.forEach((x) => {
+      if (typeof x != "string") throw "Vehicle type must be a string";
+      if (x.trim().length === 0) throw "Vehicle type cannot be empty or blanks";
+    });
+  }
 
   //parkingtype validator
   if (
