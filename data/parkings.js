@@ -357,9 +357,9 @@ function validate(
   //parkingtype validator
   if (
     !parkingType.toLowerCase() === "open" ||
-    !parkingType.toLowerCase() === "close"
+    !parkingType.toLowerCase() === "closed"
   ) {
-    throw "Parking type only accepts open and close as values";
+    throw "Parking type only accepts open and closed as values";
   }
 }
 
