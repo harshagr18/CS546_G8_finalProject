@@ -290,7 +290,7 @@ function validate(
   zip,
   longitude,
   latitude,
-  vehicleType,
+  category,
   parkingType
 ) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
@@ -344,11 +344,14 @@ function validate(
   // } else throw "category must be an object";
 
   //vehicletype validator
-  if (Array.isArray(vehicleType)) {
-    vehicleType.forEach((x) => {
+  if (Array.isArray(category)) {
+    category.forEach((x) => {
       if (typeof x != "string") throw "Vehicle type must be a string";
       if (x.trim().length === 0) throw "Vehicle type cannot be empty or blanks";
     });
+    category = category.map((X) => X.toLowerCase());
+
+    if (!vehicleType.includes(...category)) throw "Vehicle type not found";
   }
 
   //parkingtype validator
@@ -430,6 +433,15 @@ const stateList = [
   "WV",
   "WI",
   "WY",
+];
+const vehicleType = [
+  "sedan",
+  "suv",
+  "hatchback",
+  "station wagon",
+  "coupe",
+  "minivan",
+  "pickup truck",
 ];
 
 module.exports = {

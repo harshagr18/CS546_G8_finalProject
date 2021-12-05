@@ -18,7 +18,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({
-  storage: storage,
   fileFilter: function (req, file, cb) {
     const fileTypes = /png|jpeg|jpg/;
     const extName = fileTypes.test(path.extname(file.originalname));
@@ -30,6 +29,7 @@ const upload = multer({
       cb("Error: only png, jpeg, and jpg are allowed!");
     }
   },
+  storage: storage,
 });
 
 //get the lister id
@@ -98,30 +98,17 @@ router.get("/edit/:id", async (req, res) => {
       req.params.id
     );
 
-    let vehicleType = [
-      "sedan",
-      "suv",
-      "hatchback",
-      "station wagon",
-      "coupe",
-      "minivan",
-      "pickup truck",
-    ];
-    const filteredArray = vehicleType.filter((value) =>
-      getData.vehicleType.includes(value)
-    );
     let option = {};
+    let arraytypes = [...getData.vehicleType];
+    for (let i = 0; i < vehicleType.length; i++) {
+      if (vehicleType[i] == arraytypes[i]) {
+        option[getData.vehicleType[i]] = true;
+      } else {
+        option[vehicleType[i]] = false;
+      }
+    }
 
-    vehicleType.forEach((x) => {
-      filteredArray.forEach((y) => {
-        if (x == y) {
-          option[x] = true;
-        } else {
-          option[x] = false;
-        }
-      });
-    });
-
+    console.log(option);
     res.render("pages/parkings/editParkings", {
       title: "Edit Parking",
       states: stateList,
@@ -238,7 +225,10 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       return;
     }
 
-    let parkingImg = req.file.path;
+    let parkingImg = !req.file.path
+      ? "public\\images\\no_image.jpg"
+      : req.file.path;
+
     const postParkings = await parkingsData.createParkings(
       listerId,
       parkingImg,
@@ -375,7 +365,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
 });
 
 //delete parkings
-router.delete("/:id", async (req, res) => {
+router.delete("/delete/:id", async (req, res) => {
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
     return;
@@ -388,8 +378,27 @@ router.delete("/:id", async (req, res) => {
     return;
   }
   try {
+    const listerId = req.session.user.userId;
+    let validListerId = validate(listerId);
+    if (!validListerId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
+
+    //session user id
+    const getData = await parkingsData.getParkingbyUser(
+      listerId,
+      req.params.id
+    );
+
     const deleteData = await parkingsData.deleteParking(req.params.id);
-    res.json(deleteData);
+    res.render("pages/parkings/getParkings", {
+      title: "My Parkings",
+      success: true,
+      successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
+    });
   } catch (error) {
     res.status(404).json({ message: "Data not found " });
   }
@@ -450,14 +459,18 @@ function validateArguments(
   //   }
 
   //vehicletype validator
-  // if (Array.isArray(category) && category.length >= 1) {
-  //   const isString = (x) => typeof x == "string" && x.trim().length != 0;
-  //   if (!category.every(isString)) {
-  //     return "vehicletype must contain strings!";
-  //   }
-  // } else {
-  //   return "vehicletype must be an array having atleast 1 string!";
-  // }
+  if (Array.isArray(category) && category.length >= 1) {
+    const isString = (x) => typeof x == "string" && x.trim().length != 0;
+    if (!category.every(isString)) {
+      return "vehicletype must contain strings!";
+    }
+    category = category.map((X) => X.toLowerCase());
+    if (!vehicleType.includes(...category)) {
+      return "vehicle type must contain values from dropdown";
+    }
+  } else {
+    return "vehicletype must be an array having atleast 1 string!";
+  }
 
   //parkingtype validator
   if (
@@ -521,4 +534,14 @@ const stateList = [
   "WI",
   "WY",
 ];
+const vehicleType = [
+  "sedan",
+  "suv",
+  "hatchback",
+  "station wagon",
+  "coupe",
+  "minivan",
+  "pickup truck",
+];
+
 module.exports = router;
