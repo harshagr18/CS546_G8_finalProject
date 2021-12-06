@@ -27,6 +27,16 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
   if (req.url == "/parkings/update/") {
     req.method = "PUT";
   }
+
+  if (req.url == "/reviews/updateReview/") {
+    req.method = "PUT";
+  }
+
+  if(req.url.startsWith("/reviews/deleteReview/")) {
+    console.log(req.method);
+    req.method = "DELETE";
+    console.log(req.method);
+  }
   // let the next middleware run:
   next();
 };
