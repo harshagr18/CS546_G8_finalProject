@@ -24,6 +24,13 @@ const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   //   delete req.body._method;
   // }
 
+  if (
+    req.url == "/users/updateUser/61a842ec7718a0fc70c9d328" &&
+    req.method == "POST"
+  ) {
+    req.method = "PUT";
+  }
+
   if (req.url == "/parkings/update/") {
     req.method = "PUT";
   }
