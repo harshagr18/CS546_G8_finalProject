@@ -32,6 +32,22 @@ const upload = multer({
   storage: storage,
 });
 
+//geocoding api
+// const axios = require("axios");
+// const params = {
+//   access_key: "YOUR_ACCESS_KEY",
+//   query: "1600 Pennsylvania Ave NW",
+// };
+
+// axios
+//   .get("https://api.positionstack.com/v1/forward", { params })
+//   .then((response) => {
+//     console.log(response.data);
+//   })
+//   .catch((error) => {
+//     console.log(error);
+//   });
+
 //get the lister id
 router.get("/", async (req, res) => {
   try {
@@ -98,23 +114,39 @@ router.get("/edit/:id", async (req, res) => {
       req.params.id
     );
 
-    let option = {};
-    let arraytypes = [...getData.vehicleType];
-    for (let i = 0; i < vehicleType.length; i++) {
-      if (vehicleType[i] == arraytypes[i]) {
-        option[getData.vehicleType[i]] = true;
+    let optionVehicleType = "";
+    vehicleType.forEach((x) => {
+      if (getData.vehicleType.includes(x)) {
+        optionVehicleType += `<option selected>${x}</option>`;
       } else {
-        option[vehicleType[i]] = false;
+        optionVehicleType += `<option>${x}</option>`;
       }
-    }
+    });
+    let optionStateList = "";
+    stateList.forEach((x) => {
+      if (getData.state.includes(x)) {
+        optionStateList += `<option selected>${x}</option>`;
+      } else {
+        optionStateList += `<option>${x}</option>`;
+      }
+    });
 
-    console.log(option);
+    let optionParkingType = "";
+    let parkingTypeArray = ["open", "closed"];
+    parkingTypeArray.forEach((x) => {
+      if (getData.parkingType.includes(x)) {
+        optionParkingType += `<option selected>${x}</option>`;
+      } else {
+        optionParkingType += `<option>${x}</option>`;
+      }
+    });
+
     res.render("pages/parkings/editParkings", {
       title: "Edit Parking",
-      states: stateList,
+      states: optionStateList,
+      parkingtype: optionParkingType,
+      vehicleType: optionVehicleType,
       data: getData,
-      parkingType: getData.parkingType,
-      vehicleType: option,
       error: false,
     });
   } catch (error) {
@@ -225,9 +257,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       return;
     }
 
-    let parkingImg = !req.file.path
-      ? "public\\images\\no_image.jpg"
-      : req.file.path;
+    let parkingImg = !req.file ? "public\\images\\no_image.jpg" : req.file.path;
 
     const postParkings = await parkingsData.createParkings(
       listerId,
@@ -264,7 +294,10 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     return;
   }
   if (!req.file) {
-    updatedData.parkingImg = updatedData.parkingImghidden;
+    updatedData.parkingImg =
+      updatedData.parkingImghidden == ""
+        ? "public\\images\\no_image.jpg"
+        : updatedData.parkingImghidden;
   } else {
     updatedData.parkingImg = req.file.path;
   }
@@ -336,19 +369,32 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       "minivan",
       "pickup truck",
     ];
-    const filteredArray = vehicleType.filter((value) =>
-      updatedParking.category.includes(value)
-    );
-    let option = {};
 
+    let optionVehicleType = "";
     vehicleType.forEach((x) => {
-      filteredArray.forEach((y) => {
-        if (x == y) {
-          option[x] = true;
-        } else {
-          option[x] = false;
-        }
-      });
+      if (updatedParking.vehicleType.includes(x)) {
+        optionVehicleType += `<option selected>${x}</option>`;
+      } else {
+        optionVehicleType += `<option>${x}</option>`;
+      }
+    });
+    let optionStateList = "";
+    stateList.forEach((x) => {
+      if (updatedParking.state.includes(x)) {
+        optionStateList += `<option selected>${x}</option>`;
+      } else {
+        optionStateList += `<option>${x}</option>`;
+      }
+    });
+
+    let optionParkingType = "";
+    let parkingTypeArray = ["open", "closed"];
+    parkingTypeArray.forEach((x) => {
+      if (updatedParking.parkingType.includes(x)) {
+        optionParkingType += `<option selected>${x}</option>`;
+      } else {
+        optionParkingType += `<option>${x}</option>`;
+      }
     });
 
     res.render("pages/parkings/editParkings", {
@@ -356,8 +402,9 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       error: false,
       data: updatedParking,
       success: true,
-      parkingType: updatedParking.parkingType,
-      vehicleType: option,
+      states: optionStateList,
+      parkingtype: optionParkingType,
+      vehicleType: optionVehicleType,
     });
   } catch (e) {
     res.status(500).json({ error: e });
@@ -475,9 +522,9 @@ function validateArguments(
   //parkingtype validator
   if (
     !parkingType.toLowerCase() === "open" ||
-    !parkingType.toLowerCase() === "close"
+    !parkingType.toLowerCase() === "closed"
   ) {
-    throw "Parking type only accepts open and close as values";
+    throw "Parking type only accepts open and closed as values";
   }
 }
 const stateList = [
