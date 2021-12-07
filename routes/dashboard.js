@@ -41,7 +41,7 @@ router.post("/search", async (req, res) => {
       zipSearch
     );
     //const distance = await parkingsData.getDistance("abc", "pqr");
-    console.log(distance);
+    //console.log(distance);
     getData.forEach((x) => {
       let address =
         x.address.replace(/\s/g, "+") +
