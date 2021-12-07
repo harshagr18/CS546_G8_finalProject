@@ -19,7 +19,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({
-  storage: storage,
   fileFilter: function (req, file, cb) {
     const fileTypes = /png|jpeg|jpg/;
     const extName = fileTypes.test(path.extname(file.originalname));
@@ -31,21 +30,42 @@ const upload = multer({
       cb("Error: only png, jpeg, and jpg are allowed!");
     }
   },
+  storage: storage,
 });
+
+//geocoding api
+// const axios = require("axios");
+// const params = {
+//   access_key: "YOUR_ACCESS_KEY",
+//   query: "1600 Pennsylvania Ave NW",
+// };
+
+// axios
+//   .get("https://api.positionstack.com/v1/forward", { params })
+//   .then((response) => {
+//     console.log(response.data);
+//   })
+//   .catch((error) => {
+//     console.log(error);
+//   });
 
 //get the lister id
 router.get("/", async (req, res) => {
   try {
-    console.log("here??");
-    // if (req.session.username) {
-    //   return res.redirect("/private");
-    // }
 
+    if (!req.session.user) {
+      return res.redirect("/users/login");
+    }
+    const listerId = req.session.user.userId;
+    let validId = validate(listerId);
+    if (!validId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
     //username calls user table and fetches lister id to get parkings from logged in user
-    //hardcoded for testing
-    const getData = await parkingsData.getParkingsOfLister(
-      "6164f085181bfcb0325557c7"
-    );
+    const getData = await parkingsData.getParkingsOfLister(listerId);
     res.render("pages/parkings/getParkings", {
       parkdata: getData,
       title: "My Parkings",
@@ -78,42 +98,57 @@ router.get("/edit/:id", async (req, res) => {
         .json({ error: "Id must be a valid string and an Object Id" });
       return;
     }
+    if (!req.session.user) {
+      return res.redirect("/users/login");
+    }
+    const listerId = req.session.user.userId;
+    let validListerId = validate(listerId);
+    if (!validListerId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
+
     //session user id
     const getData = await parkingsData.getParkingbyUser(
-      "6164f085181bfcb0325557c7",
+      listerId,
       req.params.id
     );
 
-    let vehicleType = [
-      "sedan",
-      "suv",
-      "hatchback",
-      "station wagon",
-      "coupe",
-      "minivan",
-      "pickup truck",
-    ];
-    const filteredArray = vehicleType.filter((value) =>
-      getData.category.includes(value)
-    );
-    let option = {};
-
+    let optionVehicleType = "";
     vehicleType.forEach((x) => {
-      filteredArray.forEach((y) => {
-        if (x == y) {
-          option[x] = true;
-        } else {
-          option[x] = false;
-        }
-      });
+      if (getData.vehicleType.includes(x)) {
+        optionVehicleType += `<option selected>${x}</option>`;
+      } else {
+        optionVehicleType += `<option>${x}</option>`;
+      }
+    });
+    let optionStateList = "";
+    stateList.forEach((x) => {
+      if (getData.state.includes(x)) {
+        optionStateList += `<option selected>${x}</option>`;
+      } else {
+        optionStateList += `<option>${x}</option>`;
+      }
+    });
+
+    let optionParkingType = "";
+    let parkingTypeArray = ["open", "closed"];
+    parkingTypeArray.forEach((x) => {
+      if (getData.parkingType.includes(x)) {
+        optionParkingType += `<option selected>${x}</option>`;
+      } else {
+        optionParkingType += `<option>${x}</option>`;
+      }
     });
 
     res.render("pages/parkings/editParkings", {
       title: "Edit Parking",
-      states: stateList,
+      states: optionStateList,
+      parkingtype: optionParkingType,
+      vehicleType: optionVehicleType,
       data: getData,
-      parkingType: getData.parkingType,
-      vehicleType: option,
       error: false,
     });
   } catch (error) {
@@ -218,8 +253,22 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       return;
     }
 
-    let parkingImg = req.file.path;
+    if (!req.session.user) {
+      return res.redirect("/users/login");
+    }
+    const listerId = req.session.user.userId;
+    let validListerId = validate(listerId);
+    if (!validListerId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
+
+    let parkingImg = !req.file ? "public\\images\\no_image.jpg" : req.file.path;
+
     const postParkings = await parkingsData.createParkings(
+      listerId,
       parkingImg,
       address.toLowerCase(),
       city.toLowerCase(),
@@ -253,7 +302,10 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     return;
   }
   if (!req.file) {
-    updatedData.parkingImg = updatedData.parkingImghidden;
+    updatedData.parkingImg =
+      updatedData.parkingImghidden == ""
+        ? "public\\images\\no_image.jpg"
+        : updatedData.parkingImghidden;
   } else {
     updatedData.parkingImg = req.file.path;
   }
@@ -325,19 +377,32 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       "minivan",
       "pickup truck",
     ];
-    const filteredArray = vehicleType.filter((value) =>
-      updatedParking.category.includes(value)
-    );
-    let option = {};
 
+    let optionVehicleType = "";
     vehicleType.forEach((x) => {
-      filteredArray.forEach((y) => {
-        if (x == y) {
-          option[x] = true;
-        } else {
-          option[x] = false;
-        }
-      });
+      if (updatedParking.vehicleType.includes(x)) {
+        optionVehicleType += `<option selected>${x}</option>`;
+      } else {
+        optionVehicleType += `<option>${x}</option>`;
+      }
+    });
+    let optionStateList = "";
+    stateList.forEach((x) => {
+      if (updatedParking.state.includes(x)) {
+        optionStateList += `<option selected>${x}</option>`;
+      } else {
+        optionStateList += `<option>${x}</option>`;
+      }
+    });
+
+    let optionParkingType = "";
+    let parkingTypeArray = ["open", "closed"];
+    parkingTypeArray.forEach((x) => {
+      if (updatedParking.parkingType.includes(x)) {
+        optionParkingType += `<option selected>${x}</option>`;
+      } else {
+        optionParkingType += `<option>${x}</option>`;
+      }
     });
 
     res.render("pages/parkings/editParkings", {
@@ -345,8 +410,9 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       error: false,
       data: updatedParking,
       success: true,
-      parkingType: updatedParking.parkingType,
-      vehicleType: option,
+      states: optionStateList,
+      parkingtype: optionParkingType,
+      vehicleType: optionVehicleType,
     });
   } catch (e) {
     res.status(500).json({ error: e });
@@ -354,7 +420,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
 });
 
 //delete parkings
-router.delete("/:id", async (req, res) => {
+router.delete("/delete/:id", async (req, res) => {
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
     return;
@@ -367,8 +433,27 @@ router.delete("/:id", async (req, res) => {
     return;
   }
   try {
+    const listerId = req.session.user.userId;
+    let validListerId = validate(listerId);
+    if (!validListerId) {
+      res
+        .status(400)
+        .json({ error: "Id must be a valid string and an Object Id" });
+      return;
+    }
+
+    //session user id
+    const getData = await parkingsData.getParkingbyUser(
+      listerId,
+      req.params.id
+    );
+
     const deleteData = await parkingsData.deleteParking(req.params.id);
-    res.json(deleteData);
+    res.render("pages/parkings/getParkings", {
+      title: "My Parkings",
+      success: true,
+      successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
+    });
   } catch (error) {
     res.status(404).json({ message: "Data not found " });
   }
@@ -429,21 +514,25 @@ function validateArguments(
   //   }
 
   //vehicletype validator
-  // if (Array.isArray(category) && category.length >= 1) {
-  //   const isString = (x) => typeof x == "string" && x.trim().length != 0;
-  //   if (!category.every(isString)) {
-  //     return "vehicletype must contain strings!";
-  //   }
-  // } else {
-  //   return "vehicletype must be an array having atleast 1 string!";
-  // }
+  if (Array.isArray(category) && category.length >= 1) {
+    const isString = (x) => typeof x == "string" && x.trim().length != 0;
+    if (!category.every(isString)) {
+      return "vehicletype must contain strings!";
+    }
+    category = category.map((X) => X.toLowerCase());
+    if (!vehicleType.includes(...category)) {
+      return "vehicle type must contain values from dropdown";
+    }
+  } else {
+    return "vehicletype must be an array having atleast 1 string!";
+  }
 
   //parkingtype validator
   if (
     !parkingType.toLowerCase() === "open" ||
-    !parkingType.toLowerCase() === "close"
+    !parkingType.toLowerCase() === "closed"
   ) {
-    throw "Parking type only accepts open and close as values";
+    throw "Parking type only accepts open and closed as values";
   }
 }
 const stateList = [
@@ -500,4 +589,14 @@ const stateList = [
   "WI",
   "WY",
 ];
+const vehicleType = [
+  "sedan",
+  "suv",
+  "hatchback",
+  "station wagon",
+  "coupe",
+  "minivan",
+  "pickup truck",
+];
+
 module.exports = router;

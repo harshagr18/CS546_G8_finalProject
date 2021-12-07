@@ -1,7 +1,23 @@
 const { ObjectId } = require("bson");
-const { FindCursor, ConnectionCheckOutFailedEvent } = require("mongodb");
 const mongoCollections = require("../config/mongoCollections");
 const parkings = mongoCollections.parkings;
+const { default: axios } = require("axios");
+const settings = require("../config/settings.json");
+const apikey = settings.apikey;
+
+//get distance from google
+async function getDistance(p1, p2) {
+  const { data } = await axios
+    .get(
+      "https://maps.googleapis.com/maps/api/distancematrix/json?origins=Washington%2C%20DC&destinations=New%20York%20City%2C%20NY&units=imperial&key=" +
+        apikey +
+        ""
+    )
+    .catch(function (error) {
+      console.log(error);
+    });
+  return JSON.stringify(data);
+}
 
 //get parkings by city/state/zipcode - Dashboard Route
 async function getParkingsByCityStateZip(
@@ -25,7 +41,7 @@ async function getParkingsByCityStateZip(
 
   //state validator+
   if (state != "") {
-    if (stateList.indexOf(state) == -1) {
+    if (stateList.indexOf(state.toUpperCase()) == -1) {
       throw "State not found";
     }
   }
@@ -128,6 +144,7 @@ async function getParking(id = checkParameters()) {
 
 //create parkings
 async function createParkings(
+  listerId,
   parkingImg,
   address,
   city,
@@ -144,8 +161,11 @@ async function createParkings(
   zip = zip.trim();
   longitude = longitude.trim(); //optional to be filled by Geolocation API
   latitude = latitude.trim(); ////optional to be filled by Geolocation API
-  parkingType = parkingType.trim().toLowerCase;
+  parkingType = parkingType.trim().toLowerCase();
 
+  validateID(listerId);
+
+  listerId = ObjectId(listerId);
   validate(
     parkingImg,
     address.toLowerCase(),
@@ -157,8 +177,9 @@ async function createParkings(
     vehicleType,
     parkingType
   );
+
   let newParking = {
-    listerId: new ObjectId(),
+    listerId: listerId,
     listing: [],
     parkingImg,
     overallRating: 0,
@@ -285,7 +306,7 @@ function validate(
   zip,
   longitude,
   latitude,
-  vehicleType,
+  category,
   parkingType
 ) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
@@ -339,19 +360,22 @@ function validate(
   // } else throw "category must be an object";
 
   //vehicletype validator
-  // if (Array.isArray(vehicleType)) {
-  //   vehicleType.forEach((x) => {
-  //     if (typeof x != "string") throw "review id must be a string";
-  //     if (x.trim().length === 0) throw "review id cannot be empty or blanks";
-  //   });
-  // }
+  if (Array.isArray(category)) {
+    category.forEach((x) => {
+      if (typeof x != "string") throw "Vehicle type must be a string";
+      if (x.trim().length === 0) throw "Vehicle type cannot be empty or blanks";
+    });
+    category = category.map((X) => X.toLowerCase());
+
+    if (!vehicleType.includes(...category)) throw "Vehicle type not found";
+  }
 
   //parkingtype validator
   if (
     !parkingType.toLowerCase() === "open" ||
-    !parkingType.toLowerCase() === "close"
+    !parkingType.toLowerCase() === "closed"
   ) {
-    throw "Parking type only accepts open and close as values";
+    throw "Parking type only accepts open and closed as values";
   }
 }
 
@@ -426,6 +450,15 @@ const stateList = [
   "WI",
   "WY",
 ];
+const vehicleType = [
+  "sedan",
+  "suv",
+  "hatchback",
+  "station wagon",
+  "coupe",
+  "minivan",
+  "pickup truck",
+];
 
 module.exports = {
   createParkings,
@@ -435,4 +468,5 @@ module.exports = {
   getParkingsOfLister,
   getParkingsByCityStateZip,
   getParkingbyUser,
+  getDistance,
 };

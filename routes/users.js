@@ -5,6 +5,61 @@ const userData = data.users;
 const parkingData = data.parkings;
 const { ObjectId } = require("mongodb");
 
+stateList = [
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "DC",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "PR",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+];
+
 function validate(id) {
   if (typeof id != "string") {
     return false;
@@ -37,6 +92,7 @@ router.post("/createUser", async (req, res) => {
     res.render("pages/users/createUsers", {
       error: e,
       title: "Create Profile",
+      states: stateList,
     });
   }
 });
@@ -54,13 +110,48 @@ router.post("/login", async (req, res) => {
     res.redirect("/");
   } catch (e) {
     console.log(e);
-    res.status(400).render("pages/users/login", { error: e });
+    res
+      .status(400)
+      .render("pages/users/login", { title: "Create Profile", error: e });
+  }
+});
+
+router.get("/updateUser/:id", async (req, res) => {
+  try {
+    let validId = validate(req.params.id);
+    if (!validId) {
+      res.status(400).json({ error: "Id must be valid" });
+      return;
+    }
+    getData = await userData.getUser(req.params.id.toString());
+    res.render("pages/users/editUser", {
+      title: "Edit Profile",
+      states: stateList,
+      data: getData,
+    });
+    return;
+  } catch (e) {
+    console.log(e);
+    res.status(404).json({ error: "Internal error" });
+  }
+});
+
+router.put("/updateUser", async (req, res) => {
+  try {
+  } catch (e) {
+    console.log(e);
+    res
+      .status(400)
+      .render("pages/users/editUser", { title: "Edit Profile", error: e });
   }
 });
 
 router.get("/createProfile", async (req, res) => {
   try {
-    res.render("pages/users/createUsers", { title: "Create Profile" });
+    res.render("pages/users/createUsers", {
+      title: "Create Profile",
+      states: stateList,
+    });
   } catch (e) {
     console.log(e);
     res.status(404).json({ error: "Internal error" });
@@ -93,7 +184,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/updateUser/:id", async (req, res) => {
   const userInfo = req.body;
   let validId = validate(req.params.id);
   if (!validId) {
@@ -102,14 +193,12 @@ router.put("/:id", async (req, res) => {
       .json({ error: "Id must be a valid string and an Object Id" });
     return;
   }
-
   try {
     await userData.getUser(req.params.id);
   } catch (e) {
     res.status(404).json({ error: "User not found" });
     return;
   }
-
   try {
     const updatedUser = await userData.updateUser(
       req.params.id,
