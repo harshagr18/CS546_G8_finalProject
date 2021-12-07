@@ -63,15 +63,23 @@
     {{#each listingsData}}
       <div class="col-sm-4">
         <div class="card">
-          <img src={{parkingImg}} class="card-img-top" alt="Parking Image" />
+          <iframe
+            width="280"
+            height="300"
+            style="border:0"
+            loading="lazy"
+            src="{{mapUrl}}"
+          ></iframe>
+          {{!-- <img src={{parkingImg}} class="card-img-top" alt="Parking Image" /> --}}
           <div class="card-body">
             <h5 class="card-title">{{address}}</h5>
             <p class="card-text">{{zip}}</p>
             <a href="/parkings/{{_id}}" class="btn btn-primary">Go Here</a>
             <a href="/bookParking" class="btn btn-primary">Book</a>
+            {{!-- <a href="/bookParking" class="btn btn-primary">Book</a> --}}
             <input
               type="hidden"
-              id="listingId"
+              id="listingId_{{_id}}"
               name="listingId"
               value={{_id}}
             />

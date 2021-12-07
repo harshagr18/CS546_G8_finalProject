@@ -8,21 +8,32 @@
           <div class="card-body">
             <h5 class="card-title">{{address}}</h5>
             <p class="card-text">{{zip}}</p>
-            <a href="#" class="btn btn-primary">Go Here</a>
             <a
               href="parkings/edit/{{_id}}"
-              id="editParkings"
+              id="editParkings_{{_id}}"
               class="btn btn-primary"
             >Edit</a>
-            <input
+            <a
+              onclick="return confirm('Are you sure?')"
+              href="parkings/delete/{{_id}}"
+              id="getParkingsDelete_{{_id}}"
+              class="btn btn-danger"
+            >Delete</a>
+
+            {{!-- <input
               type="hidden"
               id="parkingID"
               name="parkingID"
               value={{_id}}
-            />
+            /> --}}
           </div>
         </div>
       </div>
+    {{else}}
+      <div class="container alert alert-warning"><p class="empty">No content</p></div>
     {{/each}}
+    {{#if success}}
+      {{{successmsg}}}
+    {{/if}}
   </div>
 </div>

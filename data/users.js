@@ -27,16 +27,6 @@ function checkIsProperString(val) {
   }
 }
 
-function checkAlphanumerics(phrase) {
-  let str = phrase;
-  const checker = /[^a-z0-9]/g;
-  if (checker.test(str)) {
-    return true;
-  }
-
-  return false;
-}
-
 function validateID(id) {
   if (typeof id != "string") {
     throw "Argument of type string expected";
@@ -368,40 +358,17 @@ let exportedMethods = {
     }
     return result;
   },
-  //commented password function error
-  //   async checkUser(username, password) {
-  //     checkIsProperString(username);
-  //     username = username.toLowerCase();
-  //     if (username.trim().length <= 4) {
-  //       throw `Please chose a longer username`;
-  //     }
-  //     if (password.trim().length <= 6) {
-  //       throw `Please chose a longer password`;
-  //     }
-  //     checkIsProperString(password);
-  //     let user = await get(username);
-  //     if (user === null) {
-  //       throw `Username not found`;
-  //     }
-  //     let compare = await bcrypt.compare(password, user.password);
-  //     if (compare) {
-  //       return user;
-  //     } else throw `Incorrect Password`;
-  //   },
 
   async checkUser(username, password) {
-    if (typeof username != "string" || typeof password != "string")
-      throw "Error: Username or password must be string";
-    if (username.length === 0 || username.length < 4)
-      throw "Error: Username cannot be empty or length should be atleast 4 chars long";
-    else if (/\s/.test(username)) throw "Error: Username cannot contain spaces";
-    if (checkAlphanumerics(username)) {
-      throw "Error: Username only accepts alphanumerics";
+    checkIsProperString(username);
+    username = username.toLowerCase();
+    if (username.trim().length <= 4) {
+      throw `Please chose a longer username`;
     }
-    if (password.trim().length === 0 || password.length < 6)
-      throw "Error: Password cannot be blanks or length should be atleast 6 chars long";
-    else if (/\s/.test(password)) throw "Error: Password cannot contain spaces";
-
+    if (password.trim().length <= 6) {
+      throw `Please chose a longer password`;
+    }
+    checkIsProperString(password);
     let user = await get(username);
     if (user === null) {
       throw `Username not found`;

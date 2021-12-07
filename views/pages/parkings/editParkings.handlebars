@@ -59,9 +59,7 @@
           <div class="form-group col align-self-start">
             <label for="parkingType">Parking Type</label>
             <select id="parkingType" name="parkingType" class="form-control">
-              <option selected>{{parkingType}}</option>
-              <option>open</option>
-              <option>closed</option>
+              {{{parkingtype}}}
             </select>
           </div>
           <div class="form-group col align-self-end">
@@ -97,12 +95,7 @@
           <div class="form-group col align-self-start">
             <label for="state">State</label>
             <select id="state" name="state" class="form-control">
-              <option selected>{{data.state}}</option>
-
-              {{#each states}}
-                <option>{{this}}</option>
-              {{/each}}
-
+              {{{states}}}
             </select>
           </div>
           <div class="form-group col align-self-start">
@@ -125,14 +118,8 @@
               size="2"
               aria-label="multiple vehicle type"
             >
-              {{#each vehicleType}}
-                {{#if @key}}
-                  {{#if this}}
-                    <option selected>{{@key}}</option>
-                  {{/if}}
-                {{/if}}
-                <option>{{@key}}</option>
-              {{/each}}
+
+              {{{vehicleType}}}
             </select>
           </div>
         </div>
@@ -145,7 +132,7 @@
     </form>
     {{#if success}}
       <div class="alert alert-success" role="alert">
-        Parking successfully update!
+        Parking successfully updated!
       </div>
     {{/if}}
   </div>
