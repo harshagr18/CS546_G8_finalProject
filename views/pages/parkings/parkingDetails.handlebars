@@ -29,7 +29,7 @@
                             <button class="dropbtn">Options</button>
                             <div class="dropdown-content">
                                 <p><a href="../reviews/editReview/{{_id}}">Edit Review</a></p>
-                                <p><a href="../reviews/deleteReview/{{_id}}">Delete Review</a></p>
+                                <p><a onclick="return confirm('Are you sure?')" href="../reviews/deleteReview/{{_id}}">Delete Review</a></p>
                             </div>
                         </div>
                     {{/if}}

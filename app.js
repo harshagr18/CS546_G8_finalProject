@@ -40,9 +40,7 @@ const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   }
 
   if(req.url.startsWith("/reviews/deleteReview/")) {
-    console.log(req.method);
     req.method = "DELETE";
-    console.log(req.method);
   }
   // let the next middleware run:
   next();
