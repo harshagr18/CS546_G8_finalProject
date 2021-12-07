@@ -26,6 +26,7 @@
     "express-session": "^1.17.2",
     "mongodb": "^4.1.4",
     "multer": "^1.4.3",
+    "sessionstorage": "^0.1.0",
     "uuid": "^8.3.2"
   }
 }

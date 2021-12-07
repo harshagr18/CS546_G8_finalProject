@@ -81,6 +81,27 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.use("/listings/bookListing/:id", (req,res,next) => {
+  // if (req.session.user) {
+    req.method = 'put';
+    next();
+  // } else {
+  //   return res.redirect('/users/login');
+  // }
+});
+
+app.use("/listings/updateListingData/:id", (req,res,next) => {
+  req.method = 'put';
+  console.log(req.body);
+  next();
+});
+
+app.use("/listings/removeListing/:id", (req,res,next) => {
+  req.method = 'delete';
+  console.log(req.body);
+  next();
+});
+
 app.use("/", (req, res, next) => {
   if (
     !req.session.user &&

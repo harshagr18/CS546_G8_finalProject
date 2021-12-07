@@ -1,0 +1,57 @@
+<div class="container">
+    <form 
+    method="POST"
+    id="listBooking"
+    action="/listings/createListing"
+    >
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="startDate">Start date</label>
+                <input
+                type="text"
+                class="form-control"
+                id="startDate"
+                name="startDate"
+                />
+                <label for="endDate">End date</label>
+                <input
+                type="text"
+                class="form-control"
+                id="endDate"
+                name="endDate"
+                />
+            </div>
+            <div class="form-group col-md-6">
+                <label for="startTime">Start time</label>
+                <input
+                type="text"
+                class="form-control"
+                id="startTime"
+                name="startTime"
+                />
+                <label for="endTime">End time</label>
+                <input
+                type="text"
+                class="form-control"
+                id="endTime"
+                name="endTime"
+                />
+            </div>
+            <div class="form-group col-md-6">
+                <label for="price">Price</label>
+                <input
+                type="text"
+                class="form-control"
+                id="price"
+                name="price"
+                />
+            </div>
+        </div>
+        {{!-- <input type="submit" value="Create"> --}}
+        <button
+      type="submit"
+      id="btnCreateListing"
+      class="btn btn-primary"
+    >Create</button>
+    </form>
+</div>

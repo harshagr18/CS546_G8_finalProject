@@ -3,6 +3,7 @@ const router = express.Router();
 const { ObjectId } = require("bson");
 const parkingsData = require("../data/parkings");
 const path = require("path");
+const sessionStorage = require("sessionstorage");
 
 //added by sv
 
@@ -51,6 +52,7 @@ const upload = multer({
 //get the lister id
 router.get("/", async (req, res) => {
   try {
+
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
@@ -160,6 +162,7 @@ router.get("/edit/:id", async (req, res) => {
 
 //get parkings
 router.get("/:id", async (req, res) => {
+  console.log("parking id: ",req.params.id);
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
     return;
@@ -175,9 +178,14 @@ router.get("/:id", async (req, res) => {
 
   try {
     const getData = await parkingsData.getParking(req.params.id);
-    res.json(getData);
+    // if (global && global.sessionStorage) {
+      sessionStorage.setItem("parkingId", getData._id);
+    // }
+    
+    // res.json(getData);
+    res.render("pages/parkings/listings", {getData: getData, title: "Listings" })
   } catch (error) {
-    res.status(404).json({ message: "Data not found " });
+    res.status(404).json({ message: error });
   }
 });
 
