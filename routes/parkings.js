@@ -32,22 +32,6 @@ const upload = multer({
   storage: storage,
 });
 
-//geocoding api
-// const axios = require("axios");
-// const params = {
-//   access_key: "YOUR_ACCESS_KEY",
-//   query: "1600 Pennsylvania Ave NW",
-// };
-
-// axios
-//   .get("https://api.positionstack.com/v1/forward", { params })
-//   .then((response) => {
-//     console.log(response.data);
-//   })
-//   .catch((error) => {
-//     console.log(error);
-//   });
-
 //get the lister id
 router.get("/", async (req, res) => {
   try {
@@ -218,7 +202,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
   }
 
   try {
-    const {
+    let {
       address,
       city,
       state,
@@ -248,6 +232,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
+
     const listerId = req.session.user.userId;
     let validListerId = validate(listerId);
     if (!validListerId) {
@@ -259,6 +244,22 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
 
     let parkingImg = !req.file ? "public\\images\\no_image.jpg" : req.file.path;
 
+    //Get geolocation information
+    let geoAddress =
+      parkingPostData.address +
+      "," +
+      parkingPostData.city +
+      "," +
+      parkingPostData.state +
+      "," +
+      "USA";
+
+    const geocodes = await parkingsData.getcodes(geoAddress);
+
+    geocodes.data.forEach((x) => {
+      (longitude = x.longitude), (latitude = x.latitude);
+    });
+
     const postParkings = await parkingsData.createParkings(
       listerId,
       parkingImg,
@@ -266,8 +267,8 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       city.toLowerCase(),
       state.toUpperCase(),
       zip,
-      longitude,
-      latitude,
+      longitude.toString(),
+      latitude.toString(),
       category,
       parkingType.toLowerCase()
     );
@@ -277,7 +278,6 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       success: true,
     });
     return;
-    //return res.status(200).json(postParkings);
   } catch (e) {
     res.status(500).json({ error: e });
   }
@@ -345,7 +345,30 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     });
     return;
   }
+  try {
+    let geoAddress =
+      updatedData.address +
+      "," +
+      updatedData.city +
+      "," +
+      updatedData.state +
+      "," +
+      "USA";
 
+    const geocodes = await parkingsData.getcodes(geoAddress);
+
+    geocodes.data.forEach((x) => {
+      (updatedData.longitude = x.longitude),
+        (updatedData.latitude = x.latitude);
+    });
+  } catch (error) {
+    res.status(500).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      error: true,
+      errormsg: "Internal Server Error",
+    });
+    return;
+  }
   try {
     const updatedParking = await parkingsData.updateParking(
       updatedData.parkingId,
@@ -355,8 +378,8 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       updatedData.city.toLowerCase(),
       updatedData.state.toUpperCase(),
       updatedData.zip,
-      updatedData.longitude,
-      updatedData.latitude,
+      updatedData.longitude.toString(),
+      updatedData.latitude.toString(),
       updatedData.category,
       updatedData.parkingType.toLowerCase()
     );
