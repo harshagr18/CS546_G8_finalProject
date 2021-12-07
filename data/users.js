@@ -369,7 +369,7 @@ let exportedMethods = {
     return result;
   },
 
-  //modified by sv user validation logic
+  //modified by sv user checks for password equal to 6 not accepting
   async checkUser(username, password) {
     checkIsProperString(username);
     username = username.toLowerCase();
