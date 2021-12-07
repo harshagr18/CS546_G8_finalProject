@@ -34,6 +34,14 @@ const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   if (req.url == "/parkings/update/") {
     req.method = "PUT";
   }
+
+  if (req.url == "/reviews/updateReview/") {
+    req.method = "PUT";
+  }
+
+  if(req.url.startsWith("/reviews/deleteReview/")) {
+    req.method = "DELETE";
+  }
   // let the next middleware run:
   next();
 };

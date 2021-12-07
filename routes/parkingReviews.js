@@ -5,15 +5,17 @@ const parkingsData = data.parkings;
 const reviewData = data.parkingReviews;
 const errorCheck = require('../data/errorHandling')
 const { ObjectId } = require('mongodb');
+const moment = require('moment');
 
 router.get('/:id', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/users/login");
+    }
     if(!errorCheck.checkId(req.params.id.trim())) {
         res.status(400).json({error: "You must supply a valid Parking Id"});
         return;
     }
-
     try {
-        console.log("Inside get of writeareview");
         const reviewParking = await parkingsData.getParking(req.params.id);
         res.json(reviewParking);
     } catch(e) {
@@ -23,6 +25,9 @@ router.get('/:id', async (req, res) => {
 });
 
 router.get('/userreviews/:id', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/users/login");
+    }
     if(!errorCheck.checkId(req.params.id.trim())) {
         res.status(400).json({error: "You must supply a valid Parking Id"});
         return;
@@ -38,6 +43,9 @@ router.get('/userreviews/:id', async (req, res) => {
 });
 
 router.get('/parkingreviews/:id', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/users/login");
+    }
     if(!errorCheck.checkId(req.params.id.trim())) {
         res.status(400).json({error: "You must supply a valid Parking Id"});
         return;
@@ -53,7 +61,12 @@ router.get('/parkingreviews/:id', async (req, res) => {
 });
 
 router.post('/:id', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/users/login");
+    }
     let reviewInfo = req.body;
+    reviewInfo.dateOfReview = moment(reviewInfo.dateOfReview, "YYYY/MM/DD").format("MM/DD/YYYY");
+    reviewInfo.rating = parseInt(reviewInfo.rating);
 
     if(!errorCheck.checkId(req.params.id.trim())) {
         res.status(400).json({error: "You must supply a valid Parking Id"});
@@ -65,48 +78,13 @@ router.post('/:id', async (req, res) => {
         return;
     }
 
-    if(!errorCheck.checkString(reviewInfo.dateOfReview.trim())) {
-        res.status(400).json({error: "You must supply a valid Date"});
-        return;
-    }
-
     if(!errorCheck.checkString(reviewInfo.comment.trim())) {
         res.status(400).json({error: "You must supply a valid Date"});
         return;
     }
 
     if(!errorCheck.checkDate(reviewInfo.dateOfReview.trim())) {
-        res.status(400).json({error: "Date provided is not in proper format"});
-        return;
-    }
-
-    let compareDate = reviewInfo.dateOfReview.replace(/\//g, "");
-  
-    if(parseInt(compareDate.substring(0,4)) === 229 || parseInt(compareDate.substring(0,4)) === 230 || parseInt(compareDate.substring(0,4)) === 231) {
-        res.status(400).json({ error: 'The month of February only contains 28 days. Please enter correct date' });
-        return;
-    }
-
-    if(parseInt(compareDate.substring(0,4)) === 431 || parseInt(compareDate.substring(0,4)) === 631 || parseInt(compareDate.substring(0,4)) === 931 || parseInt(compareDate.substring(0,4)) === 1131) {
-        res.status(400).json({ error: 'The month mentioned only contains 30 days. Please enter correct date' });
-        return;
-    }
-
-    let currentDate = new Date(); 
-    let dateTime =  + (currentDate.getMonth()+1)  + "/"
-                    + currentDate.getDate() + "/" 
-                    + currentDate.getFullYear();
-    
-    dateTime = dateTime.replace(/\//g, ""); 
-    dateTime = dateTime.substring(0,8);
-    dateTime = parseInt(dateTime);
-
-    if(compareDate < dateTime) {
-        res.status(400).json({ error:'The date provided is not of the current day but it is of previous days'});
-        return;
-    }
-    else if(compareDate > dateTime) {
-        res.status(400).json({ error:'The date provided is not of the current day but it is of next days'});
+        res.status(400).json({error: "Date provided is not in proper format. Also please enter today's date"});
         return;
     }
 
@@ -119,22 +97,44 @@ router.post('/:id', async (req, res) => {
 
     try {
         const newReview = await reviewData.createReview(req.params.id,
-            reviewInfo.userId.trim(),
+            req.session.user.userId.trim(),
             reviewInfo.rating,
             reviewInfo.dateOfReview.trim(),
             reviewInfo.comment.trim()
         );
-        return res.status(200).json(newReview)
+        const redirectUrl = "/parkings/" + req.params.id; 
+        res.redirect(redirectUrl);
     } catch(e) {
         res.status(500).json({ error: e });
     }
 });
 
-router.put("/:id", async(req, res) => {
-    let updateReviewInfo = req.body;
-
+router.get("/editReview/:id", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/users/login");
+    }
     if(!errorCheck.checkId(req.params.id.trim())) {
-        res.status(400).json({error: "You must supply a valid Parking Id"});
+        res.status(400).json({error: "You must supply a valid Review Id"});
+        return;
+    }
+    try {
+        const reviewDetails = await reviewData.getReview(req.params.id);
+        res.status(200).render("pages/reviews/editReview", {reviewId: req.params.id, review: reviewDetails.comment, rating: reviewDetails.rating, userLoggedIn: true})
+    } catch(e) {
+        res.status(404).json({ error: 'Review not found' });
+        return;
+    }
+});
+
+router.put("/updateReview/", async(req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/users/login");
+    }
+    let updateReviewInfo = req.body;
+    updateReviewInfo.rating = parseInt(updateReviewInfo.rating);
+
+    if(!errorCheck.checkId(updateReviewInfo.reviewId.trim())) {
+        res.status(400).json({error: "You must supply a valid Review Id"});
         return;
     }
 
@@ -149,39 +149,40 @@ router.put("/:id", async(req, res) => {
     }
 
     try {
-        await reviewData.getReview(req.params.id);
+        await reviewData.getReview(updateReviewInfo.reviewId);
     } catch (e) {
         res.status(404).json({ error: 'Review not found' });
         return;
     }
-
     try {
-        const updatedReview = await reviewData.updateReview(req.params.id,
+        const updatedReview = await reviewData.updateReview(updateReviewInfo.reviewId,
             updateReviewInfo.rating,
             updateReviewInfo.comment
         );
-        res.json(updatedReview);
+        res.redirect("/parkings/" + updatedReview.parkingId)
     } catch(e) {
-        res.status(500).json({ error: e });
+        res.status(404).json({ error: e });
     }
 });
 
-router.delete('/:id', async(req, res) => {
+router.delete('/deleteReview/:id', async(req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/users/login");
+    }
+    deleteReviewInfo = req.body;
     if(!errorCheck.checkId(req.params.id.trim())) {
         res.status(400).json({error: "You must supply a valid Parking Id"});
         return;
     }
-
     try {
         await reviewData.getReview(req.params.id);
     } catch(e) {
-        res.status(404).json({ error: 'Parking not found' });
+        res.status(404).json({ error: 'Review not found' });
         return;
     }
-
     try {
         const deletedReview = await reviewData.removeReview(req.params.id);
-        res.json(deletedReview);
+        res.redirect("/parkings/" + deletedReview.parkingId);
     } catch (e) {
         res.status(404).json({ error: 'Review cannot be deleted due to some error' });
     }
