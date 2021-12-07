@@ -10,4 +10,11 @@
 }
 .card {
   width: 18rem;
+  margin: 0 auto;
+  float: none;
+  margin-bottom: 10px;
+}
+.card img {
+  height: 280px;
+  width: 286px;
 }

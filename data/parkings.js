@@ -3,7 +3,9 @@ const mongoCollections = require("../config/mongoCollections");
 const parkings = mongoCollections.parkings;
 const { default: axios } = require("axios");
 const settings = require("../config/settings.json");
+const { json } = require("body-parser");
 const apikey = settings.apikey;
+const geocodingKey = settings.geocodingKey;
 
 //get distance from google
 async function getDistance(p1, p2) {
@@ -14,9 +16,24 @@ async function getDistance(p1, p2) {
         ""
     )
     .catch(function (error) {
-      console.log(error);
+      throw "Error: " + error;
     });
   return JSON.stringify(data);
+}
+
+//geocoding api
+async function getcodes(address) {
+  const params = {
+    access_key: geocodingKey,
+    query: address,
+  };
+
+  const { data } = await axios
+    .get("http://api.positionstack.com/v1/forward", { params })
+    .catch((error) => {
+      throw error;
+    });
+  return data;
 }
 
 //get parkings by city/state/zipcode - Dashboard Route
@@ -469,4 +486,5 @@ module.exports = {
   getParkingsByCityStateZip,
   getParkingbyUser,
   getDistance,
+  getcodes,
 };
