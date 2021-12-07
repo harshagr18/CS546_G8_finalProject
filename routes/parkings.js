@@ -3,6 +3,7 @@ const router = express.Router();
 const { ObjectId } = require("bson");
 const parkingsData = require("../data/parkings");
 const path = require("path");
+const sessionStorage = require("sessionstorage");
 
 //added by sv
 
@@ -142,10 +143,14 @@ router.get("/:id", async (req, res) => {
 
   try {
     const getData = await parkingsData.getParking(req.params.id);
+    // if (global && global.sessionStorage) {
+      sessionStorage.setItem("parkingId", getData._id);
+    // }
+    
     // res.json(getData);
     res.render("pages/parkings/listings", {getData: getData, title: "Listings" })
   } catch (error) {
-    res.status(404).json({ message: "Data not found " });
+    res.status(404).json({ message: error });
   }
 });
 

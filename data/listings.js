@@ -2,6 +2,8 @@ const { parkings } = require("./../config/mongoCollections");
 const { ObjectId } = require("mongodb");
 const common = require("./common");
 const parkingsData = require("./parkings");
+// const mongoCollections = require("../config/mongoCollections");
+// const parkings = mongoCollections.parkings;
 
 let exportedMethods = {
   async createListing(listerId, startDate, endDate, startTime, endTime, price) {
@@ -46,7 +48,7 @@ let exportedMethods = {
       booked: booked,
       bookerId: bookerId,
       numberPlate: numberPlate,
-      userCarCategory: userCarCategory,
+      // userCarCategory: userCarCategory,
     };
 
     const parkingsCollection = await parkings();
@@ -173,26 +175,10 @@ let exportedMethods = {
     // userCarCategory,
     price
   ) {
-    // const parkingsCollection = await parkings();
-    // let constParkingId = await parkingsCollection.findOne({
-    //   _id: ObjectId(listerId),
-    // });
 
-    // if (constParkingId === null) throw `No parking with that id.`;
+    const listingData = await this.getListing(listingId);
 
-    // let flag = 1;
-    // let listingData;
-    // for(let parking of constParkingId.listing) {
-    //   if(parking._id.toString() == listingId) {
-    //     flag = 0;
-    //     listingData = parking;
-    //     break;
-    //   }
-    // }
-    // if(flag == 1) throw `No listing found with this id.`
-
-    const listingData = await getListing(listingId);
-
+    //Pending: validation for start date with ed date after updating
     if (startDate == "" || startDate == null) startDate = listingData.startDate;
     else common.checkInputDate(startDate);
     if (endDate == "" || endDate == null) endDate = listingData.endDate;
@@ -205,6 +191,7 @@ let exportedMethods = {
     else common.checkIsProperNumber(price);
 
     const updateListing = {
+      _id: ObjectId(listingData._id),
       startDate: startDate,
       endDate: endDate,
       startTime: startTime,
@@ -215,54 +202,116 @@ let exportedMethods = {
       numberPlate: listingData.numberPlate,
     };
 
-    // Reference: https://stackoverflow.com/questions/5646798/mongodb-updating-subdocument
-    // https://stackoverflow.com/questions/60586215/multiple-conditions-in-updateone-query-in-mongodb
-    const updatedListings = await parkingsCollection.updateOne(
-      {
-        _id: ObjectId(listerId),
-        "listing._id": ObjectId(listingId),
-      },
-      { $set: updateListing },
-      { upsert: true }
-    );
-    // Pending
-    // Error: matched count = 1, modified count = 0
-    // console.log(updatedListings.upsertedId);
-    if (updatedListings.modifiedCount === 0)
-      throw `Could not update listing successfully.`;
-
-    // return updatedListings;
-    return await getListing(listingId);
-  },
-
-  async updateListingByUser(listerId, listingId, bookerId, numberPlate, userCarCategory) {},
-
-  async bookListing(listerId, listingId) {  //, bookerId, numberPlate
-    console.log("Lister Id in data:",listerId);
-    console.log("Listing Id in data:",listingId);
-    const updateListing = {
-      booked: true
-      // bookerId: bookerId,
-      // numberPlate: numberPlate
+    const removeListing = {
+      _id: ObjectId(listingData._id),
+      startDate: listingData.startDate,
+      endDate: listingData.endDate,
+      startTime: listingData.startTime,
+      endTime: listingData.endTime,
+      price: listingData.price, // pending: update price acc to number of hours inputed
+      booked: listingData.booked,
+      bookerId: listingData.bookerId,
+      numberPlate: listingData.numberPlate,
     };
 
-    const updatedListings = await parkingsCollection.updateOne(
+    const parkingsCollection = await parkings();
+
+    const removeListings = await parkingsCollection.updateOne(
+      //update
       {
         _id: ObjectId(listerId),
         "listing._id": ObjectId(listingId),
       },
-      { $set: updateListing }
-      // { upsert: true }
+      { $pull: { listing: removeListing } }
     );
-    // Pending
-    // Error: matched count = 1, modified count = 0
-    // console.log(updatedListings.upsertedId);
-    if (updatedListings.modifiedCount === 0)
-      throw `Could not update listing successfully.`;
+    if (removeListings.modifiedCount !== 0) {   // check correct param for remove listing
+      const updatedListings = await parkingsCollection.updateOne(
+        {
+          _id: ObjectId(listerId),
+        },
+        { $addToSet: { listing: updateListing } }
+      );
+      // Pending
+      // Error: matched count = 1, modified count = 0
+      // console.log(updatedListings.upsertedId);
+      if (updatedListings.modifiedCount === 0)
+        throw `Could not update listing successfully.`;
 
-    // return updatedListings;
-    // return await getListing(listingId);
-    return true;
+      // return updatedListings;
+      // return await getListing(listingId);
+      return true;
+    } else {
+      throw `Could not update listing successfully.`;
+    }
+  },
+
+  async updateListingByUser(
+    listerId,
+    listingId,
+    bookerId,
+    numberPlate,
+    userCarCategory
+  ) {},
+
+  async bookListing(listerId, listingId) {
+    //, bookerId, numberPlate
+    console.log("Lister Id in data:", listerId);
+    console.log("Listing Id in data:", listingId);
+
+    let getListingData = await this.getListing(listingId);
+    const updateListing = {
+      _id: ObjectId(getListingData._id),
+      startDate: getListingData.startDate,
+      endDate: getListingData.endDate,
+      startTime: getListingData.startTime,
+      endTime: getListingData.endTime,
+      price: getListingData.price, // pending: update price acc to number of hours inputed
+      booked: true,
+      bookerId: "newId",
+      numberPlate: "newNumplate",
+    };
+
+    const removeListing = {
+      _id: ObjectId(getListingData._id),
+      startDate: getListingData.startDate,
+      endDate: getListingData.endDate,
+      startTime: getListingData.startTime,
+      endTime: getListingData.endTime,
+      price: getListingData.price, // pending: update price acc to number of hours inputed
+      booked: getListingData.booked,
+      bookerId: getListingData.bookerId,
+      numberPlate: getListingData.numberPlate,
+    };
+
+    const parkingsCollection = await parkings();
+
+    const removeListings = await parkingsCollection.updateOne(
+      //update
+      {
+        _id: ObjectId(listerId),
+        "listing._id": ObjectId(listingId),
+      },
+      { $pull: { listing: removeListing } }
+    );
+    if (removeListings.modifiedCount !== 0) {   // check correct param for remove listing
+      const updatedListings = await parkingsCollection.updateOne(
+        {
+          _id: ObjectId(listerId),
+        },
+        { $addToSet: { listing: updateListing } }
+      );
+      // Pending
+      // Error: matched count = 1, modified count = 0
+      // console.log(updatedListings.upsertedId);
+      if (updatedListings.modifiedCount === 0)
+        throw `Could not book listing successfully.`;
+
+      // return updatedListings;
+      // return await getListing(listingId);
+      return true;
+    } else {
+      throw `Could not book listing successfully.`;
+    }
   },
 
   // async listingDetail(bookerId, startDate, endDate, startTime, endTime, booked, numberPlate, price) {

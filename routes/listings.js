@@ -5,9 +5,21 @@ const usersData = require("../data/users");
 const common = require("../data/common");
 let { ObjectId } = require("mongodb");
 const session = require("express-session");
+const sessionStorage = require("sessionstorage");
+// const window = require("window");
+
+
+router.get("/createListingPage", async(req,res) => {
+  try{
+    res.render("pages/parkings/createListing");
+  } catch(e) {
+
+  }
+});
 
 // Pending: Change the render page url for all
 router.post("/createListing", async (req, res) => {
+  // Body empty issue resolved by removing enctype in form
   const requestBody = req.body;
   let listerId;
   // let listerCarCategory;
@@ -16,19 +28,14 @@ router.post("/createListing", async (req, res) => {
   // user id will be in session
   // make a db call to get the lister id from user id
 
-  try {
-    const userData = await usersData.getUser(req.session.user);
-    listerId = userData.listerId.toString();
-    // listerCarCategory = userData.category.vehicleType;
-  } catch (e) {
-    res.status(400).render("users/login", { error: e });
-  }
+  listerId = sessionStorage.getItem("parkingId");
 
   let startDate = requestBody.startDate;
   let endDate = requestBody.endDate;
   let startTime = requestBody.startTime;
   let endTime = requestBody.endTime;
-  let price = requestBody.price;
+  let price = parseInt(requestBody.price);
+
 
   try {
     if (
@@ -52,7 +59,7 @@ router.post("/createListing", async (req, res) => {
     common.checkInputTime(endTime);
     common.checkIsProperNumber(price);
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res.status(400).render("pages/parkings/createListing", { error: e });
     return;
   }
 
@@ -71,16 +78,16 @@ router.post("/createListing", async (req, res) => {
     //     .render("users/login", { error: "Error 404 :No data found." });
     //   return;
     // }
-    res.render("users/login", { data: data, title: "Create Listing" });
+    res.render("pages/parkings/createListing", { data: data, title: "Create Listing" });
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res.status(400).render("pages/parkings/createListing", { error: e });
   }
 });
 
 router.get("/getAllListing", async (req, res) => {
   let listerId;
   try {
-    const userData = await usersData.getUser(req.session.user);
+    const userData = await usersData.getUser(req.session.user.userId);
     listerId = userData.listerId.toString();
   } catch (e) {
     res.status(400).render("users/login", { error: e });
@@ -108,51 +115,81 @@ router.get("/getAllListing", async (req, res) => {
   }
 });
 
+// Pending: List out only the slots whose booked value is 'false'
+// if slot is available for 2 hours and user booked it only for 1 hr then list out
+// new slot in the list as well with the available time
 router.get("/getListing/:id", async (req, res) => {
-  console.log("listing id: ",req.params.id);
+  console.log("listing id: ", req.params.id);
   try {
     const data = await listingsData.getListing(req.params.id);
     if (!data) {
-      res
-        .status(404)
-        .render("pages/parkings/listingDetail", { error: "Error 404 :No data found." });
+      res.status(404).render("pages/parkings/listingDetail", {
+        error: "Error 404 :No data found.",
+      });
       return;
     }
-    res.render("pages/parkings/listingDetail", { data: data, title: "Book Listing" });
+    res.render("pages/parkings/listingDetail", {
+      data: data,
+      title: "Book Listing",
+    });
   } catch (e) {
     res.status(400).render("pages/parkings/listingDetail", { error: e });
   }
 });
 
+//Pending: pop up to ask if they are sure to delete listing
 router.delete("/removeListing/:id", async (req, res) => {
   try {
-    const data = await listingsData.removeListing(req.params.id);
-    res.render("users/login", { data: data, title: "Create Listing" });
+    // Window.confirm("Are you sure?");
+    // if (confirm("Are you sure?")) {
+      // txt = "Yes";
+      // try {
+      const data = await listingsData.removeListing(req.params.id);
+      res.render("pages/parkings/listings", { data: data, title: "Create Listing" });
+      // } catch (e) {
+      //   res.status(400).render("users/login", { error: e });
+      // }
+    // } else {
+    //   // txt = "No";
+    //   return;
+    // }
   } catch (e) {
     res.status(400).render("users/login", { error: e });
   }
 });
 
-router.put("/updateByLister/:id", async (req, res) => {
+router.get("/updateListing/:id", async (req, res, next) => {
+  try {
+    sessionStorage.setItem("listingId", req.params.id);
+    res.render("pages/parkings/listingUpdate", {
+      id: req.params.id,
+      title: "Update Listing",
+    });
+
+    // next();
+  } catch (e) {
+    res.status(400).render("pages/parkings/listingUpdate", { error: e });
+    // next();
+    // res.status(400).send({ error: e });
+  }
+});
+
+router.put("/updateListingData/:id", async (req, res) => {
   const requestBody = req.body;
   let listerId;
-
-  try {
-    const userData = await usersData.getUser(req.session.user);
-    listerId = userData.listerId.toString();
-  } catch (e) {
-    res.status(400).render("users/login", { error: e });
-  }
+  console.log("user in session", req.session.user.userId);
+  listerId = sessionStorage.getItem("parkingId");
 
   let startDate = requestBody.startDate;
   let endDate = requestBody.endDate;
   let startTime = requestBody.startTime;
   let endTime = requestBody.endTime;
-  let price = requestBody.price;
+  let price = parseInt(requestBody.price);
 
-  // Pending: error handling for params that are not null, i.e. 
+  // Pending: error handling for params that are not null, i.e.
   // whose values has been passed to be updated rest can be ignored
   try {
+    // if (listerId == req.session.user.userId) { // update by lister
     const data = await listingsData.updateListingByLister(
       listerId,
       req.params.id,
@@ -163,40 +200,56 @@ router.put("/updateByLister/:id", async (req, res) => {
       //   userCarCategory,
       price
     );
-    res.render("users/login", { data: data, title: "Create Listing" });
+    res.render("pages/parkings/listingUpdate", {
+      data: data,
+      title: "Create Listing",
+    });
+    return;
+    // } else if(false) {
+    //   // update by user
+    // } else {
+    //   res.render("pages/parkings/listingUpdate", {
+    //     errorMessage: "Cannot update the parking.",
+    //   });
+    //   return;
+    // }
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res.status(400).render("pages/parkings/listingUpdate", { error: e });
   }
 });
 
 router.put("/bookListing/:id", async (req, res) => {
-  // console.log("lister id from req param: ", req.data.listerId);
   const requestBody = req.body;
   let listerId;
   let listingId = req.params.id;
+  // Pending: get bookerId and number plate from req and send
+  // it to book listing db function to add in db
 
-    console.log("Listing Id in data:",listingId);
+  console.log("user session data", req.session.user.userId);
+  listerId = sessionStorage.getItem("parkingId");
 
-  try {
-    const userData = await usersData.getUser(req.session.user);
-    listerId = userData.listerId.toString();
-  console.log("Lister Id in data:",listerId);
-
-  } catch (e) {
-    res.status(400).render("users/login", { error: e });
-  }
-
-  // Pending: error handling for params that are not null, i.e. 
+  // Pending: error handling for params that are not null, i.e.
   // whose values has been passed to be updated rest can be ignored
   try {
+    // if (listerId != req.session.user.userId) {
     const data = await listingsData.bookListing(
-      listerId, listingId
+      listerId,
+      listingId
       // , bookerId, numberPlate
     );
-    // res.render("users/login", { data: data, title: "Create Listing" });
-    res.json({success: true});
+    res.render("pages/parkings/listingDetail", {
+      data: data,
+      title: "Listing Detail",
+    });
+    return;
+    // } else {
+    //   res.render("pages/parkings/listing", {
+    //     errorMessage: "Lister cannot book the parking.",
+    //   });
+    //   return;
+    // }
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res.status(400).render("pages/parkings/listingDetail", { error: e });
   }
 });
 
@@ -205,7 +258,7 @@ router.put("/bookListing/:id", async (req, res) => {
 //     let listerId;
 
 //     try {
-//       const userData = await usersData.getUser(req.session.user);
+//       const userData = await usersData.getUser(req.session.user.userId);
 //       listerId = userData.listerId.toString();
 //     } catch (e) {
 //       res.status(400).render("users/login", { error: e });

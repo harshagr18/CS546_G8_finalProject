@@ -1,6 +1,8 @@
 <main>
 <h1>{{title}}</h1>
 
+<a href="/listings/createListingPage">Create Listing</a>
+
 {{#if getData.listing.length}}
   <div class="row">
 
@@ -14,6 +16,14 @@
             <p class="card-text">{{zip}}</p> --}}
             {{!-- <a href="parkings/61a2eb490b44342c5afbcd40" class="btn btn-primary">Go Here</a> --}}
             <a href="/listings/getListing/{{_id}}" class="btn btn-primary">Book</a>
+            {{!-- {{#if booked != true}} --}}
+
+            <a href="/listings/updateListing/{{_id}}" class="btn btn-primary">Update</a>
+            {{!-- <a href="pages/parkings/listingUpdate" class="btn btn-primary">Update</a> --}}
+
+            <a href="/listings/removeListingPage" class="btn btn-primary">Delete</a>
+
+            {{!-- {{/if}} --}}
             <input
               type="hidden"
               id="listingId"
