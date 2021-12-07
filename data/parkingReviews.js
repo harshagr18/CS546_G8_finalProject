@@ -1,5 +1,6 @@
 const mongoCollections = require('../config/mongoCollections');
 const parkings = mongoCollections.parkings;
+const users = mongoCollections.users;
 const errorCheck = require('./errorHandling');
 const { ObjectId } = require('mongodb');
 
@@ -20,8 +21,13 @@ let exportedMethods = {
         if(!errorCheck.checkId(userId)) throw 'userId is not a valid input';
         if(!errorCheck.checkRating(rating)) throw 'Rating is not a valid input';
         if(!errorCheck.checkString(comment)) throw 'Comment is not a valid input';
-
         if(!errorCheck.checkDate(dateOfReview)) throw 'The date provided is not a valid date. Please enter a valid date of today';
+
+        const userCollection = await users();
+        const userData = await userCollection.findOne({ _id: ObjectId(userId)});
+
+        if(userData === null)
+            throw 'User does not exist';
 
         const parkingCollection = await parkings();
         const checkParking = await parkingCollection.findOne({ _id: ObjectId(parkingId)});
@@ -29,7 +35,7 @@ let exportedMethods = {
         if(checkParking === null)
             throw 'Parking does not exist';
 
-        const averageRating = updateRating(checkParking, rating, 'C');
+        const averageRating = updateRating(checkParking, rating);
 
         const newReview = {
             _id: new ObjectId(),
@@ -47,7 +53,15 @@ let exportedMethods = {
 
         if(!ratingUpdate.matchedCount && !ratingUpdate.modifiedCount)
             throw 'Creating reviews have been failed'
-        
+
+        const userUpdate = await userCollection.updateOne(
+            {_id: ObjectId(userId)},
+            {$push: {reviews: newReview}}
+        )
+
+        if(!userUpdate.matchedCount && !userUpdate.modifiedCount)
+            throw 'Cannot add Reviews to the User collection';
+
         const sameReview = await parkingCollection.findOne({ _id: ObjectId(parkingId)});
 
         if(sameReview === null)
@@ -85,9 +99,6 @@ let exportedMethods = {
         if(parking === null)
             throw 'No parking found with that ID';
 
-        parking.parkingReviews.forEach(element => {
-            element._id = element._id.toString();
-        })
         return parking.parkingReviews;
     },
 
@@ -108,7 +119,6 @@ let exportedMethods = {
                 }
             })
         });
-        resultData._id = resultData._id.toString();
         return resultData;
     },
 
@@ -152,6 +162,12 @@ let exportedMethods = {
         if(!reviewUpdate.matchedCount && !reviewUpdate.modifiedCount)
             throw 'Update of the rating has been failed';
 
+        const userCollection = await users();
+        const removeUserReview = await userCollection.updateOne({}, {$pull: {reviews: {_id: ObjectId(reviewId)}}});
+    
+        if(!removeUserReview.matchedCount && !removeUserReview.modifiedCount)
+            throw 'Removal of review from the user has failed';
+
         resultData = {"reviewId": reviewId, "deleted": true, parkingId: parking[0].parkingId};
         return resultData;
     },
@@ -162,6 +178,7 @@ let exportedMethods = {
         if(!errorCheck.checkString(comment)) throw 'Comment is not a valid input';
 
         rating = parseInt(rating);
+        const userCollection = await users();
         const parkingCollection = await parkings();
         const findReview = await parkingCollection.aggregate([{$unwind: "$parkingReviews"}, {$match: {"parkingReviews._id": ObjectId(reviewId)}}, {"$replaceRoot": {"newRoot": "$parkingReviews"}}]).toArray();
 
@@ -173,7 +190,7 @@ let exportedMethods = {
         if(!extractReview.matchedCount && !extractReview.modifiedCount)
             throw 'Review update has been failed';
 
-        const getParkingData = await parkingCollection.findOne({_id: ObjectId(findReview[0].parkingId)});    
+        const getParkingData = await parkingCollection.findOne({_id: ObjectId(findReview[0].parkingId)});
 
         if(getParkingData === null)
             throw 'No parking found with that ID';
@@ -209,6 +226,19 @@ let exportedMethods = {
 
         if(!updateReview.modifiedCount)
             throw 'Same values has been provided for update. Please change the values';
+
+        const extractUserReview = await userCollection.updateOne({}, {$pull: {reviews: {_id: ObjectId(reviewId)}}});
+
+        if(!extractUserReview.matchedCount && !extractUserReview.modifiedCount)
+            throw 'Review remove from the user have been failed';
+
+        const updateNewReview = await parkingCollection.updateOne(
+            {_id: ObjectId(findReview[0].parkingId)},
+            {$push: {reviews: newReviewInfo}}
+        );
+    
+        if(!updateNewReview.matchedCount && !updateNewReview.modifiedCount)
+            throw 'Update has been failed in the user collection';
 
         return await this.getReview(reviewId);
     }

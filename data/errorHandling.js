@@ -32,10 +32,6 @@ function checkDate(date) {
     }
     const currentDate = new Date();
     const checkingDate = new Date(date.trim());
-    console.log("Date values are:")
-    console.log(currentDate);
-    console.log(checkingDate);
-    console.log(currentDate.getDate());
 
     if(currentDate.getFullYear() !== checkingDate.getFullYear() || currentDate.getMonth() !== checkingDate.getMonth() || currentDate.getDate() !== checkingDate.getDate()) {
         return false;
