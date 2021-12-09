@@ -320,6 +320,7 @@ let exportedMethods = {
     }
 
     userId = ObjectId(userId);
+    const hash = await bcrypt.hash(password, saltRounds);
 
     let updatedUser = {
       firstName: firstName,
@@ -327,6 +328,7 @@ let exportedMethods = {
       email: email,
       phoneNumber: phoneNumber,
       username: username,
+      password: hash,
       address: address,
       city: city,
       state: state,

@@ -23,16 +23,16 @@ const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   //   req.method = req.body._method;
   //   delete req.body._method;
   // }
-
-  if (
-    req.url == "/users/updateUser/61a842ec7718a0fc70c9d328" &&
-    req.method == "POST"
-  ) {
+  if (req.url == "/parkings/update/") {
     req.method = "PUT";
   }
 
-  if (req.url == "/parkings/update/") {
+  if (req.url == "/reviews/updateReview/") {
     req.method = "PUT";
+  }
+
+  if(req.url.startsWith("/reviews/deleteReview/")) {
+    req.method = "DELETE";
   }
   // let the next middleware run:
   next();

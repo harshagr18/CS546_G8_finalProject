@@ -169,6 +169,11 @@ router.get("/:id", async (req, res) => {
     res.render("pages/parkings/listings", {
       getData: getData,
       title: "Listings",
+    res.render("pages/parkings/parkingDetails", {
+      parkdata: getData,
+      title: "Parking",
+      isReviewer: true,
+      userLoggedIn: true
     });
   } catch (error) {
     res.status(404).json({ message: error });
