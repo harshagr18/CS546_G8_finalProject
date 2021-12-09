@@ -93,6 +93,7 @@ router.post("/createUser", async (req, res) => {
       error: e,
       title: "Create Profile",
       states: stateList,
+      partial: "emptyPartial",
     });
   }
 });
@@ -110,9 +111,11 @@ router.post("/login", async (req, res) => {
     res.redirect("/");
   } catch (e) {
     console.log(e);
-    res
-      .status(400)
-      .render("pages/users/login", { title: "Create Profile", error: e });
+    res.status(400).render("pages/users/login", {
+      title: "Create Profile",
+      error: e,
+      partial: "emptyPartial",
+    });
   }
 });
 
@@ -128,6 +131,7 @@ router.get("/updateUser/:id", async (req, res) => {
       title: "Edit Profile",
       states: stateList,
       data: getData,
+      partial: "emptyPartial",
     });
     return;
   } catch (e) {
@@ -155,9 +159,11 @@ router.post("/updateUser/:id", async (req, res) => {
     res.redirect("/");
   } catch (e) {
     console.log(e);
-    res
-      .status(400)
-      .render("pages/users/editUser", { title: "Edit Profile", error: e });
+    res.status(400).render("pages/users/editUser", {
+      title: "Edit Profile",
+      error: e,
+      partial: "emptyPartial",
+    });
   }
 });
 
@@ -166,6 +172,7 @@ router.get("/createProfile", async (req, res) => {
     res.render("pages/users/createUsers", {
       title: "Create Profile",
       states: stateList,
+      partial: "emptyPartial",
     });
   } catch (e) {
     console.log(e);
@@ -175,7 +182,10 @@ router.get("/createProfile", async (req, res) => {
 
 router.get("/login", async (req, res) => {
   try {
-    res.render("pages/users/login", { title: "Login" });
+    res.render("pages/users/login", {
+      title: "Login",
+      partial: "emptyPartial",
+    });
   } catch (e) {
     console.log(e);
     res.status(404).json({ error: "Internal Error" });
@@ -191,6 +201,7 @@ router.get("/:id", async (req, res) => {
       user: user,
       title: "My Profile",
       parkings: parkings,
+      partial: "emptyPartial",
     });
     return;
   } catch (e) {

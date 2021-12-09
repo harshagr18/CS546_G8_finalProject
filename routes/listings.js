@@ -8,13 +8,10 @@ const session = require("express-session");
 const sessionStorage = require("sessionstorage");
 // const window = require("window");
 
-
-router.get("/createListingPage", async(req,res) => {
-  try{
-    res.render("pages/parkings/createListing");
-  } catch(e) {
-
-  }
+router.get("/createListingPage", async (req, res) => {
+  try {
+    res.render("pages/parkings/createListing", { partial: "emptyPartial" });
+  } catch (e) {}
 });
 
 // Pending: Change the render page url for all
@@ -35,7 +32,6 @@ router.post("/createListing", async (req, res) => {
   let startTime = requestBody.startTime;
   let endTime = requestBody.endTime;
   let price = parseInt(requestBody.price);
-
 
   try {
     if (
@@ -59,7 +55,10 @@ router.post("/createListing", async (req, res) => {
     common.checkInputTime(endTime);
     common.checkIsProperNumber(price);
   } catch (e) {
-    res.status(400).render("pages/parkings/createListing", { error: e });
+    res.status(400).render("pages/parkings/createListing", {
+      partial: "emptyPartial",
+      error: e,
+    });
     return;
   }
 
@@ -78,7 +77,11 @@ router.post("/createListing", async (req, res) => {
     //     .render("users/login", { error: "Error 404 :No data found." });
     //   return;
     // }
-    res.render("pages/parkings/createListing", { data: data, title: "Create Listing" });
+    res.render("pages/parkings/createListing", {
+      partial: "emptyPartial",
+      data: data,
+      title: "Create Listing",
+    });
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", { error: e });
   }
@@ -90,7 +93,9 @@ router.get("/getAllListing", async (req, res) => {
     const userData = await usersData.getUser(req.session.user.userId);
     listerId = userData.listerId.toString();
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res
+      .status(400)
+      .render("users/login", { error: e, partial: "emptyPartial" });
   }
 
   try {
@@ -104,12 +109,17 @@ router.get("/getAllListing", async (req, res) => {
   try {
     const data = await listingsData.getAllListings(listerId);
     if (!data) {
-      res
-        .status(404)
-        .render("users/login", { error: "Error 404 :No data found." });
+      res.status(404).render("users/login", {
+        partial: "emptyPartial",
+        error: "Error 404 :No data found.",
+      });
       return;
     }
-    res.render("users/login", { data: data, title: "Create Listing" });
+    res.render("users/login", {
+      partial: "emptyPartial",
+      data: data,
+      title: "Create Listing",
+    });
   } catch (e) {
     res.status(400).render("users/login", { error: e });
   }
@@ -129,6 +139,7 @@ router.get("/getListing/:id", async (req, res) => {
       return;
     }
     res.render("pages/parkings/listingDetail", {
+      partial: "emptyPartial",
       data: data,
       title: "Book Listing",
     });
@@ -142,13 +153,17 @@ router.delete("/removeListing/:id", async (req, res) => {
   try {
     // Window.confirm("Are you sure?");
     // if (confirm("Are you sure?")) {
-      // txt = "Yes";
-      // try {
-      const data = await listingsData.removeListing(req.params.id);
-      res.render("pages/parkings/listings", { data: data, title: "Create Listing" });
-      // } catch (e) {
-      //   res.status(400).render("users/login", { error: e });
-      // }
+    // txt = "Yes";
+    // try {
+    const data = await listingsData.removeListing(req.params.id);
+    res.render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      data: data,
+      title: "Create Listing",
+    });
+    // } catch (e) {
+    //   res.status(400).render("users/login", { error: e });
+    // }
     // } else {
     //   // txt = "No";
     //   return;
@@ -162,13 +177,17 @@ router.get("/updateListing/:id", async (req, res, next) => {
   try {
     sessionStorage.setItem("listingId", req.params.id);
     res.render("pages/parkings/listingUpdate", {
+      partial: "emptyPartial",
       id: req.params.id,
       title: "Update Listing",
     });
 
     // next();
   } catch (e) {
-    res.status(400).render("pages/parkings/listingUpdate", { error: e });
+    res.status(400).render("pages/parkings/listingUpdate", {
+      partial: "emptyPartial",
+      error: e,
+    });
     // next();
     // res.status(400).send({ error: e });
   }
@@ -201,6 +220,7 @@ router.put("/updateListingData/:id", async (req, res) => {
       price
     );
     res.render("pages/parkings/listingUpdate", {
+      partial: "emptyPartial",
       data: data,
       title: "Create Listing",
     });
@@ -214,7 +234,10 @@ router.put("/updateListingData/:id", async (req, res) => {
     //   return;
     // }
   } catch (e) {
-    res.status(400).render("pages/parkings/listingUpdate", { error: e });
+    res.status(400).render("pages/parkings/listingUpdate", {
+      partial: "emptyPartial",
+      error: e,
+    });
   }
 });
 
@@ -238,6 +261,7 @@ router.put("/bookListing/:id", async (req, res) => {
       // , bookerId, numberPlate
     );
     res.render("pages/parkings/listingDetail", {
+      partial: "emptyPartial",
       data: data,
       title: "Listing Detail",
     });
@@ -249,7 +273,10 @@ router.put("/bookListing/:id", async (req, res) => {
     //   return;
     // }
   } catch (e) {
-    res.status(400).render("pages/parkings/listingDetail", { error: e });
+    res.status(400).render("pages/parkings/listingDetail", {
+      partial: "emptyPartial",
+      error: e,
+    });
   }
 });
 
