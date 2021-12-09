@@ -136,8 +136,23 @@ router.get("/updateUser/:id", async (req, res) => {
   }
 });
 
-router.put("/updateUser", async (req, res) => {
+router.post("/updateUser/:id", async (req, res) => {
   try {
+    const userInfo = req.body;
+    updatedUser = await userData.updateUser(
+      req.params.id.toString(),
+      userInfo.firstName,
+      userInfo.lastName,
+      userInfo.email,
+      userInfo.phoneNumber,
+      userInfo.username,
+      userInfo.password,
+      userInfo.address,
+      userInfo.city,
+      userInfo.state,
+      userInfo.zip
+    );
+    res.redirect("/");
   } catch (e) {
     console.log(e);
     res
@@ -181,40 +196,6 @@ router.get("/:id", async (req, res) => {
   } catch (e) {
     console.log(e);
     res.status(404).json({ error: "User not found" });
-  }
-});
-
-router.put("/updateUser/:id", async (req, res) => {
-  const userInfo = req.body;
-  let validId = validate(req.params.id);
-  if (!validId) {
-    res
-      .status(400)
-      .json({ error: "Id must be a valid string and an Object Id" });
-    return;
-  }
-  try {
-    await userData.getUser(req.params.id);
-  } catch (e) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-  try {
-    const updatedUser = await userData.updateUser(
-      req.params.id,
-      userInfo.firstName,
-      userInfo.lastName,
-      userInfo.email,
-      userInfo.phoneNumber,
-      userInfo.username,
-      userInfo.address,
-      userInfo.city,
-      userInfo.state,
-      userInfo.zip
-    );
-    res.json(updatedUser);
-  } catch (e) {
-    res.status(500).json({ error: e });
   }
 });
 
