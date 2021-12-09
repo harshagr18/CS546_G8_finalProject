@@ -129,6 +129,7 @@ router.get("/updateUser/:id", async (req, res) => {
     getData = await userData.getUser(req.params.id.toString());
     res.render("pages/users/editUser", {
       title: "Edit Profile",
+      session: req.session.user.userId,
       states: stateList,
       data: getData,
       partial: "emptyPartial",
@@ -161,6 +162,7 @@ router.post("/updateUser/:id", async (req, res) => {
     console.log(e);
     res.status(400).render("pages/users/editUser", {
       title: "Edit Profile",
+      session: req.session.user.userId,
       error: e,
       partial: "emptyPartial",
     });
@@ -200,6 +202,7 @@ router.get("/:id", async (req, res) => {
     res.render("pages/users/getUsers", {
       user: user,
       title: "My Profile",
+      session: req.session.user.userId,
       parkings: parkings,
       partial: "emptyPartial",
     });
@@ -210,7 +213,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.get("/delete/:id", async (req, res) => {
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a user Id" });
     return;
@@ -224,7 +227,7 @@ router.delete("/:id", async (req, res) => {
   }
   try {
     const deleteData = await userData.deleteUser(req.params.id);
-    res.json(deleteData);
+    res.redirect("/users/logout");
   } catch (error) {
     console.log(error);
     res.status(404).json({ message: "Data not found " });

@@ -52,6 +52,7 @@ router.get("/", async (req, res) => {
     res.render("pages/parkings/getParkings", {
       partial: "emptyPartial",
       parkdata: getData,
+      session: req.session.user.userId,
       title: "My Parkings",
     });
   } catch (error) {
@@ -66,6 +67,7 @@ router.get("/create", async (req, res) => {
     // }
     res.render("pages/parkings/createParkings", {
       partial: "emptyPartial",
+      session: req.session.user.userId,
       title: "Create Parking",
       states: stateList,
     });
@@ -130,6 +132,7 @@ router.get("/edit/:id", async (req, res) => {
 
     res.render("pages/parkings/editParkings", {
       partial: "editParkings",
+      session: req.session.user.userId,
       title: "Edit Parking",
       states: optionStateList,
       parkingtype: optionParkingType,
@@ -140,6 +143,7 @@ router.get("/edit/:id", async (req, res) => {
   } catch (error) {
     res.status(404).render("pages/parkings/editParkings", {
       partial: "editParkings",
+      session: req.session.user.userId,
       title: "Edit Parking",
       error: true,
       errormsg: "No data found",
@@ -170,7 +174,7 @@ router.get("/:id", async (req, res) => {
     // }
     res.render("pages/parkings/parkingDetails", {
       partial: "emptyPartial",
-
+      session: req.session.user.userId,
       parkdata: getData,
       title: "Parking",
       isReviewer: true,
@@ -290,7 +294,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     );
     res.render("pages/parkings/createParkings", {
       partial: "emptyPartial",
-
+      session: req.session.user.userId,
       title: "Create Parking",
       states: stateList,
       success: true,
@@ -358,6 +362,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   } catch (e) {
     res.status(404).render("pages/parkings/editParkings", {
       partial: "editParkings",
+      session: req.session.user.userId,
       title: "Edit Parking",
       error: true,
       errormsg: e,
@@ -384,6 +389,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     res.status(500).render("pages/parkings/editParkings", {
       title: "Edit Parking",
       partial: "editParkings",
+      session: req.session.user.userId,
       error: true,
       errormsg: "Internal Server Error",
     });
@@ -442,6 +448,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
 
     res.render("pages/parkings/editParkings", {
       partial: "editParkings",
+      session: req.session.user.userId,
       title: "Edit Parking",
       error: false,
       data: updatedParking,
@@ -487,6 +494,7 @@ router.delete("/delete/:id", async (req, res) => {
     const deleteData = await parkingsData.deleteParking(req.params.id);
     res.render("pages/parkings/getParkings", {
       partial: "emptyPartial",
+      session: req.session.user.userId,
       title: "My Parkings",
       success: true,
       successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,

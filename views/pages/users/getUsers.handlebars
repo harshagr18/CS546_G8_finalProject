@@ -5,9 +5,9 @@
             <div class="px-4 py-3">
                 <h5 class="mb-0">{{user.firstName}} {{user.lastName}}</h5> <br>
                 <div class="p-4 rounded shadow-sm bg-light">
-                    <span class= "d-block"><span class="font-weight-bold mb-0">Username</span><span class="font-italic mb-0">{{ user.username }}</span></span>
-                    <span class= "d-block"></span><span class="font-weight-bold mb-0">Phone Number</span><span class="font-italic mb-0">{{ user.phoneNumber }}</span></span>
-                    <span class= "d-block"></span><span class="font-weight-bold mb-0">Email</span><span class="font-italic mb-0">{{ user.email }}</span></span>
+                    <span class= "d-block"><span class="font-weight-bold mb-0">Username</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.username }}</span></span>
+                    <span class= "d-block"></span><span class="font-weight-bold mb-0">Phone Number</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.phoneNumber }}</span></span>
+                    <span class= "d-block"></span><span class="font-weight-bold mb-0">Email</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.email }}</span></span>
                 </div>
             </div>
             <div class="py-4 px-4">
@@ -44,7 +44,8 @@
                         </div>
                         {{else}}
                         <div class="container alert alert-warning"><p class="empty">No content</p></div>
-                    {{/each}} 
+                    {{/each}}
+                    <a href="/users/updateUser/{{ session }}">Update / Delete my account.</a>
                 </div>
             </div>
         </div>
