@@ -131,7 +131,7 @@ router.get("/edit/:id", async (req, res) => {
     });
 
     res.render("pages/parkings/editParkings", {
-      partial: "emptyPartial",
+      partial: "editParkings",
       session: req.session.user.userId,
       title: "Edit Parking",
       states: optionStateList,
@@ -142,7 +142,7 @@ router.get("/edit/:id", async (req, res) => {
     });
   } catch (error) {
     res.status(404).render("pages/parkings/editParkings", {
-      partial: "emptyPartial",
+      partial: "editParkings",
       session: req.session.user.userId,
       title: "Edit Parking",
       error: true,
@@ -204,14 +204,14 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     res.status(400).json({ error: "You must provide zip" });
     return;
   }
-  if (!parkingPostData.longitude) {
-    res.status(400).json({ error: "You must provide longitude" });
-    return;
-  }
-  if (!parkingPostData.latitude) {
-    res.status(400).json({ error: "You must provide latitude" });
-    return;
-  }
+  // if (!parkingPostData.longitude) {
+  //   res.status(400).json({ error: "You must provide longitude" });
+  //   return;
+  // }
+  // if (!parkingPostData.latitude) {
+  //   res.status(400).json({ error: "You must provide latitude" });
+  //   return;
+  // }
   if (!parkingPostData.category) {
     res.status(400).json({ error: "You must provide category" });
     return;
@@ -238,8 +238,8 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       city,
       state,
       zip,
-      longitude,
-      latitude,
+      // longitude,
+      // latitude,
       category,
       parkingType
     );
@@ -329,8 +329,8 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     !updatedData.city ||
     !updatedData.state ||
     !updatedData.zip ||
-    !updatedData.longitude ||
-    !updatedData.latitude ||
+    // !updatedData.longitude ||
+    // !updatedData.latitude ||
     !updatedData.category ||
     !updatedData.parkingType
   ) {
@@ -343,8 +343,8 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     updatedData.city,
     updatedData.state,
     updatedData.zip,
-    updatedData.longitude,
-    updatedData.latitude,
+    // updatedData.longitude,
+    // updatedData.latitude,
     updatedData.category,
     updatedData.parkingType
   );
@@ -388,7 +388,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   } catch (error) {
     res.status(500).render("pages/parkings/editParkings", {
       title: "Edit Parking",
-      partial: "editPartial",
+      partial: "editParkings",
       session: req.session.user.userId,
       error: true,
       errormsg: "Internal Server Error",
@@ -447,7 +447,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     });
 
     res.render("pages/parkings/editParkings", {
-      partial: "editPartial",
+      partial: "editParkings",
       session: req.session.user.userId,
       title: "Edit Parking",
       error: false,
@@ -520,8 +520,8 @@ function validateArguments(
   city,
   state,
   zip,
-  longitude,
-  latitude,
+  // longitude,
+  // latitude,
   category,
   parkingType
 ) {
