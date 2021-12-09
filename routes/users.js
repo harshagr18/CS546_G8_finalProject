@@ -127,7 +127,6 @@ router.get("/updateUser/:id", async (req, res) => {
       return;
     }
     getData = await userData.getUser(req.params.id.toString());
-    console.log(req.session.user);
     res.render("pages/users/editUser", {
       title: "Edit Profile",
       session: req.session.user.userId,

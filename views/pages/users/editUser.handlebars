@@ -21,8 +21,7 @@
               {{/each}}
             </select></div>
         <div class="col-md-4"><label class="labels">Zip Code</label><input type="number" class="form-control" placeholder="zip code" name="zip" id="zip" value="{{data.zip}}"></div>
-        <a href="/users/delete/{{ session }}">Delete my account.</a>
     </div>
     <h3 style="color:red;">{{ error }}</h3>
-    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Update</button></div>
+    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Update</button>&nbsp&nbsp&nbsp&nbsp<a onclick="return confirm('Are you sure? Your account will be deleted permanently.')" href="/users/delete/{{ session }}"><button class="btn btn-danger profile-button">Delete my account</button></a></div>
 </form>
