@@ -10,22 +10,22 @@
             <p class="card-text">{{zip}}</p>
             <a
               href="parkings/edit/{{_id}}"
-              id="editParkings"
+              id="editParkings_{{_id}}"
               class="btn btn-primary"
             >Edit</a>
             <a
               onclick="return confirm('Are you sure?')"
               href="parkings/delete/{{_id}}"
-              id="getParkingsDelete"
+              id="getParkingsDelete_{{_id}}"
               class="btn btn-danger"
             >Delete</a>
 
-            <input
+            {{!-- <input
               type="hidden"
               id="parkingID"
               name="parkingID"
               value={{_id}}
-            />
+            /> --}}
           </div>
         </div>
       </div>

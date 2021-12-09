@@ -10,6 +10,16 @@ async function get(username) {
   });
   return user;
 }
+//added by sv
+function checkAlphanumerics(phrase) {
+  let str = phrase;
+  const checker = /[^a-z0-9]/g;
+  if (checker.test(str)) {
+    return true;
+  }
+
+  return false;
+}
 
 function checkIsProperString(val) {
   if (!val) {
@@ -25,16 +35,6 @@ function checkIsProperString(val) {
   if (val.trim().length == 0) {
     throw `String is only spaces`;
   }
-}
-
-function checkAlphanumerics(phrase) {
-  let str = phrase;
-  const checker = /[^a-z0-9]/g;
-  if (checker.test(str)) {
-    return true;
-  }
-
-  return false;
 }
 
 function validateID(id) {
@@ -370,28 +370,11 @@ let exportedMethods = {
     }
     return result;
   },
-  //commented password function error
-  //   async checkUser(username, password) {
-  //     checkIsProperString(username);
-  //     username = username.toLowerCase();
-  //     if (username.trim().length <= 4) {
-  //       throw `Please chose a longer username`;
-  //     }
-  //     if (password.trim().length <= 6) {
-  //       throw `Please chose a longer password`;
-  //     }
-  //     checkIsProperString(password);
-  //     let user = await get(username);
-  //     if (user === null) {
-  //       throw `Username not found`;
-  //     }
-  //     let compare = await bcrypt.compare(password, user.password);
-  //     if (compare) {
-  //       return user;
-  //     } else throw `Incorrect Password`;
-  //   },
 
+  //modified by sv user checks for password equal to 6 not accepting
   async checkUser(username, password) {
+    checkIsProperString(username);
+    username = username.toLowerCase();
     if (typeof username != "string" || typeof password != "string")
       throw "Error: Username or password must be string";
     if (username.length === 0 || username.length < 4)
@@ -400,6 +383,7 @@ let exportedMethods = {
     if (checkAlphanumerics(username)) {
       throw "Error: Username only accepts alphanumerics";
     }
+    checkIsProperString(password);
     if (password.trim().length === 0 || password.length < 6)
       throw "Error: Password cannot be blanks or length should be atleast 6 chars long";
     else if (/\s/.test(password)) throw "Error: Password cannot contain spaces";

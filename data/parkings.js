@@ -1,7 +1,40 @@
 const { ObjectId } = require("bson");
-const { FindCursor, ConnectionCheckOutFailedEvent } = require("mongodb");
 const mongoCollections = require("../config/mongoCollections");
 const parkings = mongoCollections.parkings;
+const { default: axios } = require("axios");
+const settings = require("../config/settings.json");
+const { json } = require("body-parser");
+const apikey = settings.apikey;
+const geocodingKey = settings.geocodingKey;
+
+//get distance from google
+async function getDistance(p1, p2) {
+  const { data } = await axios
+    .get(
+      "https://maps.googleapis.com/maps/api/distancematrix/json?origins=Washington%2C%20DC&destinations=New%20York%20City%2C%20NY&units=imperial&key=" +
+        apikey +
+        ""
+    )
+    .catch(function (error) {
+      throw "Error: " + error;
+    });
+  return JSON.stringify(data);
+}
+
+//geocoding api
+async function getcodes(address) {
+  const params = {
+    access_key: geocodingKey,
+    query: address,
+  };
+
+  const { data } = await axios
+    .get("http://api.positionstack.com/v1/forward", { params })
+    .catch((error) => {
+      throw error;
+    });
+  return data;
+}
 
 //get parkings by city/state/zipcode - Dashboard Route
 async function getParkingsByCityStateZip(
@@ -25,7 +58,7 @@ async function getParkingsByCityStateZip(
 
   //state validator+
   if (state != "") {
-    if (stateList.indexOf(state) == -1) {
+    if (stateList.indexOf(state.toUpperCase()) == -1) {
       throw "State not found";
     }
   }
@@ -357,9 +390,9 @@ function validate(
   //parkingtype validator
   if (
     !parkingType.toLowerCase() === "open" ||
-    !parkingType.toLowerCase() === "close"
+    !parkingType.toLowerCase() === "closed"
   ) {
-    throw "Parking type only accepts open and close as values";
+    throw "Parking type only accepts open and closed as values";
   }
 }
 
@@ -452,4 +485,6 @@ module.exports = {
   getParkingsOfLister,
   getParkingsByCityStateZip,
   getParkingbyUser,
+  getDistance,
+  getcodes,
 };

@@ -26,6 +26,14 @@ const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   if (req.url == "/parkings/update/") {
     req.method = "PUT";
   }
+
+  if (req.url == "/reviews/updateReview/") {
+    req.method = "PUT";
+  }
+
+  if(req.url.startsWith("/reviews/deleteReview/")) {
+    req.method = "DELETE";
+  }
   // let the next middleware run:
   next();
 };
@@ -70,6 +78,27 @@ app.use(function (req, res, next) {
       userStatus +
       ")"
   );
+  next();
+});
+
+app.use("/listings/bookListing/:id", (req,res,next) => {
+  // if (req.session.user) {
+    req.method = 'put';
+    next();
+  // } else {
+  //   return res.redirect('/users/login');
+  // }
+});
+
+app.use("/listings/updateListingData/:id", (req,res,next) => {
+  req.method = 'put';
+  console.log(req.body);
+  next();
+});
+
+app.use("/listings/removeListing/:id", (req,res,next) => {
+  req.method = 'delete';
+  console.log(req.body);
   next();
 });
 

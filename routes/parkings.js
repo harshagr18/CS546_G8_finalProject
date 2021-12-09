@@ -3,6 +3,7 @@ const router = express.Router();
 const { ObjectId } = require("bson");
 const parkingsData = require("../data/parkings");
 const path = require("path");
+const sessionStorage = require("sessionstorage");
 
 //added by sv
 
@@ -35,6 +36,7 @@ const upload = multer({
 //get the lister id
 router.get("/", async (req, res) => {
   try {
+
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
@@ -98,23 +100,39 @@ router.get("/edit/:id", async (req, res) => {
       req.params.id
     );
 
-    let option = {};
-    let arraytypes = [...getData.vehicleType];
-    for (let i = 0; i < vehicleType.length; i++) {
-      if (vehicleType[i] == arraytypes[i]) {
-        option[getData.vehicleType[i]] = true;
+    let optionVehicleType = "";
+    vehicleType.forEach((x) => {
+      if (getData.vehicleType.includes(x)) {
+        optionVehicleType += `<option selected>${x}</option>`;
       } else {
-        option[vehicleType[i]] = false;
+        optionVehicleType += `<option>${x}</option>`;
       }
-    }
+    });
+    let optionStateList = "";
+    stateList.forEach((x) => {
+      if (getData.state.includes(x)) {
+        optionStateList += `<option selected>${x}</option>`;
+      } else {
+        optionStateList += `<option>${x}</option>`;
+      }
+    });
 
-    console.log(option);
+    let optionParkingType = "";
+    let parkingTypeArray = ["open", "closed"];
+    parkingTypeArray.forEach((x) => {
+      if (getData.parkingType.includes(x)) {
+        optionParkingType += `<option selected>${x}</option>`;
+      } else {
+        optionParkingType += `<option>${x}</option>`;
+      }
+    });
+
     res.render("pages/parkings/editParkings", {
       title: "Edit Parking",
-      states: stateList,
+      states: optionStateList,
+      parkingtype: optionParkingType,
+      vehicleType: optionVehicleType,
       data: getData,
-      parkingType: getData.parkingType,
-      vehicleType: option,
       error: false,
     });
   } catch (error) {
@@ -128,6 +146,7 @@ router.get("/edit/:id", async (req, res) => {
 
 //get parkings
 router.get("/:id", async (req, res) => {
+  console.log("parking id: ",req.params.id);
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
     return;
@@ -143,9 +162,14 @@ router.get("/:id", async (req, res) => {
 
   try {
     const getData = await parkingsData.getParking(req.params.id);
-    res.json(getData);
+    res.render("pages/parkings/parkingDetails", {
+      parkdata: getData,
+      title: "Parking",
+      isReviewer: true,
+      userLoggedIn: true
+    });
   } catch (error) {
-    res.status(404).json({ message: "Data not found " });
+    res.status(404).json({ message: error });
   }
 });
 
@@ -186,7 +210,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
   }
 
   try {
-    const {
+    let {
       address,
       city,
       state,
@@ -216,6 +240,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
+
     const listerId = req.session.user.userId;
     let validListerId = validate(listerId);
     if (!validListerId) {
@@ -225,9 +250,23 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       return;
     }
 
-    let parkingImg = !req.file.path
-      ? "public\\images\\no_image.jpg"
-      : req.file.path;
+    let parkingImg = !req.file ? "public\\images\\no_image.jpg" : req.file.path;
+
+    //Get geolocation information
+    let geoAddress =
+      parkingPostData.address +
+      "," +
+      parkingPostData.city +
+      "," +
+      parkingPostData.state +
+      "," +
+      "USA";
+
+    const geocodes = await parkingsData.getcodes(geoAddress);
+
+    geocodes.data.forEach((x) => {
+      (longitude = x.longitude), (latitude = x.latitude);
+    });
 
     const postParkings = await parkingsData.createParkings(
       listerId,
@@ -236,8 +275,8 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       city.toLowerCase(),
       state.toUpperCase(),
       zip,
-      longitude,
-      latitude,
+      longitude.toString(),
+      latitude.toString(),
       category,
       parkingType.toLowerCase()
     );
@@ -247,7 +286,6 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       success: true,
     });
     return;
-    //return res.status(200).json(postParkings);
   } catch (e) {
     res.status(500).json({ error: e });
   }
@@ -264,7 +302,10 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     return;
   }
   if (!req.file) {
-    updatedData.parkingImg = updatedData.parkingImghidden;
+    updatedData.parkingImg =
+      updatedData.parkingImghidden == ""
+        ? "public\\images\\no_image.jpg"
+        : updatedData.parkingImghidden;
   } else {
     updatedData.parkingImg = req.file.path;
   }
@@ -312,7 +353,30 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     });
     return;
   }
+  try {
+    let geoAddress =
+      updatedData.address +
+      "," +
+      updatedData.city +
+      "," +
+      updatedData.state +
+      "," +
+      "USA";
 
+    const geocodes = await parkingsData.getcodes(geoAddress);
+
+    geocodes.data.forEach((x) => {
+      (updatedData.longitude = x.longitude),
+        (updatedData.latitude = x.latitude);
+    });
+  } catch (error) {
+    res.status(500).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      error: true,
+      errormsg: "Internal Server Error",
+    });
+    return;
+  }
   try {
     const updatedParking = await parkingsData.updateParking(
       updatedData.parkingId,
@@ -322,8 +386,8 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       updatedData.city.toLowerCase(),
       updatedData.state.toUpperCase(),
       updatedData.zip,
-      updatedData.longitude,
-      updatedData.latitude,
+      updatedData.longitude.toString(),
+      updatedData.latitude.toString(),
       updatedData.category,
       updatedData.parkingType.toLowerCase()
     );
@@ -336,19 +400,32 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       "minivan",
       "pickup truck",
     ];
-    const filteredArray = vehicleType.filter((value) =>
-      updatedParking.category.includes(value)
-    );
-    let option = {};
 
+    let optionVehicleType = "";
     vehicleType.forEach((x) => {
-      filteredArray.forEach((y) => {
-        if (x == y) {
-          option[x] = true;
-        } else {
-          option[x] = false;
-        }
-      });
+      if (updatedParking.vehicleType.includes(x)) {
+        optionVehicleType += `<option selected>${x}</option>`;
+      } else {
+        optionVehicleType += `<option>${x}</option>`;
+      }
+    });
+    let optionStateList = "";
+    stateList.forEach((x) => {
+      if (updatedParking.state.includes(x)) {
+        optionStateList += `<option selected>${x}</option>`;
+      } else {
+        optionStateList += `<option>${x}</option>`;
+      }
+    });
+
+    let optionParkingType = "";
+    let parkingTypeArray = ["open", "closed"];
+    parkingTypeArray.forEach((x) => {
+      if (updatedParking.parkingType.includes(x)) {
+        optionParkingType += `<option selected>${x}</option>`;
+      } else {
+        optionParkingType += `<option>${x}</option>`;
+      }
     });
 
     res.render("pages/parkings/editParkings", {
@@ -356,8 +433,9 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       error: false,
       data: updatedParking,
       success: true,
-      parkingType: updatedParking.parkingType,
-      vehicleType: option,
+      states: optionStateList,
+      parkingtype: optionParkingType,
+      vehicleType: optionVehicleType,
     });
   } catch (e) {
     res.status(500).json({ error: e });
@@ -475,9 +553,9 @@ function validateArguments(
   //parkingtype validator
   if (
     !parkingType.toLowerCase() === "open" ||
-    !parkingType.toLowerCase() === "close"
+    !parkingType.toLowerCase() === "closed"
   ) {
-    throw "Parking type only accepts open and close as values";
+    throw "Parking type only accepts open and closed as values";
   }
 }
 const stateList = [

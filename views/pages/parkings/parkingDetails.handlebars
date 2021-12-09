@@ -1,0 +1,95 @@
+<main>
+    <div class="container" id ="sticky">
+        <img src={{parkingImg}} class="card-img-top" alt="Parking Image" />
+        <div class="form-group col align-self-start" id="sticky">
+            <p>Address</p>
+            <p class="address">{{parkdata.address}}</p>
+            <p>City</p>
+            <p class="city">{{parkdata.city}}</p>
+            <p>Zip</p>
+            <p class="zip">{{parkdata.zip}}</p>
+            <p>OverallRating</p>
+            <p class="overallRating">{{parkdata.overallRating}}</p>
+        </div>
+        
+        <div class="card-wide" id="right">
+        <h3>Reviews</h3>
+        {{#each parkdata.parkingReviews}}
+            <div class = "reviews">
+                <div class = "card-full">
+                    <div class="reviewHeading">
+                        <div class="reviewerRating">
+                            <h5 class = "rating">Rating: {{rating}}</h5>
+                        </div>
+                    </div>
+                    <p>{{comment}}</p>
+
+                    {{#if ../this.isReviewer}}
+                        <div class="dropdown">
+                            <button class="dropbtn">Options</button>
+                            <div class="dropdown-content">
+                                <p><a href="../reviews/editReview/{{_id}}">Edit Review</a></p>
+                                <p><a onclick="return confirm('Are you sure?')" href="../reviews/deleteReview/{{_id}}">Delete Review</a></p>
+                            </div>
+                        </div>
+                    {{/if}}
+                </div>
+            </div>
+        {{/each}}
+    </div>
+
+    {{#if userLoggedIn}}
+        {{#if currentUserData.reviewedRestaurantPage}}
+            <button class="open-button" onclick="openAlert()">Post a Review</button>
+        {{else}}
+            <button class="open-button" onclick="openForm()">Post a Review</button>
+        {{/if}}
+    {{else}}
+        <button class="open-button" onclick="openLoginForm()">Post a Review</button>
+    {{/if}}
+    
+    <div class="form-popup" id="myForm">
+        <h2>Post a Review</h2>
+        <form id="login-form" name ="loginForm" class="form-container" action="/reviews/{{parkdata._id}}" method="POST">
+            <label>
+                <input type="date" id="dateOfReview" name="dateOfReview" required/>
+            </label>
+            <label>
+                <input type="text" name="rating" id="rating" class="inputFields" placeholder="Enter your Rating" required/> 
+            </label>
+            <label>
+                <input type="text" name="comment" id="comment" class="inputFields" placeholder="Enter your Review" required/>
+            </label><br>
+            <button type="submit" class="btn btn-primary">Post!</button>
+            <button type="button" class="btn btn-primary" onclick="closeForm()">Cancel</button>
+        </form>
+    </div>
+    <div class="form-popup" id="myLoginForm">
+        <h2>Login to post a review!</h2>
+        <form id="login-form" name ="loginForm" class="form-container" action="javascript:void(0);">
+            <button type="submit" class="btn" id="routeToLogin">Login</button>
+            <button type="button" class="btn cancel" onclick="closeLoginForm()">Cancel</button>
+        </form>
+    </div>
+    <div class="form-popup" id="myAlert">
+        <p>You have already Posted a Review! <br> You can edit your Review Above.</p>
+        <form id="login-form" name ="loginForm" class="form-container" action="javascript:void(0);">
+            <button type="button" class="btn cancel" onclick="closeAlert()">Close</button>
+        </form>
+    </div>
+    <div>
+        {{#if hasError}}
+        <div class="error">
+            <ul>
+                {{#each error}}
+                    <li>
+                        {{this}}
+                    </li>
+                {{/each}}
+            </ul>
+        </div>
+        {{/if}}
+    </div>
+    
+    <script src="../../../public/js/parkingReviews.js"></script>
+</main>
