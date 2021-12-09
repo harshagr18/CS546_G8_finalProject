@@ -66,7 +66,6 @@ router.get("/create", async (req, res) => {
     // }
     res.render("pages/parkings/createParkings", {
       partial: "emptyPartial",
-
       title: "Create Parking",
       states: stateList,
     });
@@ -130,8 +129,7 @@ router.get("/edit/:id", async (req, res) => {
     });
 
     res.render("pages/parkings/editParkings", {
-      partial: "emptyPartial",
-
+      partial: "editParkings",
       title: "Edit Parking",
       states: optionStateList,
       parkingtype: optionParkingType,
@@ -141,8 +139,7 @@ router.get("/edit/:id", async (req, res) => {
     });
   } catch (error) {
     res.status(404).render("pages/parkings/editParkings", {
-      partial: "emptyPartial",
-
+      partial: "editParkings",
       title: "Edit Parking",
       error: true,
       errormsg: "No data found",
@@ -203,14 +200,14 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     res.status(400).json({ error: "You must provide zip" });
     return;
   }
-  if (!parkingPostData.longitude) {
-    res.status(400).json({ error: "You must provide longitude" });
-    return;
-  }
-  if (!parkingPostData.latitude) {
-    res.status(400).json({ error: "You must provide latitude" });
-    return;
-  }
+  // if (!parkingPostData.longitude) {
+  //   res.status(400).json({ error: "You must provide longitude" });
+  //   return;
+  // }
+  // if (!parkingPostData.latitude) {
+  //   res.status(400).json({ error: "You must provide latitude" });
+  //   return;
+  // }
   if (!parkingPostData.category) {
     res.status(400).json({ error: "You must provide category" });
     return;
@@ -237,8 +234,8 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       city,
       state,
       zip,
-      longitude,
-      latitude,
+      // longitude,
+      // latitude,
       category,
       parkingType
     );
@@ -328,8 +325,8 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     !updatedData.city ||
     !updatedData.state ||
     !updatedData.zip ||
-    !updatedData.longitude ||
-    !updatedData.latitude ||
+    // !updatedData.longitude ||
+    // !updatedData.latitude ||
     !updatedData.category ||
     !updatedData.parkingType
   ) {
@@ -342,8 +339,8 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     updatedData.city,
     updatedData.state,
     updatedData.zip,
-    updatedData.longitude,
-    updatedData.latitude,
+    // updatedData.longitude,
+    // updatedData.latitude,
     updatedData.category,
     updatedData.parkingType
   );
@@ -361,7 +358,6 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   } catch (e) {
     res.status(404).render("pages/parkings/editParkings", {
       partial: "editParkings",
-
       title: "Edit Parking",
       error: true,
       errormsg: e,
@@ -387,8 +383,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   } catch (error) {
     res.status(500).render("pages/parkings/editParkings", {
       title: "Edit Parking",
-      partial: "editPartial",
-
+      partial: "editParkings",
       error: true,
       errormsg: "Internal Server Error",
     });
@@ -446,7 +441,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     });
 
     res.render("pages/parkings/editParkings", {
-      partial: "editPartial",
+      partial: "editParkings",
       title: "Edit Parking",
       error: false,
       data: updatedParking,
@@ -492,7 +487,6 @@ router.delete("/delete/:id", async (req, res) => {
     const deleteData = await parkingsData.deleteParking(req.params.id);
     res.render("pages/parkings/getParkings", {
       partial: "emptyPartial",
-
       title: "My Parkings",
       success: true,
       successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
@@ -518,8 +512,8 @@ function validateArguments(
   city,
   state,
   zip,
-  longitude,
-  latitude,
+  // longitude,
+  // latitude,
   category,
   parkingType
 ) {
