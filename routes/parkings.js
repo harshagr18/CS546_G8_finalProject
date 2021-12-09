@@ -33,26 +33,9 @@ const upload = multer({
   storage: storage,
 });
 
-//geocoding api
-// const axios = require("axios");
-// const params = {
-//   access_key: "YOUR_ACCESS_KEY",
-//   query: "1600 Pennsylvania Ave NW",
-// };
-
-// axios
-//   .get("https://api.positionstack.com/v1/forward", { params })
-//   .then((response) => {
-//     console.log(response.data);
-//   })
-//   .catch((error) => {
-//     console.log(error);
-//   });
-
 //get the lister id
 router.get("/", async (req, res) => {
   try {
-
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
@@ -67,6 +50,7 @@ router.get("/", async (req, res) => {
     //username calls user table and fetches lister id to get parkings from logged in user
     const getData = await parkingsData.getParkingsOfLister(listerId);
     res.render("pages/parkings/getParkings", {
+      partial: "emptyPartial",
       parkdata: getData,
       title: "My Parkings",
     });
@@ -81,6 +65,8 @@ router.get("/create", async (req, res) => {
     //   return res.redirect("/private");
     // }
     res.render("pages/parkings/createParkings", {
+      partial: "emptyPartial",
+
       title: "Create Parking",
       states: stateList,
     });
@@ -144,6 +130,8 @@ router.get("/edit/:id", async (req, res) => {
     });
 
     res.render("pages/parkings/editParkings", {
+      partial: "emptyPartial",
+
       title: "Edit Parking",
       states: optionStateList,
       parkingtype: optionParkingType,
@@ -153,6 +141,8 @@ router.get("/edit/:id", async (req, res) => {
     });
   } catch (error) {
     res.status(404).render("pages/parkings/editParkings", {
+      partial: "emptyPartial",
+
       title: "Edit Parking",
       error: true,
       errormsg: "No data found",
@@ -162,7 +152,7 @@ router.get("/edit/:id", async (req, res) => {
 
 //get parkings
 router.get("/:id", async (req, res) => {
-  console.log("parking id: ",req.params.id);
+  console.log("parking id: ", req.params.id);
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
     return;
@@ -179,11 +169,16 @@ router.get("/:id", async (req, res) => {
   try {
     const getData = await parkingsData.getParking(req.params.id);
     // if (global && global.sessionStorage) {
-      sessionStorage.setItem("parkingId", getData._id);
+    sessionStorage.setItem("parkingId", getData._id);
     // }
-    
-    // res.json(getData);
-    res.render("pages/parkings/listings", {getData: getData, title: "Listings" })
+    res.render("pages/parkings/parkingDetails", {
+      partial: "emptyPartial",
+
+      parkdata: getData,
+      title: "Parking",
+      isReviewer: true,
+      userLoggedIn: true,
+    });
   } catch (error) {
     res.status(404).json({ message: error });
   }
@@ -226,7 +221,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
   }
 
   try {
-    const {
+    let {
       address,
       city,
       state,
@@ -256,6 +251,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
+
     const listerId = req.session.user.userId;
     let validListerId = validate(listerId);
     if (!validListerId) {
@@ -267,6 +263,22 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
 
     let parkingImg = !req.file ? "public\\images\\no_image.jpg" : req.file.path;
 
+    //Get geolocation information
+    let geoAddress =
+      parkingPostData.address +
+      "," +
+      parkingPostData.city +
+      "," +
+      parkingPostData.state +
+      "," +
+      "USA";
+
+    const geocodes = await parkingsData.getcodes(geoAddress);
+
+    geocodes.data.forEach((x) => {
+      (longitude = x.longitude), (latitude = x.latitude);
+    });
+
     const postParkings = await parkingsData.createParkings(
       listerId,
       parkingImg,
@@ -274,18 +286,19 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       city.toLowerCase(),
       state.toUpperCase(),
       zip,
-      longitude,
-      latitude,
+      longitude.toString(),
+      latitude.toString(),
       category,
       parkingType.toLowerCase()
     );
     res.render("pages/parkings/createParkings", {
+      partial: "emptyPartial",
+
       title: "Create Parking",
       states: stateList,
       success: true,
     });
     return;
-    //return res.status(200).json(postParkings);
   } catch (e) {
     res.status(500).json({ error: e });
   }
@@ -347,13 +360,40 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     );
   } catch (e) {
     res.status(404).render("pages/parkings/editParkings", {
+      partial: "editParkings",
+
       title: "Edit Parking",
       error: true,
       errormsg: e,
     });
     return;
   }
+  try {
+    let geoAddress =
+      updatedData.address +
+      "," +
+      updatedData.city +
+      "," +
+      updatedData.state +
+      "," +
+      "USA";
 
+    const geocodes = await parkingsData.getcodes(geoAddress);
+
+    geocodes.data.forEach((x) => {
+      (updatedData.longitude = x.longitude),
+        (updatedData.latitude = x.latitude);
+    });
+  } catch (error) {
+    res.status(500).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      partial: "editPartial",
+
+      error: true,
+      errormsg: "Internal Server Error",
+    });
+    return;
+  }
   try {
     const updatedParking = await parkingsData.updateParking(
       updatedData.parkingId,
@@ -363,8 +403,8 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       updatedData.city.toLowerCase(),
       updatedData.state.toUpperCase(),
       updatedData.zip,
-      updatedData.longitude,
-      updatedData.latitude,
+      updatedData.longitude.toString(),
+      updatedData.latitude.toString(),
       updatedData.category,
       updatedData.parkingType.toLowerCase()
     );
@@ -406,6 +446,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     });
 
     res.render("pages/parkings/editParkings", {
+      partial: "editPartial",
       title: "Edit Parking",
       error: false,
       data: updatedParking,
@@ -450,6 +491,8 @@ router.delete("/delete/:id", async (req, res) => {
 
     const deleteData = await parkingsData.deleteParking(req.params.id);
     res.render("pages/parkings/getParkings", {
+      partial: "emptyPartial",
+
       title: "My Parkings",
       success: true,
       successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,

@@ -15,6 +15,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const handlebarsInstance = exphbs.create({
+  defaultLayout: "main",
+  // Specify helpers which are only registered on this instance.
+  helpers: {
+    asJSON: (obj, spacing) => {
+      if (typeof spacing === "number")
+        return new Handlebars.SafeString(JSON.stringify(obj, null, spacing));
+
+      return new Handlebars.SafeString(JSON.stringify(obj));
+    },
+  },
+  partialsDir: ["views/partials/"],
+});
+
 const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   // If the user posts to the server with a property called _method, rewrite the request's method
   // To be that method; so if they post _method=PUT you can now allow browsers to POST to a route that gets
@@ -23,16 +37,16 @@ const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   //   req.method = req.body._method;
   //   delete req.body._method;
   // }
-
-  if (
-    req.url == "/users/updateUser/61a842ec7718a0fc70c9d328" &&
-    req.method == "POST"
-  ) {
+  if (req.url == "/parkings/update/") {
     req.method = "PUT";
   }
 
-  if (req.url == "/parkings/update/") {
+  if (req.url == "/reviews/updateReview/") {
     req.method = "PUT";
+  }
+
+  if (req.url.startsWith("/reviews/deleteReview/")) {
+    req.method = "DELETE";
   }
   // let the next middleware run:
   next();
@@ -81,23 +95,23 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use("/listings/bookListing/:id", (req,res,next) => {
+app.use("/listings/bookListing/:id", (req, res, next) => {
   // if (req.session.user) {
-    req.method = 'put';
-    next();
+  req.method = "put";
+  next();
   // } else {
   //   return res.redirect('/users/login');
   // }
 });
 
-app.use("/listings/updateListingData/:id", (req,res,next) => {
-  req.method = 'put';
+app.use("/listings/updateListingData/:id", (req, res, next) => {
+  req.method = "put";
   console.log(req.body);
   next();
 });
 
-app.use("/listings/removeListing/:id", (req,res,next) => {
-  req.method = 'delete';
+app.use("/listings/removeListing/:id", (req, res, next) => {
+  req.method = "delete";
   console.log(req.body);
   next();
 });
@@ -133,7 +147,7 @@ app.use("/", (req, res, next) => {
 app.use(rewriteUnsupportedBrowserMethodsPut);
 app.use(rewriteUnsupportedBrowserMethodsDelete);
 
-app.engine("handlebars", exphbs.engine({ defaultLayout: "main" }));
+app.engine("handlebars", handlebarsInstance.engine);
 app.set("view engine", "handlebars");
 
 configRoutes(app);

@@ -3,5 +3,10 @@
     "serverUrl": "mongodb://localhost:27017/",
     "database": "CS546_G8"
   },
+<<<<<<< HEAD
   "apikey": "AIzaSyAgiEctdZoEnqGTU9k2ewFp_qvZmFYl7h"
+=======
+  "apikey": "AIzaSyAgiEctdZoEnqGTU9k2ewFp_qvZmFYl7hM",
+  "geocodingKey": "5fc9eb24092f2d9673b7c34ac5206b30"
+>>>>>>> 851323b3af987e2ae5a2d16d4a7696c1b34a958f
 }
