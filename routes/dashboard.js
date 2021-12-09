@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
     }
     res.render("pages/dashboard", {
       title: "My Parking Assistant",
-      session: req.session.user,
+      session: req.session.user.userId,
       authenticated: authenticated,
       states: stateList,
       partial: "emptyPartial",
@@ -35,7 +35,7 @@ router.post("/search", async (req, res) => {
   if (!citySearch && !zipSearch && !stateSearch) {
     res.status(400).render("pages/dashboard", {
       title: "My Parking Assistant",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: "Expected at least one parameter",
       partial: "emptyPartial",
@@ -47,7 +47,7 @@ router.post("/search", async (req, res) => {
   if (validateString != undefined) {
     res.status(400).render("pages/dashboard", {
       title: "My Parking Assistant",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: validateString,
       partial: "emptyPartial",
@@ -82,7 +82,7 @@ router.post("/search", async (req, res) => {
 
     res.render("pages/dashboard", {
       listingsData: getData,
-      session: req.session.user,
+      session: req.session.user.userId,
       title: "My Parking Assistant",
       citySearch: citySearch,
       stateSearch: stateSearch,
