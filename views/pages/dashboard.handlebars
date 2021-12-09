@@ -27,18 +27,8 @@
           name="zipSearch"
           value="{{zipSearch}}"
         />
-
-        {{!-- <input
-          class="form-control mr-sm-2"
-          type="text"
-          placeholder="Search by state"
-          aria-label="Zip Code"
-          id="stateSearch"
-          name="stateSearch"
-          value="{{stateSearch}}"        />
- --}}
         <select id="stateSearch" name="stateSearch" class="form-control">
-          <option selected>Select State...</option>
+          <option selected>Select State</option>
 
           {{#each states}}
             <option>{{this}}</option>
@@ -85,7 +75,7 @@
             <a href="/parkings/{{_id}}" class="btn btn-primary">Go Here</a>
             {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
             <a href="/bookParking" class="btn btn-primary">Book</a>
-            {{!-- <a href="/bookParking" class="btn btn-primary">Book</a> --}}
+            {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
             <input
               type="hidden"
               id="listingId_{{_id}}"

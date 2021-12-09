@@ -13,6 +13,7 @@ router.get("/", (req, res) => {
       title: "My Parking Assistant",
       authenticated: authenticated,
       states: stateList,
+      partial: "emptyPartial",
     });
   } catch (error) {
     res.status(404).json({ message: "Page not found" });
@@ -24,6 +25,9 @@ router.post("/search", async (req, res) => {
   let citySearch = req.body.citySearch;
   let zipSearch = req.body.zipSearch;
   let stateSearch = req.body.stateSearch;
+  if (stateSearch === "Select State") {
+    stateSearch = "";
+  }
   const apikey = settings.apikey;
 
   let hasErrors = false;
@@ -32,9 +36,22 @@ router.post("/search", async (req, res) => {
       title: "My Parking Assistant",
       hasErrors: true,
       error: "Expected at least one parameter",
+      partial: "emptyPartial",
     });
     return;
   }
+
+  let validateString = validateArguments(citySearch, stateSearch, zipSearch);
+  if (validateString != undefined) {
+    res.status(400).render("pages/dashboard", {
+      title: "My Parking Assistant",
+      hasErrors: true,
+      error: validateString,
+      partial: "emptyPartial",
+    });
+    return;
+  }
+
   try {
     const getData = await parkingsData.getParkingsByCityStateZip(
       citySearch,
@@ -66,12 +83,46 @@ router.post("/search", async (req, res) => {
       citySearch: citySearch,
       stateSearch: stateSearch,
       zipSearch: zipSearch,
+      partial: "emptyPartial",
     });
     return;
   } catch (error) {
     res.status(404).json({ message: "Page not found" });
   }
 });
+
+function validateArguments(city, state, zip) {
+  const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
+
+  if (
+    typeof city != "string" ||
+    typeof state != "string" ||
+    typeof zip != "string"
+  ) {
+    return "Parameter of defined type not found";
+  }
+  // if (
+  //   city.trim().length === " " ||
+  //   state.trim().length === 0 ||
+  //   zip.trim().length === 0
+  // ) {
+  //   return "Parameter cannot be blank spaces or empty values";
+  // }
+
+  //state validator
+
+  if (state != "") {
+    if (stateList.indexOf(state) == -1) {
+      return "State not found";
+    }
+  }
+
+  //zip code validator
+  if (zip != "")
+    if (!zipRegex.test(zip)) {
+      return "Incorrect zip code";
+    }
+}
 
 const stateList = [
   "AL",

@@ -21,3 +21,7 @@ function openAlert() {
 function closeAlert() {
   document.getElementById("myAlert").style.display = "none";
 }
+
+function imgError() {
+  event.src = "/public/images/no-image.jpg";
+}
