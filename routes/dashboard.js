@@ -12,6 +12,7 @@ router.get("/", (req, res) => {
     res.render("pages/dashboard", {
       title: "My Parking Assistant",
       authenticated: authenticated,
+      states: stateList,
     });
   } catch (error) {
     res.status(404).json({ message: "Page not found" });
@@ -71,5 +72,60 @@ router.post("/search", async (req, res) => {
     res.status(404).json({ message: "Page not found" });
   }
 });
+
+const stateList = [
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "DC",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "PR",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+];
 
 module.exports = router;
