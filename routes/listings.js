@@ -10,7 +10,10 @@ const sessionStorage = require("sessionstorage");
 
 router.get("/createListingPage", async (req, res) => {
   try {
-    res.render("pages/parkings/createListing", { partial: "emptyPartial" });
+    res.render("pages/parkings/createListing", {
+      partial: "emptyPartial",
+      session: req.session.user,
+    });
   } catch (e) {}
 });
 
@@ -57,6 +60,7 @@ router.post("/createListing", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", {
       partial: "emptyPartial",
+      session: req.session.user,
       error: e,
     });
     return;
@@ -79,11 +83,15 @@ router.post("/createListing", async (req, res) => {
     // }
     res.render("pages/parkings/createListing", {
       partial: "emptyPartial",
+      session: req.session.user,
       data: data,
       title: "Create Listing",
     });
   } catch (e) {
-    res.status(400).render("pages/parkings/createListing", { error: e });
+    res.status(400).render("pages/parkings/createListing", {
+      error: e,
+      session: req.session.user,
+    });
   }
 });
 

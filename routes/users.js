@@ -129,6 +129,7 @@ router.get("/updateUser/:id", async (req, res) => {
     getData = await userData.getUser(req.params.id.toString());
     res.render("pages/users/editUser", {
       title: "Edit Profile",
+      session: req.session.user,
       states: stateList,
       data: getData,
       partial: "emptyPartial",
@@ -161,6 +162,7 @@ router.post("/updateUser/:id", async (req, res) => {
     console.log(e);
     res.status(400).render("pages/users/editUser", {
       title: "Edit Profile",
+      session: req.session.user,
       error: e,
       partial: "emptyPartial",
     });
@@ -200,6 +202,7 @@ router.get("/:id", async (req, res) => {
     res.render("pages/users/getUsers", {
       user: user,
       title: "My Profile",
+      session: req.session.user,
       parkings: parkings,
       partial: "emptyPartial",
     });

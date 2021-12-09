@@ -130,6 +130,7 @@ router.get("/editReview/:id", async (req, res) => {
     const reviewDetails = await reviewData.getReview(req.params.id);
     res.status(200).render("pages/reviews/editReview", {
       partial: "emptyPartial",
+      session: req.session.user,
       reviewId: req.params.id,
       review: reviewDetails.comment,
       rating: reviewDetails.rating,
