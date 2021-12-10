@@ -54,6 +54,7 @@ router.get("/", async (req, res) => {
       parkdata: getData,
       session: req.session.user.userId,
       title: "My Parkings",
+      states: stateList,
     });
   } catch (error) {
     res.status(404).json({ message: "Page not found" });
@@ -66,7 +67,7 @@ router.get("/create", async (req, res) => {
     //   return res.redirect("/private");
     // }
     res.render("pages/parkings/createParkings", {
-      partial: "emptyPartial",
+      partial: "createParking",
       session: req.session.user.userId,
       title: "Create Parking",
       states: stateList,
@@ -293,7 +294,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       parkingType.toLowerCase()
     );
     res.render("pages/parkings/createParkings", {
-      partial: "emptyPartial",
+      partial: "createParking",
       session: req.session.user.userId,
       title: "Create Parking",
       states: stateList,

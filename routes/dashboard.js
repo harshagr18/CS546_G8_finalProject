@@ -39,6 +39,7 @@ router.post("/search", async (req, res) => {
       hasErrors: true,
       error: "Expected at least one parameter",
       partial: "emptyPartial",
+      states: stateList,
     });
     return;
   }
@@ -51,6 +52,7 @@ router.post("/search", async (req, res) => {
       hasErrors: true,
       error: validateString,
       partial: "emptyPartial",
+      states: stateList,
     });
     return;
   }
@@ -88,6 +90,7 @@ router.post("/search", async (req, res) => {
       stateSearch: stateSearch,
       zipSearch: zipSearch,
       partial: "emptyPartial",
+      states: stateList,
     });
     return;
   } catch (error) {

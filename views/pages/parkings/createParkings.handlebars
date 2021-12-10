@@ -1,8 +1,11 @@
 <div class="container">
+  <a href="/parkings" id="viewParkings" class="">View my parkings</a>
+
   <form
     method="POST"
     id="createParkingForm"
     action="/parkings/post"
+    onsubmit="createParkingValidation(event);"
     enctype="multipart/form-data"
   >
     <div class="form-row">
@@ -137,6 +140,8 @@
       Parking successfully created!
     </div>
   {{/if}}
-  <a href="/parkings" id="viewParkings" class="">View my parkings</a>
+
+  <div class="alert alert-danger error" id="uiError" role="alert">
+  </div>
 
 </div>
