@@ -143,3 +143,14 @@ input[type="password"] {
   box-sizing: border-box;
   border: 2px solid rgba(0, 0, 0, 0.02);
 }
+.star {
+  font-size: 50px;
+  position: absolute;
+  right: 5px;
+  bottom: 71px;
+}
+.rating {
+  position: absolute;
+  right: 29px;
+  bottom: 94px;
+}

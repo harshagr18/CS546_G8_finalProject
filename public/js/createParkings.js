@@ -67,7 +67,7 @@ const vehicleType = [
 ];
 const parkingType = ["open", "close"];
 
-function editParkingValidation(event) {
+function createParkingValidation(event) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   const addressRegex = /[A-Za-z0-9'\.\-\s\,]/;
   const cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
