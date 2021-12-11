@@ -100,18 +100,18 @@
               <span class="star">&#11088;</span>
               <span class="rating">{{overallRating}}</span>
 
-              <p class="card-text">{{zip}}</p>
-              <a href="/parkings/{{_id}}" class="btn btn-primary">Details</a>
-              {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
-              <a href="/bookParking" class="btn btn-success">Book</a>
-              {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
-              <input
-                type="hidden"
-                id="listingId_{{_id}}"
-                name="listingId"
-                value={{_id}}
-              />
-            </div>
+
+            <p class="card-text">{{zip}}</p>
+            <a href="/parkings/{{_id}}" class="btn btn-primary">Details</a>
+
+            <a href="/listings/getAllListing/{{_id}}" class="btn btn-success">Book</a>
+
+            <input
+              type="hidden"
+              id="listingId_{{_id}}"
+              name="listingId"
+              value={{_id}}
+            />
           </div>
         </div>
 
