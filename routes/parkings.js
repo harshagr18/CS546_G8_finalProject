@@ -578,7 +578,7 @@ function validateArguments(
     !parkingType.toLowerCase() === "open" ||
     !parkingType.toLowerCase() === "closed"
   ) {
-    throw "Parking type only accepts open and closed as values";
+    return "Parking type only accepts open and closed as values";
   }
 }
 const stateList = [

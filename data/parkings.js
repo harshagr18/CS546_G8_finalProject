@@ -40,67 +40,65 @@ async function getcodes(address) {
 async function getParkingsByCityStateZip(
   city,
   state,
-  zipcode = checkParameters()
+  zipcode,
+  parkingType = checkParameters()
 ) {
+  let q = {};
+  q["$and"] = [];
+
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   //string and trim length checks
   if (
     typeof zipcode != "string" ||
     typeof city != "string" ||
-    typeof state != "string"
+    typeof state != "string" ||
+    typeof parkingType != "string"
   ) {
     throw "Parameter of defined type not found";
   }
   //state validator
   if (city != "") {
     if (city.trim().length === 0) throw "City cannot be blanks";
+    else {
+      q["$and"].push({ city: new RegExp(city) });
+    }
   }
 
   //state validator+
   if (state != "") {
     if (stateList.indexOf(state.toUpperCase()) == -1) {
       throw "State not found";
+    } else {
+      q["$and"].push({ state: state });
     }
   }
-
-  //zip code validator
   if (zipcode != "") {
+    //zip code validator
     if (!zipRegex.test(zipcode)) {
       throw "Incorrect zip code";
+    } else {
+      q["$and"].push({ zipcode: zipcode });
     }
   }
-
-  const cityFilter = {
-    $or: [
-      {
-        city: new RegExp(city),
-      },
-      {
-        state: state,
-      },
-      {
-        zip: zipcode,
-      },
-    ],
-  };
-  const noCityFilter = {
-    $or: [
-      {
-        state: state,
-      },
-      {
-        zip: zipcode,
-      },
-    ],
-  };
+  //parking type validator
+  if (parkingType != "") {
+    if (
+      !parkingType.toLowerCase() === "open" ||
+      !parkingType.toLowerCase() === "closed"
+    ) {
+      throw "Parking type only accepts open and closed as values";
+    } else {
+      q["$and"].push({ parkingType: parkingType });
+    }
+  }
 
   const parkingCollection = await parkings();
   let listedParkings;
-  if (city != "") {
-    listedParkings = await parkingCollection.find(cityFilter).toArray();
-  } else {
-    listedParkings = await parkingCollection.find(noCityFilter).toArray();
-  }
+  //if (city != "") {
+  listedParkings = await parkingCollection.find(q).toArray();
+  //} else {
+  //  listedParkings = await parkingCollection.find(noCityFilter).toArray();
+  //}
 
   if (listedParkings === null) throw "No parking found";
   //parkingId._id = parkingId._id.toString();
