@@ -32,11 +32,15 @@
           name="stateSearch"
           class="form-control mr-sm-2"
         >
-          <option selected>Select State</option>
+          {{#if stateSelected}}
+            {{{selectedStates}}}
+          {{else}}
+            <option selected>Select State</option>
+            {{#each states}}
+              <option>{{this}}</option>
+            {{/each}}
 
-          {{#each states}}
-            <option>{{this}}</option>
-          {{/each}}
+          {{/if}}
 
         </select>
         <select
@@ -44,9 +48,14 @@
           name="parkingType"
           class="form-control mr-sm-2"
         >
-          <option value="" selected>Select Type</option>
-          <option>open</option>
-          <option>closed</option>
+          {{#if selectedPType}}
+            {{{selectedType}}}
+          {{else}}
+            <option selected>Select Type</option>
+            <option>open</option>
+            <option>closed</option>
+
+          {{/if}}
 
         </select>
 

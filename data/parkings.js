@@ -77,7 +77,7 @@ async function getParkingsByCityStateZip(
     if (!zipRegex.test(zipcode)) {
       throw "Incorrect zip code";
     } else {
-      q["$and"].push({ zipcode: zipcode });
+      q["$and"].push({ zip: zipcode });
     }
   }
   //parking type validator
@@ -91,7 +91,6 @@ async function getParkingsByCityStateZip(
       q["$and"].push({ parkingType: parkingType });
     }
   }
-
   const parkingCollection = await parkings();
   let listedParkings;
   //if (city != "") {
