@@ -11,6 +11,7 @@ router.get("/", (req, res) => {
     }
     res.render("pages/dashboard", {
       title: "My Parking Assistant",
+      session: req.session.user.userId,
       authenticated: authenticated,
       states: stateList,
       partial: "emptyPartial",
@@ -25,29 +26,46 @@ router.post("/search", async (req, res) => {
   let citySearch = req.body.citySearch;
   let zipSearch = req.body.zipSearch;
   let stateSearch = req.body.stateSearch;
+  let parkingType = req.body.parkingType;
+
   if (stateSearch === "Select State") {
     stateSearch = "";
   }
+  if (parkingType === "Select Type") {
+    parkingType = "";
+  }
   const apikey = settings.apikey;
+  if (apikey == "" || apikey == undefined) {
+    res.status(404).json({ message: "Google Maps API key not found" });
+  }
 
   let hasErrors = false;
   if (!citySearch && !zipSearch && !stateSearch) {
     res.status(400).render("pages/dashboard", {
       title: "My Parking Assistant",
+      session: req.session.user.userId,
       hasErrors: true,
       error: "Expected at least one parameter",
       partial: "emptyPartial",
+      states: stateList,
     });
     return;
   }
 
-  let validateString = validateArguments(citySearch, stateSearch, zipSearch);
+  let validateString = validateArguments(
+    citySearch,
+    stateSearch,
+    zipSearch,
+    parkingType
+  );
   if (validateString != undefined) {
     res.status(400).render("pages/dashboard", {
       title: "My Parking Assistant",
+      session: req.session.user.userId,
       hasErrors: true,
       error: validateString,
       partial: "emptyPartial",
+      states: stateList,
     });
     return;
   }
@@ -56,7 +74,8 @@ router.post("/search", async (req, res) => {
     const getData = await parkingsData.getParkingsByCityStateZip(
       citySearch,
       stateSearch,
-      zipSearch
+      zipSearch,
+      parkingType
     );
     //const distance = await parkingsData.getDistance("abc", "pqr");
     //console.log(distance);
@@ -77,13 +96,48 @@ router.post("/search", async (req, res) => {
         apikey;
     });
 
+    let stateSelected = false;
+    let selectedPType = false;
+    let optionStateList = "";
+    let optionParkingType = "";
+
+    //select states after selection
+    if (stateSearch != "") {
+      stateSelected = true;
+      stateList.forEach((x) => {
+        if (stateSearch.includes(x)) {
+          optionStateList += `<option selected>${x}</option>`;
+        } else {
+          optionStateList += `<option>${x}</option>`;
+        }
+      });
+    }
+    //select parking type after selection
+
+    if (parkingType != "") {
+      selectedPType = true;
+      let parkingTypeArray = ["open", "closed"];
+      parkingTypeArray.forEach((x) => {
+        if (parkingType.includes(x)) {
+          optionParkingType += `<option selected>${x}</option>`;
+        } else {
+          optionParkingType += `<option>${x}</option>`;
+        }
+      });
+    }
+
     res.render("pages/dashboard", {
       listingsData: getData,
+      session: req.session.user.userId,
       title: "My Parking Assistant",
       citySearch: citySearch,
-      stateSearch: stateSearch,
       zipSearch: zipSearch,
       partial: "emptyPartial",
+      states: stateList,
+      selectedStates: optionStateList,
+      selectedType: optionParkingType,
+      stateSelected: stateSelected,
+      selectedPType: selectedPType,
     });
     return;
   } catch (error) {
@@ -91,7 +145,7 @@ router.post("/search", async (req, res) => {
   }
 });
 
-function validateArguments(city, state, zip) {
+function validateArguments(city, state, zip, parkingType) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
 
   if (
@@ -122,6 +176,14 @@ function validateArguments(city, state, zip) {
     if (!zipRegex.test(zip)) {
       return "Incorrect zip code";
     }
+
+  //parkingtype validator
+  if (
+    !parkingType.toLowerCase() === "open" ||
+    !parkingType.toLowerCase() === "closed"
+  ) {
+    return "Parking type only accepts open and closed as values";
+  }
 }
 
 const stateList = [
