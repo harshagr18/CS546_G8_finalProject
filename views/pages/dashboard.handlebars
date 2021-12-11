@@ -27,12 +27,26 @@
           name="zipSearch"
           value="{{zipSearch}}"
         />
-        <select id="stateSearch" name="stateSearch" class="form-control">
+        <select
+          id="stateSearch"
+          name="stateSearch"
+          class="form-control mr-sm-2"
+        >
           <option selected>Select State</option>
 
           {{#each states}}
             <option>{{this}}</option>
           {{/each}}
+
+        </select>
+        <select
+          id="parkingType"
+          name="parkingType"
+          class="form-control mr-sm-2"
+        >
+          <option value="" selected>Select Type</option>
+          <option>open</option>
+          <option>closed</option>
 
         </select>
 
@@ -78,7 +92,7 @@
             <p class="card-text">{{zip}}</p>
             <a href="/parkings/{{_id}}" class="btn btn-primary">Go Here</a>
             {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
-            <a href="/bookParking" class="btn btn-primary">Book</a>
+            <a href="/bookParking" class="btn btn-success">Book</a>
             {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
             <input
               type="hidden"
