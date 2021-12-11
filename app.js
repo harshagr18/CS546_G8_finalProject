@@ -68,11 +68,7 @@ const rewriteUnsupportedBrowserMethodsDelete = (req, res, next) => {
   //   delete req.body._method;
   // }
 
-  if (req.url == "/listings/removeListing/") {
-    req.method = "DELETE";
-  }
-
-  if (req.url.startsWith("/parkings/delete/")) {
+  if (req.url.startsWith("/parkings/delete/") || req.url.startsWith("/listings/removeListing/")) {
     req.method = "DELETE";
   }
   next();
@@ -106,6 +102,7 @@ app.use(function (req, res, next) {
   next();
 });
 
+
 app.use("/", (req, res, next) => {
   if (
     !req.session.user &&
@@ -118,6 +115,21 @@ app.use("/", (req, res, next) => {
     res.redirect("/users/login");
     return;
   }
+  next();
+});
+
+app.use("/listings/bookListing/:id", (req,res,next) => {
+    req.method = 'put';
+    next();
+});
+
+app.use("/listings/updateListingData/:id", (req,res,next) => {
+  req.method = 'put';
+  next();
+});
+
+app.use("/listings/removeListing/:id", (req,res,next) => {
+  req.method = 'delete';
   next();
 });
 
