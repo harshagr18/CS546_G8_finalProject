@@ -196,7 +196,7 @@ async function createParkings(
     listerId: listerId,
     listing: [],
     parkingImg,
-    overallRating: 0.0,
+    overallRating: "0.0",
     address,
     city,
     zip,
