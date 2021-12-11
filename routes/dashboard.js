@@ -96,15 +96,48 @@ router.post("/search", async (req, res) => {
         apikey;
     });
 
+    let stateSelected = false;
+    let selectedPType = false;
+    let optionStateList = "";
+    let optionParkingType = "";
+
+    //select states after selection
+    if (stateSearch != "") {
+      stateSelected = true;
+      stateList.forEach((x) => {
+        if (stateSearch.includes(x)) {
+          optionStateList += `<option selected>${x}</option>`;
+        } else {
+          optionStateList += `<option>${x}</option>`;
+        }
+      });
+    }
+    //select parking type after selection
+
+    if (parkingType != "") {
+      selectedPType = true;
+      let parkingTypeArray = ["open", "closed"];
+      parkingTypeArray.forEach((x) => {
+        if (parkingType.includes(x)) {
+          optionParkingType += `<option selected>${x}</option>`;
+        } else {
+          optionParkingType += `<option>${x}</option>`;
+        }
+      });
+    }
+
     res.render("pages/dashboard", {
       listingsData: getData,
       session: req.session.user.userId,
       title: "My Parking Assistant",
       citySearch: citySearch,
-      stateSearch: stateSearch,
       zipSearch: zipSearch,
       partial: "emptyPartial",
       states: stateList,
+      selectedStates: optionStateList,
+      selectedType: optionParkingType,
+      stateSelected: stateSelected,
+      selectedPType: selectedPType,
     });
     return;
   } catch (error) {
