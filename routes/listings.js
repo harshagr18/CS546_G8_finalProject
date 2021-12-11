@@ -18,14 +18,14 @@ router.get("/createListingPage", async (req, res) => {
 router.post("/createListing", async (req, res) => {
   // Body empty issue resolved by removing enctype in form
   const requestBody = req.body;
-  let listerId;
+  let parkingId;
   // let listerCarCategory;
 
   // Pending: Testing
   // user id will be in session
   // make a db call to get the lister id from user id
 
-  listerId = sessionStorage.getItem("parkingId");
+  parkingId = sessionStorage.getItem("parkingId");
 
   let startDate = requestBody.startDate;
   let endDate = requestBody.endDate;
@@ -35,7 +35,7 @@ router.post("/createListing", async (req, res) => {
 
   try {
     if (
-      !listerId ||
+      !parkingId ||
       !startDate ||
       !endDate ||
       !startTime ||
@@ -45,7 +45,7 @@ router.post("/createListing", async (req, res) => {
       throw `Missing parameter`;
     }
 
-    common.checkObjectId(listerId);
+    common.checkObjectId(parkingId);
     // var today = new Date();
     // common.checkInputDate(startDate, endDate);
     common.checkInputDate(startDate);
@@ -64,7 +64,7 @@ router.post("/createListing", async (req, res) => {
 
   try {
     const data = await listingsData.createListing(
-      listerId,
+      parkingId,
       startDate,
       endDate,
       startTime,
@@ -87,41 +87,42 @@ router.post("/createListing", async (req, res) => {
   }
 });
 
-router.get("/getAllListing", async (req, res) => {
-  let listerId;
-  try {
-    const userData = await usersData.getUser(req.session.user.userId);
-    listerId = userData.listerId.toString();
-  } catch (e) {
-    res
-      .status(400)
-      .render("users/login", { error: e, partial: "emptyPartial" });
-  }
+router.get("/getAllListing/:id", async (req, res) => {
+  let parkingId = req.params.id;
+  sessionStorage.setItem("parkingId", parkingId);
+  // try {
+  //   const userData = await usersData.getUser(req.session.user.userId);
+  //   parkingId = userData.parkingId.toString();
+  // } catch (e) {
+  //   res
+  //     .status(400)
+  //     .render("pages/parkings/listings", { error: e, partial: "emptyPartial" });
+  // }
+
+  // try {
+  //   if (!parkingId) throw `Missing parameter`;
+  //   common.checkObjectId(parkingId);
+  // } catch (e) {
+  //   res.status(400).render("pages/parkings/listings", { error: e });
+  //   return;
+  // }
 
   try {
-    if (!listerId) throw `Missing parameter`;
-    common.checkObjectId(listerId);
-  } catch (e) {
-    res.status(400).render("users/login", { error: e });
-    return;
-  }
-
-  try {
-    const data = await listingsData.getAllListings(listerId);
+    const data = await listingsData.getAllListings(parkingId);
     if (!data) {
-      res.status(404).render("users/login", {
+      res.status(404).render("pages/parkings/listings", {
         partial: "emptyPartial",
         error: "Error 404 :No data found.",
       });
       return;
     }
-    res.render("users/login", {
+    res.render("pages/parkings/listings", {
       partial: "emptyPartial",
-      data: data,
-      title: "Create Listing",
+      getData: data,
+      title: "Listing",
     });
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res.status(400).render("pages/parkings/listings", { error: e });
   }
 });
 
@@ -195,9 +196,9 @@ router.get("/updateListing/:id", async (req, res, next) => {
 
 router.put("/updateListingData/:id", async (req, res) => {
   const requestBody = req.body;
-  let listerId;
+  let parkingId;
   console.log("user in session", req.session.user.userId);
-  listerId = sessionStorage.getItem("parkingId");
+  parkingId = sessionStorage.getItem("parkingId");
 
   let startDate = requestBody.startDate;
   let endDate = requestBody.endDate;
@@ -208,9 +209,9 @@ router.put("/updateListingData/:id", async (req, res) => {
   // Pending: error handling for params that are not null, i.e.
   // whose values has been passed to be updated rest can be ignored
   try {
-    // if (listerId == req.session.user.userId) { // update by lister
+    // if (parkingId == req.session.user.userId) { // update by lister
     const data = await listingsData.updateListingByLister(
-      listerId,
+      parkingId,
       req.params.id,
       startDate,
       endDate,
@@ -241,24 +242,31 @@ router.put("/updateListingData/:id", async (req, res) => {
   }
 });
 
+// Pending: all render should send session key with any value, "" also works
+
 router.put("/bookListing/:id", async (req, res) => {
   const requestBody = req.body;
-  let listerId;
+  let parkingId;
+  let bookerId;
+  let numberPlate;
   let listingId = req.params.id;
   // Pending: get bookerId and number plate from req and send
   // it to book listing db function to add in db
 
   console.log("user session data", req.session.user.userId);
-  listerId = sessionStorage.getItem("parkingId");
+  parkingId = sessionStorage.getItem("parkingId");
+  bookerId = req.session.user.userId;
+  numberPlate = requestBody.numberPlate;
 
   // Pending: error handling for params that are not null, i.e.
   // whose values has been passed to be updated rest can be ignored
   try {
-    // if (listerId != req.session.user.userId) {
+    // if (parkingId != req.session.user.userId) {
     const data = await listingsData.bookListing(
-      listerId,
-      listingId
-      // , bookerId, numberPlate
+      parkingId,
+      listingId,
+      bookerId,
+      numberPlate
     );
     res.render("pages/parkings/listingDetail", {
       partial: "emptyPartial",
@@ -282,11 +290,11 @@ router.put("/bookListing/:id", async (req, res) => {
 
 // router.put("/updateByUser/:id", async (req, res) => {
 //     const requestBody = req.body;
-//     let listerId;
+//     let parkingId;
 
 //     try {
 //       const userData = await usersData.getUser(req.session.user.userId);
-//       listerId = userData.listerId.toString();
+//       parkingId = userData.parkingId.toString();
 //     } catch (e) {
 //       res.status(400).render("users/login", { error: e });
 //     }
@@ -299,7 +307,7 @@ router.put("/bookListing/:id", async (req, res) => {
 
 //     try {
 //       const data = await listingsData.updateListingByLister(
-//         listerId,
+//         parkingId,
 //         req.params.id,
 //         startDate,
 //         endDate,

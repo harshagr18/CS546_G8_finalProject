@@ -5,6 +5,8 @@ const parkingsData = require("./parkings");
 // const mongoCollections = require("../config/mongoCollections");
 // const parkings = mongoCollections.parkings;
 
+
+// Pending: show parking details on listing page
 let exportedMethods = {
   async createListing(listerId, startDate, endDate, startTime, endTime, price) {
     let booked = false;
@@ -128,8 +130,9 @@ let exportedMethods = {
     for (let i = 0; i < parkingIdObj.listing.length; i++) {
       listingArr.push(common.convertObjectIdToString(parkingIdObj.listing[i]));
     }
-
-    return listingArr;
+    parkingIdObj.listing = listingArr;
+    // return listingArr;
+    return parkingIdObj;
   },
 
   async removeListing(listingId) {
@@ -245,18 +248,7 @@ let exportedMethods = {
     }
   },
 
-  async updateListingByUser(
-    listerId,
-    listingId,
-    bookerId,
-    numberPlate,
-    userCarCategory
-  ) {},
-
-  async bookListing(listerId, listingId) {
-    //, bookerId, numberPlate
-    console.log("Lister Id in data:", listerId);
-    console.log("Listing Id in data:", listingId);
+  async bookListing(listerId, listingId, bookerId, numberPlate) {
 
     let getListingData = await this.getListing(listingId);
     const updateListing = {
@@ -267,8 +259,8 @@ let exportedMethods = {
       endTime: getListingData.endTime,
       price: getListingData.price, // pending: update price acc to number of hours inputed
       booked: true,
-      bookerId: "newId",
-      numberPlate: "newNumplate",
+      bookerId: ObjectId(bookerId),
+      numberPlate: numberPlate,
     };
 
     const removeListing = {
