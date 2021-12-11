@@ -39,6 +39,9 @@ router.get("/", async (req, res) => {
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
+    if (!req.query.deleted) {
+      req.query.deleted = false;
+    }
     const listerId = req.session.user.userId;
     let validId = validate(listerId);
     if (!validId) {
@@ -55,6 +58,8 @@ router.get("/", async (req, res) => {
       session: req.session.user.userId,
       title: "My Parkings",
       states: stateList,
+      success: req.query.deleted,
+      successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
     });
   } catch (error) {
     res.status(404).json({ message: "Page not found" });
@@ -263,7 +268,9 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       return;
     }
 
-    let parkingImg = !req.file ? "public\\images\\no_image.jpg" : req.file.path;
+    let parkingImg = !req.file
+      ? "public/images/no_image.jpg"
+      : req.file.path.split("\\").join("/");
 
     //Get geolocation information
     let geoAddress =
@@ -319,10 +326,10 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   if (!req.file) {
     updatedData.parkingImg =
       updatedData.parkingImghidden == ""
-        ? "public\\images\\no_image.jpg"
+        ? "public/images/no_image.jpg"
         : updatedData.parkingImghidden;
   } else {
-    updatedData.parkingImg = req.file.path;
+    updatedData.parkingImg = req.file.path.split("\\").join("/");
   }
 
   if (
@@ -493,13 +500,27 @@ router.delete("/delete/:id", async (req, res) => {
     );
 
     const deleteData = await parkingsData.deleteParking(req.params.id);
-    res.render("pages/parkings/getParkings", {
-      partial: "emptyPartial",
-      session: req.session.user.userId,
-      title: "My Parkings",
-      success: true,
-      successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
-    });
+
+    if (deleteData.deleted) {
+      const getParkingData = await parkingsData.getParkingsOfLister(listerId);
+      // res.render("pages/parkings/getParkings", {
+      //   partial: "emptyPartial",
+      //   session: req.session.user.userId,
+      //   parkdata: getParkingData,
+      //   title: "My Parkings",
+      //   success: true,
+      //   successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
+      // });
+      return res.redirect("/parkings?deleted=true");
+    } else {
+      res.status(500).render("pages/parkings/getParkings", {
+        partial: "emptyPartial",
+        session: req.session.user.userId,
+        title: "My Parkings",
+        successmsg: `<div class="container alert alert-danger"><p class="empty">Parking could not be deleted</p></div>`,
+      });
+      return;
+    }
   } catch (error) {
     res.status(404).json({ message: "Data not found " });
   }

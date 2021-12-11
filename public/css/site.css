@@ -152,5 +152,24 @@ input[type="password"] {
 .rating {
   position: absolute;
   right: 29px;
-  bottom: 94px;
+  bottom: 92px;
+}
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+div[role="alert"] {
+  text-align: center;
+}
+#citySearch {
+  width: 150px;
+}
+#zipSearch {
+  width: 150px;
+}
+#stateSearch {
+  width: 150px;
+}
+#parkingType {
+  width: 150px;
 }

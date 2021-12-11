@@ -15,6 +15,10 @@
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
       crossorigin="anonymous"
     />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"
+    />
 
     <link rel="stylesheet" href="../../public/css/site.css" />
   </head>
@@ -33,20 +37,24 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="/parkings">Parkings</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/">Users</a>
-            </li>
-          </ul>
-          {{#if session}}
-          <a class="nav-link" href="/users/{{ session }}">My profile</a>
-          <a class="nav-link" href="/users/logout">Logout</a>
-          {{/if}}
-        </div>
+        {{#if session}}
+
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active">
+                <a class="nav-link" href="/parkings">Parkings</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/">Users</a>
+              </li>
+            </ul>
+            <a class="nav-link" href="/users/{{session}}">My profile</a>
+            <a class="nav-link" aria-label="logout" href="/users/logout">
+             <i class="fa fa-sign-out"></i>
+            </a>
+          </div>
+        {{/if}}
+
       </nav>
     </header>
 
@@ -74,8 +82,8 @@
     <script src="../../public/js/dashboard.js" async defer></script>
     {{> (lookup . 'partial') }}
 
-{{!-- <link rel="stylesheet" type="text/css" href="/jquery.datetimepicker.css"/ >
+    {{! <link rel="stylesheet" type="text/css" href="/jquery.datetimepicker.css"/ >
 <script src="/jquery.js"></script>
-<script src="/build/jquery.datetimepicker.full.min.js"></script> --}}
+<script src="/build/jquery.datetimepicker.full.min.js"></script> }}
   </body>
 </html>

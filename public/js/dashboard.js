@@ -13,14 +13,38 @@ function checkAlphanumerics(phrase) {
 }
 //form validation before submit
 function searchValidation(event) {
+  const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
+  const cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
+
   let citysearch = $("#citySearch").val();
   let statesearch = $("#stateSearch").val();
   let zipsearch = $("#zipSearch").val();
+  let cards = $(".parkingCards");
   if (!citysearch && !statesearch && !zipsearch) {
     event.preventDefault();
     $("#uiError").show();
     $("#uiError").html("Search atleast by city, zipcode or state");
+    cards.remove();
     return false;
+  }
+  if (citysearch != "") {
+    if (!cityRegex.test(citysearch) || citysearch.length > 30) {
+      event.preventDefault();
+      $("#uiError").show();
+      $("#uiError").html("City contains random characters");
+      cards.remove();
+      return false;
+    }
+  }
+
+  if (zipsearch != "") {
+    if (!zipRegex.test(zipsearch)) {
+      event.preventDefault();
+      $("#uiError").show();
+      $("#uiError").html("Zip contains random characters");
+      cards.remove();
+      return false;
+    }
   }
   return true;
 }
