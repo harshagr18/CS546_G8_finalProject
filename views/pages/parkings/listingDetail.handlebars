@@ -1,6 +1,6 @@
 <div class="container">
   <form
-    action="/listings/bookListing/{{data._id}}"
+    {{!-- action="/listings/bookListing/{{data._id}}" --}}
     method="post"
     id="listBooking"
     enctype="multipart/form-data"
@@ -68,6 +68,7 @@
         />
       </div>
     </div>
-    <input type="submit" value="Book" />
+    <input type="submit" value="Book" onclick="bookform({{data._id}});return true"/>
+    <input type="submit" value="report" onclick="reportform(); return true"/>
   </form>
 </div>

@@ -341,6 +341,47 @@ let exportedMethods = {
     }
   },
 
+  async reportListing(listingId, bookerId) {
+    common.checkObjectId(listingId);
+    common.checkObjectId(bookerId);
+
+    if (
+      common.xssCheck(listerId) ||
+      common.xssCheck(bookerId)
+    ) {
+      throw `XSS Attempt`;
+    }
+
+    let par;
+    const parkingsCollection = await parkings();
+    const parkingList = await parkingsCollection.find().toArray();
+
+    parkingList.forEach((element) => {
+      element.listing.forEach((x) => {
+        if(x._id.toString() === listingId.toString()) {
+          par = x;
+        }
+      });
+    });
+
+    if(!par) throw 'No listing found with that ID';
+
+    const pullListing = await parkingsCollection.updateOne(
+    {_id: ObjectId(par._id)},
+    {$pull: {listing: {bookerId: ObjectId(par.listing.bookerId) } } }
+    );
+
+    if (!pullListing.matchedCount && !pullListing.modifiedCount)
+      throw "Removal of review has failed";
+
+    const getParkingData = await parkingsCollection.findOne({
+      _id: ObjectId(par._id)
+    });
+    if (getParkingData === null) throw "No parking found with that ID";
+
+    return getParkingData;
+  }
+
   // async listingDetail(bookerId, startDate, endDate, startTime, endTime, booked, numberPlate, price) {
   //   if (
   //     !bookerId ||

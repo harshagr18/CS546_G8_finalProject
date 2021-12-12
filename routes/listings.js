@@ -155,7 +155,7 @@ router.get("/getListing/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listingDetail", { error: e });
   }
-});
+})
 
 //Pending: pop up to ask if they are sure to delete listing
 router.delete("/removeListing/:id", async (req, res) => {
@@ -293,6 +293,31 @@ router.put("/bookListing/:id", async (req, res) => {
       partial: "emptyPartial",
       error: e,
     });
+  }
+});
+
+router.delete("/reportListing", async (req, res) => {
+  try {
+      reportListingInfo = req.body;
+
+      const data = await listingsData.removeListing(reportListingInfo.listingId, reportListingInfo.bookerId);
+
+      const parkingData = await listingsData.getAllListings(data.parkingId);
+      if (!parkingData) {
+        res.status(404).render("pages/parkings/listings", {
+        partial: "emptyPartial",
+        error: "Error 404 :No data found.",
+      });
+      return;
+      }
+      res.render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      getData: parkingData,
+      title: "Listing",
+    });
+  }
+  catch (e) {
+    res.status(400).render("users/login", { error: e });  
   }
 });
 
