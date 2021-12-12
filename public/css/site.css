@@ -173,3 +173,17 @@ div[role="alert"] {
 #parkingType {
   width: 150px;
 }
+.navigators {
+  height: 40px;
+  font-weight: 500;
+}
+.fa,
+.logout {
+  color: white !important;
+}
+.logout:hover {
+  text-decoration: underline;
+}
+.nav-link:hover {
+  text-decoration: underline;
+}
