@@ -187,3 +187,6 @@ div[role="alert"] {
 .nav-link:hover {
   text-decoration: underline;
 }
+.dashboardFilter {
+  margin-bottom: 30px;
+}
