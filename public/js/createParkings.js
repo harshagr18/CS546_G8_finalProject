@@ -82,6 +82,15 @@ function createParkingValidation(event) {
     category[i] = $(this).text();
   });
 
+  if (category.length < 2) {
+    {
+      event.preventDefault();
+      $("#uiError").show();
+      $("#uiError").html("Vehicle category should be atleast  2 selections!");
+      return false;
+    }
+  }
+
   if (
     !addressRegex.test(address) ||
     address.length < 4 ||

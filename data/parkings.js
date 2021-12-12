@@ -155,6 +155,7 @@ async function getParkingsOfLister(id = checkParameters()) {
 //get Parking based on id
 async function getParking(id = checkParameters()) {
   id = id.trim();
+  validateID(id);
   id = ObjectId(id);
 
   const parkingCollection = await parkings();
@@ -281,7 +282,7 @@ async function updateParking(
     zip: zip,
     longitude: longitude,
     latitude: latitude,
-    category: category,
+    vehicleType: category,
     parkingType: parkingType,
   };
 
