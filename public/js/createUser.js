@@ -56,32 +56,25 @@ const stateList = [
   "WI",
   "WY",
 ];
-const vehicleType = [
-  "sedan",
-  "suv",
-  "hatchback",
-  "station wagon",
-  "coupe",
-  "minivan",
-  "pickup truck",
-];
-const parkingType = ["open", "close"];
 
-function editParkingValidation(event) {
+function createUserValidation(event) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   const addressRegex = /[A-Za-z0-9'\.\-\s\,]/;
   const cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
+  const phoneRegex = /^\d{10}$/im;
+  const emailRegex =
+    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
+  let firstName = $("#firstName").val();
+  let lastName = $("#lastName").val();
+  let username = $("#username").val();
+  let password = $("#password").val();
+  let email = $("#email").val();
+  let phoneNumber = $("#phoneNumber").val();
   let address = $("#address").val();
   let city = $("#city").val();
   let state = $("#state").find(":selected").text();
-  let pType = $("#parkingType").find(":selected").text();
   let zip = $("#zip").val();
-  var category = new Array();
-  $("#category > option:selected").each(function (i) {
-    category[i] = $(this).text();
-  });
-
   if (
     !addressRegex.test(address) ||
     address.length < 4 ||
@@ -96,9 +89,7 @@ function editParkingValidation(event) {
   } else if (!cityRegex.test(city) || city.length > 30) {
     event.preventDefault();
     $("#uiError").show();
-    $("#uiError").html(
-      "City contains random characters or length is greater than 30"
-    );
+    $("#uiError").html("City contains random characters");
     return false;
   } else if (stateList.indexOf(state) == -1) {
     event.preventDefault();
@@ -110,15 +101,13 @@ function editParkingValidation(event) {
     $("#uiError").show();
     $("#uiError").html("Zip contains random characters");
     return false;
-  } else if (!vehicleType.includes(...category)) {
-    event.preventDefault();
+  } else if (!phoneRegex.test(phoneNumber)) {
     $("#uiError").show();
-    $("#uiError").html("Vehicle category not found");
+    $("#uiError").html("Incorect Phone Number Format");
     return false;
-  } else if (!parkingType.indexOf(pType) == -1) {
-    event.preventDefault();
+  } else if (!emailRegex.test(email)) {
     $("#uiError").show();
-    $("#uiError").html("Parking Type not found");
+    $("#uiError").html("Incorrect Email Format");
     return false;
   }
   return true;

@@ -84,6 +84,7 @@
     <div class="row">
 
       {{#each listingsData}}
+
         <div class="col-sm-4">
           <div class="card">
             <iframe
@@ -100,23 +101,26 @@
               <span class="star">&#11088;</span>
               <span class="rating">{{overallRating}}</span>
 
+              <p class="card-text">{{zip}}</p>
+              <a href="/parkings/{{_id}}" class="btn btn-primary">Details</a>
 
-            <p class="card-text">{{zip}}</p>
-            <a href="/parkings/{{_id}}" class="btn btn-primary">Details</a>
+              <a
+                href="/listings/getAllListing/{{_id}}"
+                class="btn btn-success"
+              >Book</a>
 
-            <a href="/listings/getAllListing/{{_id}}" class="btn btn-success">Book</a>
-
-            <input
-              type="hidden"
-              id="listingId_{{_id}}"
-              name="listingId"
-              value={{_id}}
-            />
+              <input
+                type="hidden"
+                id="listingId_{{_id}}"
+                name="listingId"
+                value={{_id}}
+              />
+            </div>
           </div>
         </div>
-
       {{/each}}
     </div>
+
   {{else}}
     <div class="alert alert-info" role="alert">
       <p>Search for parking using the filters!</p>
