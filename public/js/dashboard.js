@@ -15,11 +15,16 @@ function checkAlphanumerics(phrase) {
 function searchValidation(event) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   const cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
-
   let citysearch = $("#citySearch").val();
   let statesearch = $("#stateSearch").val();
   let zipsearch = $("#zipSearch").val();
   let cards = $(".parkingCards");
+  citysearch = citysearch.trim();
+  zipsearch = zipsearch.trim();
+  if (statesearch === "Select State") {
+    statesearch = "";
+  }
+
   if (!citysearch && !statesearch && !zipsearch) {
     event.preventDefault();
     $("#uiError").show();

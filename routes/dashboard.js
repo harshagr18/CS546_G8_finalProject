@@ -28,6 +28,11 @@ router.post("/search", async (req, res) => {
   let stateSearch = req.body.stateSearch;
   let parkingType = req.body.parkingType;
 
+  citySearch = citySearch.trim();
+  stateSearch = stateSearch.trim();
+  zipSearch = zipSearch.trim();
+  parkingType = parkingType.trim();
+
   if (stateSearch === "Select State") {
     stateSearch = "";
   }
@@ -77,8 +82,12 @@ router.post("/search", async (req, res) => {
       zipSearch,
       parkingType
     );
-    //const distance = await parkingsData.getDistance("abc", "pqr");
-    //console.log(distance);
+
+    let notfound = false;
+    if (getData.length === 0) {
+      notfound = true;
+    }
+
     getData.forEach((x) => {
       let address =
         x.address.replace(/\s/g, "+") +
@@ -138,6 +147,7 @@ router.post("/search", async (req, res) => {
       selectedType: optionParkingType,
       stateSelected: stateSelected,
       selectedPType: selectedPType,
+      notfound: notfound,
     });
     return;
   } catch (error) {
