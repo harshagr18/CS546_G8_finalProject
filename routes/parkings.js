@@ -89,6 +89,7 @@ router.get("/edit/:id", async (req, res) => {
 
     if (common.xssCheck(req.params.id)) {
       res.status(400).json({ error: "XSS Attempt" });
+      return;
     }
 
     if (!validId) {
@@ -167,6 +168,7 @@ router.get("/edit/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   if (common.xssCheck(req.params.id)) {
     res.status(400).json({ error: "XSS Attempt" });
+    return;
   }
 
   console.log("parking id: ", req.params.id);
@@ -241,6 +243,7 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       common.xssCheck(parkingType)
     ) {
       res.status(400).json({ error: "XSS Attempt" });
+      return;
     }
     let {
       address,
@@ -428,6 +431,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       common.xssCheck(parkingType)
     ) {
       res.status(400).json({ error: "XSS Attempt" });
+      return;
     }
 
     const updatedParking = await parkingsData.updateParking(
@@ -500,6 +504,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
 router.delete("/delete/:id", async (req, res) => {
   if (common.xssCheck(req.params.id)) {
     res.status(400).json({ error: "XSS Attempt" });
+    return;
   }
 
   if (!req.params.id) {

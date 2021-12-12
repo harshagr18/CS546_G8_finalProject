@@ -111,6 +111,7 @@ router.post("/createUser", async (req, res) => {
       states: stateList,
       partial: "emptyPartial",
     });
+    return;
   }
 });
 
@@ -140,6 +141,7 @@ router.post("/login", async (req, res) => {
       error: "Invalid UserID / Password",
       partial: "emptyPartial",
     });
+    return;
   }
 });
 
@@ -160,8 +162,8 @@ router.get("/updateUser/:id", async (req, res) => {
     });
     return;
   } catch (e) {
-    console.log(e);
     res.status(404).json({ error: "Internal error" });
+    return;
   }
 });
 
@@ -200,13 +202,13 @@ router.post("/updateUser/:id", async (req, res) => {
     );
     res.redirect("/");
   } catch (e) {
-    console.log(e);
     res.status(400).render("pages/users/editUser", {
       title: "Edit Profile",
       session: req.session.user.userId,
       error: e,
       partial: "emptyPartial",
     });
+    return;
   }
 });
 
@@ -218,9 +220,10 @@ router.get("/createProfile", async (req, res) => {
       states: stateList,
       partial: "emptyPartial",
     });
+    return;
   } catch (e) {
-    console.log(e);
     res.status(404).json({ error: "Internal error" });
+    return;
   }
 });
 
@@ -230,9 +233,10 @@ router.get("/login", async (req, res) => {
       title: "Login",
       partial: "emptyPartial",
     });
+    return;
   } catch (e) {
-    console.log(e);
     res.status(404).json({ error: "Internal Error" });
+    return;
   }
 });
 
@@ -252,6 +256,7 @@ router.get("/:id", async (req, res) => {
   } catch (e) {
     console.log(e);
     res.status(404).json({ error: "User not found" });
+    return;
   }
 });
 
@@ -271,8 +276,8 @@ router.get("/delete/:id", async (req, res) => {
     const deleteData = await userData.deleteUser(req.params.id);
     res.redirect("/users/logout");
   } catch (error) {
-    console.log(error);
     res.status(404).json({ message: "Data not found " });
+    return;
   }
 });
 
