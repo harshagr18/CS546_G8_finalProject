@@ -6,6 +6,7 @@ const settings = require("../config/settings.json");
 const { json } = require("body-parser");
 const apikey = settings.apikey;
 const geocodingKey = settings.geocodingKey;
+const common = require("./common");
 
 //get distance from google
 async function getDistance(p1, p2) {
@@ -43,6 +44,15 @@ async function getParkingsByCityStateZip(
   zipcode,
   parkingType = checkParameters()
 ) {
+  if (
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zipcode) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
   let q = {};
   q["$and"] = [];
 
@@ -169,6 +179,20 @@ async function createParkings(
   vehicleType,
   parkingType = checkParameters()
 ) {
+  if (
+    common.xssCheck(listerId) ||
+    common.xssCheck(parkingImg) ||
+    common.xssCheck(address) ||
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zip) ||
+    common.xssCheck(latitude) ||
+    common.xssCheck(longitude) ||
+    common.xssCheck(vehicleType) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
   //trim values to reject blank spaces or empty
   parkingImg = parkingImg.trim();
   state = state.trim().toUpperCase();
@@ -232,6 +256,22 @@ async function updateParking(
   category,
   parkingType = checkParameters()
 ) {
+  if (
+    common.xssCheck(parkingId) ||
+    common.xssCheck(listerId) ||
+    common.xssCheck(parkingImg) ||
+    common.xssCheck(address) ||
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zip) ||
+    common.xssCheck(latitude) ||
+    common.xssCheck(longitude) ||
+    common.xssCheck(category) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
   //trim values to reject blank spaces or empty
   listerId = listerId.trim();
   parkingImg = parkingImg.trim();
@@ -289,6 +329,10 @@ async function updateParking(
 
 //delete parkings with id
 async function deleteParking(parkingId = checkParameters()) {
+  if (common.xssCheck(parkingId)) {
+    throw `XSS Attempt`;
+  }
+
   validateID(parkingId);
   parkingId = parkingId.trim();
   let result = {};
@@ -323,6 +367,20 @@ function validate(
   category,
   parkingType
 ) {
+  if (
+    common.xssCheck(parkingImg) ||
+    common.xssCheck(address) ||
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zip) ||
+    common.xssCheck(latitude) ||
+    common.xssCheck(longitude) ||
+    common.xssCheck(category) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
 

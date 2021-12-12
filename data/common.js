@@ -1,5 +1,15 @@
 const { ObjectId } = require("mongodb");
 
+var xss = require("xss");
+
+function xssCheck(str) {
+  if (xss(str.trim()) == str.trim()) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 // function checkIsProperString(val, typeData) {
 //   if (!val) {
 //     throw `No input passed`;
@@ -122,9 +132,7 @@ function checkInputTime(startTimeVal) {
   // var isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(
   //   startTimeVal
   // );
-  var isValid = /^([0-1]?[0-9]|2[0-4])?$/.test(
-    startTimeVal
-  );
+  var isValid = /^([0-1]?[0-9]|2[0-4])?$/.test(startTimeVal);
   if (!isValid) throw `Invalid time: ${startTimeVal}`;
   // var isValid = /^([0-1]?[0-9]|2[0-4]):([0-5][0-9])(:[0-5][0-9])?$/.test(endTimeVal);
   // if (!isValid) throw `Invalid time: ${val}`;
@@ -150,4 +158,5 @@ module.exports = {
   checkNumberPlate,
   convertObjectIdToString,
   checkObjectId,
+  xssCheck,
 };

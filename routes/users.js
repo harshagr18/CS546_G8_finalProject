@@ -112,8 +112,8 @@ router.post("/login", async (req, res) => {
   } catch (e) {
     console.log(e);
     res.status(400).render("pages/users/login", {
-      title: "Create Profile",
-      error: e,
+      title: "Login",
+      error: "Invalid UserID / Password",
       partial: "emptyPartial",
     });
   }

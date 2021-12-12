@@ -2,6 +2,7 @@ const { users } = require("./../config/mongoCollections");
 const { ObjectId } = require("mongodb");
 const bcrypt = require("bcrypt");
 const saltRounds = 16;
+const common = require("./common");
 
 async function get(username) {
   const userCollection = await users();
@@ -75,6 +76,21 @@ let exportedMethods = {
       !zip
     ) {
       throw `Missing parameter`;
+    }
+
+    if (
+      common.xssCheck(firstName) ||
+      common.xssCheck(lastName) ||
+      common.xssCheck(email) ||
+      common.xssCheck(phoneNumber) ||
+      common.xssCheck(username) ||
+      common.xssCheck(password) ||
+      common.xssCheck(address) ||
+      common.xssCheck(city) ||
+      common.xssCheck(state) ||
+      common.xssCheck(zip)
+    ) {
+      throw `XSS attempt`;
     }
 
     checkIsProperString(firstName);
@@ -238,6 +254,21 @@ let exportedMethods = {
     checkIsProperString(username);
     checkIsProperString(password);
 
+    if (
+      common.xssCheck(firstName) ||
+      common.xssCheck(lastName) ||
+      common.xssCheck(email) ||
+      common.xssCheck(phoneNumber) ||
+      common.xssCheck(username) ||
+      common.xssCheck(password) ||
+      common.xssCheck(address) ||
+      common.xssCheck(city) ||
+      common.xssCheck(state) ||
+      common.xssCheck(zip)
+    ) {
+      throw `XSS attempt`;
+    }
+
     const phoneRegex = /^\d{10}$/im;
     const emailRegex =
       /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
@@ -373,6 +404,10 @@ let exportedMethods = {
 
   //modified by sv user checks for password equal to 6 not accepting
   async checkUser(username, password) {
+    if (common.xssCheck(username) || common.xssCheck(password)) {
+      throw `XSS attempt`;
+    }
+
     checkIsProperString(username);
     username = username.toLowerCase();
     if (typeof username != "string" || typeof password != "string")
