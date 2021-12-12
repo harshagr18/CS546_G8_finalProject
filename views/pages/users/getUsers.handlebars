@@ -3,49 +3,22 @@
         <!-- Profile widget -->
         <div class="bg-white shadow rounded overflow-hidden">   
             <div class="px-4 py-3">
-                <h5 class="mb-0">{{user.firstName}} {{user.lastName}}</h5> <br>
+                <h2 class="mb-0">{{user.firstName}} {{user.lastName}}</h2> <br>
                 <div class="p-4 rounded shadow-sm bg-light">
                     <span class= "d-block"><span class="font-weight-bold mb-0">Username</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.username }}</span></span>
-                    <span class= "d-block"></span><span class="font-weight-bold mb-0">Phone Number</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.phoneNumber }}</span></span>
-                    <span class= "d-block"></span><span class="font-weight-bold mb-0">Email</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.email }}</span></span>
+                    <span class= "d-block"><span class="font-weight-bold mb-0">Phone Number</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.phoneNumber }}</span></span>
+                    <span class= "d-block"><span class="font-weight-bold mb-0">Email</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.email }}</span></span>
+                    <span class= "d-block"><span class="font-weight-bold mb-0">Address</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.address }}</span></span>
+                    <span class= "d-block"><span class="font-weight-bold mb-0">City</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.city }}</span></span>
+                    <span class= "d-block"><span class="font-weight-bold mb-0">State</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.state }}</span></span>
+                    <span class= "d-block"><span class="font-weight-bold mb-0">ZIP code</span>&nbsp&nbsp&nbsp<span class="font-italic mb-0">{{ user.zip }}</span></span>
                 </div>
             </div>
             <div class="py-4 px-4">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="mb-0">My parkings</h5>
+                    <a style = "color: #00008B;" href="/parkings">Go to my parkings</a>
                 </div>
-                    {{#each parkings}}
-                        <div class="col-sm-4">
-                            <div class="card">
-                            <img src={{parkingImg}} class="card-img-top" alt="Parking Image" />
-                            <div class="card-body">
-                                <h5 class="card-title">{{address}}</h5>
-                                <p class="card-text">{{zip}}</p>
-                                <a
-                                href="parkings/edit/{{_id}}"
-                                id="editParkings"
-                                class="btn btn-primary"
-                                >Edit</a>
-                                <a
-                                onclick="return confirm('Are you sure?')"
-                                href="parkings/delete/{{_id}}"
-                                id="getParkingsDelete"
-                                class="btn btn-danger"
-                                >Delete</a>
-
-                                <input
-                                type="hidden"
-                                id="parkingID"
-                                name="parkingID"
-                                value={{_id}}
-                                />
-                            </div>
-                            </div>
-                        </div>
-                        {{else}}
-                        <div class="container alert alert-warning"><p class="empty">No content</p></div>
-                    {{/each}}
-                    <a href="/users/updateUser/{{ session }}">Update / Delete my account.</a>
+                    <a style = "color: #00008B;" href="/users/updateUser/{{ session }}">Update / Delete my account</a>
                 </div>
             </div>
         </div>

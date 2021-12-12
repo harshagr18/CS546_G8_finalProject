@@ -5,8 +5,20 @@ const parkingsData = require("./parkings");
 // const mongoCollections = require("../config/mongoCollections");
 // const parkings = mongoCollections.parkings;
 
+// Pending: show parking details on listing page
 let exportedMethods = {
   async createListing(listerId, startDate, endDate, startTime, endTime, price) {
+    if (
+      common.xssCheck(listerId) ||
+      common.xssCheck(startDate) ||
+      common.xssCheck(endDate) ||
+      common.xssCheck(startTime) ||
+      common.xssCheck(endTime) ||
+      common.xssCheck(price)
+    ) {
+      throw `XSS Attempt`;
+    }
+
     let booked = false;
     let bookerId = null;
     let numberPlate = null;
@@ -89,6 +101,11 @@ let exportedMethods = {
   async getListing(listingId) {
     common.checkObjectId(listingId);
     // listingId = listingId.trim();
+
+    if (common.xssCheck(listerId)) {
+      throw `XSS Attempt`;
+    }
+
     listingId = ObjectId(listingId);
     const parkingsCollection = await parkings();
     let parkingsList = await parkingsCollection.find({}).toArray();
@@ -128,8 +145,9 @@ let exportedMethods = {
     for (let i = 0; i < parkingIdObj.listing.length; i++) {
       listingArr.push(common.convertObjectIdToString(parkingIdObj.listing[i]));
     }
-
-    return listingArr;
+    parkingIdObj.listing = listingArr;
+    // return listingArr;
+    return parkingIdObj;
   },
 
   async removeListing(listingId) {
@@ -175,8 +193,18 @@ let exportedMethods = {
     // userCarCategory,
     price
   ) {
-
     const listingData = await this.getListing(listingId);
+
+    if (
+      common.xssCheck(listerId) ||
+      common.xssCheck(startDate) ||
+      common.xssCheck(endDate) ||
+      common.xssCheck(startTime) ||
+      common.xssCheck(endTime) ||
+      common.xssCheck(price)
+    ) {
+      throw `XSS Attempt`;
+    }
 
     //Pending: validation for start date with ed date after updating
     if (startDate == "" || startDate == null) startDate = listingData.startDate;
@@ -224,7 +252,8 @@ let exportedMethods = {
       },
       { $pull: { listing: removeListing } }
     );
-    if (removeListings.modifiedCount !== 0) {   // check correct param for remove listing
+    if (removeListings.modifiedCount !== 0) {
+      // check correct param for remove listing
       const updatedListings = await parkingsCollection.updateOne(
         {
           _id: ObjectId(listerId),
@@ -245,18 +274,15 @@ let exportedMethods = {
     }
   },
 
-  async updateListingByUser(
-    listerId,
-    listingId,
-    bookerId,
-    numberPlate,
-    userCarCategory
-  ) {},
-
-  async bookListing(listerId, listingId) {
-    //, bookerId, numberPlate
-    console.log("Lister Id in data:", listerId);
-    console.log("Listing Id in data:", listingId);
+  async bookListing(listerId, listingId, bookerId, numberPlate) {
+    if (
+      common.xssCheck(listerId) ||
+      common.xssCheck(listingId) ||
+      common.xssCheck(bookerId) ||
+      common.xssCheck(numberPlate)
+    ) {
+      throw `XSS Attempt`;
+    }
 
     let getListingData = await this.getListing(listingId);
     const updateListing = {
@@ -267,8 +293,8 @@ let exportedMethods = {
       endTime: getListingData.endTime,
       price: getListingData.price, // pending: update price acc to number of hours inputed
       booked: true,
-      bookerId: "newId",
-      numberPlate: "newNumplate",
+      bookerId: ObjectId(bookerId),
+      numberPlate: numberPlate,
     };
 
     const removeListing = {
@@ -293,7 +319,8 @@ let exportedMethods = {
       },
       { $pull: { listing: removeListing } }
     );
-    if (removeListings.modifiedCount !== 0) {   // check correct param for remove listing
+    if (removeListings.modifiedCount !== 0) {
+      // check correct param for remove listing
       const updatedListings = await parkingsCollection.updateOne(
         {
           _id: ObjectId(listerId),

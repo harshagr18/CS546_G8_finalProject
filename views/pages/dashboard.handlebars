@@ -11,8 +11,8 @@
         <input
           class="form-control mr-sm-2"
           type="text"
-          placeholder="Search by city"
-          aria-label="Zip Code"
+          placeholder="City"
+          aria-label="Search by city"
           id="citySearch"
           name="citySearch"
           value="{{citySearch}}"
@@ -21,18 +21,41 @@
         <input
           class="form-control mr-sm-2"
           type="text"
-          placeholder="Search by zip code"
+          placeholder="Zip Code"
           aria-label="Zip Code"
           id="zipSearch"
           name="zipSearch"
           value="{{zipSearch}}"
         />
-        <select id="stateSearch" name="stateSearch" class="form-control">
-          <option selected>Select State</option>
+        <select
+          id="stateSearch"
+          name="stateSearch"
+          class="form-control mr-sm-2"
+        >
+          {{#if stateSelected}}
+            {{{selectedStates}}}
+          {{else}}
+            <option selected>Select State</option>
+            {{#each states}}
+              <option>{{this}}</option>
+            {{/each}}
 
-          {{#each states}}
-            <option>{{this}}</option>
-          {{/each}}
+          {{/if}}
+
+        </select>
+        <select
+          id="parkingType"
+          name="parkingType"
+          class="form-control mr-sm-2"
+        >
+          {{#if selectedPType}}
+            {{{selectedType}}}
+          {{else}}
+            <option selected>Select Type</option>
+            <option>open</option>
+            <option>closed</option>
+
+          {{/if}}
 
         </select>
 
@@ -55,27 +78,34 @@
 
 </div>
 
-{{#if listingsData}}
-  <div class="row">
+<div class="parkingCards">
 
-    {{#each listingsData}}
-      <div class="col-sm-4">
-        <div class="card">
-          <iframe
-            width="280"
-            height="300"
-            style="border:0"
-            loading="lazy"
-            src="{{mapUrl}}"
-          ></iframe>
-          {{!-- <img src={{parkingImg}} class="card-img-top" alt="Parking Image" /> --}}
-          <div class="card-body">
-            <h5 class="card-title">{{address}}</h5>
+  {{#if listingsData}}
+    <div class="row">
+
+      {{#each listingsData}}
+        <div class="col-sm-4">
+          <div class="card">
+            <iframe
+              width="280"
+              height="300"
+              style="border:0"
+              loading="lazy"
+              src="{{mapUrl}}"
+            ></iframe>
+            {{!-- <img src={{parkingImg}} class="card-img-top" alt="Parking Image" /> --}}
+            <div class="card-body">
+              <p class="card-title">{{address}}
+              </p>
+              <span class="star">&#11088;</span>
+              <span class="rating">{{overallRating}}</span>
+
+
             <p class="card-text">{{zip}}</p>
-            <a href="/parkings/{{_id}}" class="btn btn-primary">Go Here</a>
-            {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
-            <a href="/bookParking" class="btn btn-primary">Book</a>
-            {{! <a href="/bookParking" class="btn btn-primary">Book</a> }}
+            <a href="/parkings/{{_id}}" class="btn btn-primary">Details</a>
+
+            <a href="/listings/getAllListing/{{_id}}" class="btn btn-success">Book</a>
+
             <input
               type="hidden"
               id="listingId_{{_id}}"
@@ -84,9 +114,13 @@
             />
           </div>
         </div>
-      </div>
 
-    {{/each}}
-  </div>
+      {{/each}}
+    </div>
+  {{else}}
+    <div class="alert alert-info" role="alert">
+      <p>Search for parking using the filters!</p>
+    </div>
 
-{{/if}}
+  {{/if}}
+</div>

@@ -6,6 +6,7 @@ const settings = require("../config/settings.json");
 const { json } = require("body-parser");
 const apikey = settings.apikey;
 const geocodingKey = settings.geocodingKey;
+const common = require("./common");
 
 //get distance from google
 async function getDistance(p1, p2) {
@@ -40,67 +41,73 @@ async function getcodes(address) {
 async function getParkingsByCityStateZip(
   city,
   state,
-  zipcode = checkParameters()
+  zipcode,
+  parkingType = checkParameters()
 ) {
+  if (
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zipcode) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
+  let q = {};
+  q["$and"] = [];
+
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   //string and trim length checks
   if (
     typeof zipcode != "string" ||
     typeof city != "string" ||
-    typeof state != "string"
+    typeof state != "string" ||
+    typeof parkingType != "string"
   ) {
     throw "Parameter of defined type not found";
   }
   //state validator
   if (city != "") {
     if (city.trim().length === 0) throw "City cannot be blanks";
+    else {
+      q["$and"].push({ city: new RegExp(city) });
+    }
   }
 
   //state validator+
   if (state != "") {
     if (stateList.indexOf(state.toUpperCase()) == -1) {
       throw "State not found";
+    } else {
+      q["$and"].push({ state: state });
     }
   }
-
-  //zip code validator
   if (zipcode != "") {
+    //zip code validator
     if (!zipRegex.test(zipcode)) {
       throw "Incorrect zip code";
+    } else {
+      q["$and"].push({ zip: zipcode });
     }
   }
-
-  const cityFilter = {
-    $or: [
-      {
-        city: new RegExp(city),
-      },
-      {
-        state: state,
-      },
-      {
-        zip: zipcode,
-      },
-    ],
-  };
-  const noCityFilter = {
-    $or: [
-      {
-        state: state,
-      },
-      {
-        zip: zipcode,
-      },
-    ],
-  };
-
+  //parking type validator
+  if (parkingType != "") {
+    if (
+      !parkingType.toLowerCase() === "open" ||
+      !parkingType.toLowerCase() === "closed"
+    ) {
+      throw "Parking type only accepts open and closed as values";
+    } else {
+      q["$and"].push({ parkingType: parkingType });
+    }
+  }
   const parkingCollection = await parkings();
   let listedParkings;
-  if (city != "") {
-    listedParkings = await parkingCollection.find(cityFilter).toArray();
-  } else {
-    listedParkings = await parkingCollection.find(noCityFilter).toArray();
-  }
+  //if (city != "") {
+  listedParkings = await parkingCollection.find(q).toArray();
+  //} else {
+  //  listedParkings = await parkingCollection.find(noCityFilter).toArray();
+  //}
 
   if (listedParkings === null) throw "No parking found";
   //parkingId._id = parkingId._id.toString();
@@ -172,6 +179,20 @@ async function createParkings(
   vehicleType,
   parkingType = checkParameters()
 ) {
+  if (
+    common.xssCheck(listerId) ||
+    common.xssCheck(parkingImg) ||
+    common.xssCheck(address) ||
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zip) ||
+    common.xssCheck(latitude) ||
+    common.xssCheck(longitude) ||
+    common.xssCheck(vehicleType) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
   //trim values to reject blank spaces or empty
   parkingImg = parkingImg.trim();
   state = state.trim().toUpperCase();
@@ -199,7 +220,7 @@ async function createParkings(
     listerId: listerId,
     listing: [],
     parkingImg,
-    overallRating: 0,
+    overallRating: "0.0",
     address,
     city,
     zip,
@@ -235,6 +256,22 @@ async function updateParking(
   category,
   parkingType = checkParameters()
 ) {
+  if (
+    common.xssCheck(parkingId) ||
+    common.xssCheck(listerId) ||
+    common.xssCheck(parkingImg) ||
+    common.xssCheck(address) ||
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zip) ||
+    common.xssCheck(latitude) ||
+    common.xssCheck(longitude) ||
+    common.xssCheck(category) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
   //trim values to reject blank spaces or empty
   listerId = listerId.trim();
   parkingImg = parkingImg.trim();
@@ -292,6 +329,10 @@ async function updateParking(
 
 //delete parkings with id
 async function deleteParking(parkingId = checkParameters()) {
+  if (common.xssCheck(parkingId)) {
+    throw `XSS Attempt`;
+  }
+
   validateID(parkingId);
   parkingId = parkingId.trim();
   let result = {};
@@ -326,6 +367,20 @@ function validate(
   category,
   parkingType
 ) {
+  if (
+    common.xssCheck(parkingImg) ||
+    common.xssCheck(address) ||
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zip) ||
+    common.xssCheck(latitude) ||
+    common.xssCheck(longitude) ||
+    common.xssCheck(category) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
 
