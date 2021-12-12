@@ -4,7 +4,7 @@ const moment = require('moment');
 var xss = require("xss");
 
 function xssCheck(str) {
-  if (xss(str.trim()) == str.trim()) {
+  if (xss(str) == str) {
     return false;
   } else {
     return true;
