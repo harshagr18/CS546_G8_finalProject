@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { ObjectId } = require("bson");
 const parkingsData = require("../data/parkings");
+const common = require("../data/common");
 const path = require("path");
 const sessionStorage = require("sessionstorage");
 
@@ -85,6 +86,11 @@ router.get("/create", async (req, res) => {
 router.get("/edit/:id", async (req, res) => {
   try {
     let validId = validate(req.params.id);
+
+    if (common.xssCheck(req.params.id)) {
+      res.status(400).json({ error: "XSS Attempt" });
+    }
+
     if (!validId) {
       res
         .status(400)
@@ -159,6 +165,10 @@ router.get("/edit/:id", async (req, res) => {
 
 //get parkings
 router.get("/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+  }
+
   console.log("parking id: ", req.params.id);
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
@@ -210,14 +220,6 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     res.status(400).json({ error: "You must provide zip" });
     return;
   }
-  // if (!parkingPostData.longitude) {
-  //   res.status(400).json({ error: "You must provide longitude" });
-  //   return;
-  // }
-  // if (!parkingPostData.latitude) {
-  //   res.status(400).json({ error: "You must provide latitude" });
-  //   return;
-  // }
   if (!parkingPostData.category) {
     res.status(400).json({ error: "You must provide category" });
     return;
@@ -228,6 +230,18 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
   }
 
   try {
+    if (
+      common.xssCheck(address) ||
+      common.xssCheck(city) ||
+      common.xssCheck(state) ||
+      common.xssCheck(zip) ||
+      common.xssCheck(latitude) ||
+      common.xssCheck(longitude) ||
+      common.xssCheck(category) ||
+      common.xssCheck(parkingType)
+    ) {
+      res.status(400).json({ error: "XSS Attempt" });
+    }
     let {
       address,
       city,
@@ -404,6 +418,22 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     return;
   }
   try {
+    if (
+      common.xssCheck(parkingImg) ||
+      common.xssCheck(listerId) ||
+      common.xssCheck(parkingId) ||
+      common.xssCheck(address) ||
+      common.xssCheck(city) ||
+      common.xssCheck(state) ||
+      common.xssCheck(zip) ||
+      common.xssCheck(latitude) ||
+      common.xssCheck(longitude) ||
+      common.xssCheck(category) ||
+      common.xssCheck(parkingType)
+    ) {
+      res.status(400).json({ error: "XSS Attempt" });
+    }
+
     const updatedParking = await parkingsData.updateParking(
       updatedData.parkingId,
       updatedData.listerId,
@@ -472,6 +502,10 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
 
 //delete parkings
 router.delete("/delete/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+  }
+
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
     return;

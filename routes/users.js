@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const data = require("../data");
+const common = require("../data/common");
 const userData = data.users;
 const parkingData = data.parkings;
 const { ObjectId } = require("mongodb");
@@ -74,6 +75,21 @@ router.post("/createUser", async (req, res) => {
   let userInfo = req.body;
   console.log(userInfo);
   try {
+    if (
+      common.xssCheck(userInfo.firstName) ||
+      common.xssCheck(userInfo.lastName) ||
+      common.xssCheck(userInfo.email) ||
+      common.xssCheck(userInfo.phoneNumber) ||
+      common.xssCheck(userInfo.username) ||
+      common.xssCheck(userInfo.password) ||
+      common.xssCheck(userInfo.address) ||
+      common.xssCheck(userInfo.city) ||
+      common.xssCheck(userInfo.state) ||
+      common.xssCheck(userInfo.zip)
+    ) {
+      throw `XSS attempt`;
+    }
+
     const newUser = await userData.createUser(
       userInfo.firstName,
       userInfo.lastName,
@@ -106,6 +122,14 @@ router.get("/logout", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     let userInfo = req.body;
+
+    if (
+      common.xssCheck(userInfo.username) ||
+      common.xssCheck(userInfo.password)
+    ) {
+      throw `XSS attempt`;
+    }
+
     let user = await userData.checkUser(userInfo.username, userInfo.password);
     req.session.user = { username: user.username, userId: user._id.toString() };
     res.redirect("/");
@@ -144,6 +168,23 @@ router.get("/updateUser/:id", async (req, res) => {
 router.post("/updateUser/:id", async (req, res) => {
   try {
     const userInfo = req.body;
+
+    if (
+      common.xssCheck(req.params.id.toString()) ||
+      common.xssCheck(userInfo.firstName) ||
+      common.xssCheck(userInfo.lastName) ||
+      common.xssCheck(userInfo.email) ||
+      common.xssCheck(userInfo.phoneNumber) ||
+      common.xssCheck(userInfo.username) ||
+      common.xssCheck(userInfo.password) ||
+      common.xssCheck(userInfo.address) ||
+      common.xssCheck(userInfo.city) ||
+      common.xssCheck(userInfo.state) ||
+      common.xssCheck(userInfo.zip)
+    ) {
+      throw `XSS attempt`;
+    }
+
     updatedUser = await userData.updateUser(
       req.params.id.toString(),
       userInfo.firstName,
