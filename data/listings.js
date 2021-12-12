@@ -2,6 +2,8 @@ const { parkings } = require("./../config/mongoCollections");
 const { ObjectId } = require("mongodb");
 const common = require("./common");
 const parkingsData = require("./parkings");
+const nodemailer = require("nodemailer");
+
 // const mongoCollections = require("../config/mongoCollections");
 // const parkings = mongoCollections.parkings;
 
@@ -372,6 +374,34 @@ let exportedMethods = {
   //   listingIdObj._id = listingIdObj._id.toString();
   //   return listingIdObj;
   // }
+
+  //mailing module
+  //reused from https://www.geeksforgeeks.org/how-to-send-email-with-nodemailer-using-gmail-account-in-node-js/
+  async sendReportingMail(to, why, whom) {
+    let mailTransporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "noreply.myparkingassistant@gmail.com",
+        pass: "Myparking@1234#",
+      },
+    });
+
+    let mailDetails = {
+      from: "noreply.myparkingassistant@gmail.com",
+      to: "cakemeberry@gmail.com",
+      subject: "You have been reported",
+      text: "You have been reported for: comment, by reported",
+      // html: "<b>Hello world?</b>", // html body
+    };
+
+    mailTransporter.sendMail(mailDetails, function (err, data) {
+      if (err) {
+        console.log("Error Occurs");
+      } else {
+        console.log("Email sent successfully");
+      }
+    });
+  },
 };
 
 module.exports = exportedMethods;
