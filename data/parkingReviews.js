@@ -11,12 +11,12 @@ const updateRating = (checkParking, rating) => {
         avgRating += element.rating;
     })
     
-    avgRating = Number(avgRating/(checkParking.parkingReviews.length + 1)).toFixed(2);
+    avgRating = Number(avgRating/(checkParking.parkingReviews.length + 1)).toFixed(1);
     return avgRating;
 }
 
 let exportedMethods = {
-    async createReview(parkingId, userId, rating, dateOfReview, comment) {
+    async createReview(parkingId, userId, rating, dateOfReview, comment, username) {
         if(!errorCheck.checkId(parkingId)) throw 'parkingId is not a valid input';
         if(!errorCheck.checkId(userId)) throw 'userId is not a valid input';
         if(!errorCheck.checkRating(rating)) throw 'Rating is not a valid input';
@@ -43,7 +43,8 @@ let exportedMethods = {
             userId: userId,
             rating: rating,
             dateOfReview: dateOfReview,
-            comment: comment
+            comment: comment,
+            username: username
         }
 
         const ratingUpdate = await parkingCollection.updateOne(
@@ -66,7 +67,7 @@ let exportedMethods = {
 
         if(sameReview === null)
             throw 'Parking does not exist, review cannot be displayed';
-        
+      
         return sameReview;
     },
 
@@ -148,7 +149,7 @@ let exportedMethods = {
         })
     
         if(getParkingData.parkingReviews.length !== 0) {
-            avgRating = Number(avgRating/(getParkingData.parkingReviews.length)).toFixed(2);
+            avgRating = Number(avgRating/(getParkingData.parkingReviews.length)).toFixed(1);
         }
         else {
             avgRating = 0;
@@ -201,7 +202,7 @@ let exportedMethods = {
         })
 
         if(getParkingData.parkingReviews.length !== 0) {
-            avgRating = Number(avgRating/(getParkingData.parkingReviews.length + 1)).toFixed(2);
+            avgRating = Number(avgRating/(getParkingData.parkingReviews.length + 1)).toFixed(1);
         }
         else {
             avgRating = rating;
@@ -213,7 +214,8 @@ let exportedMethods = {
             userId: findReview[0].userId,
             rating: rating,
             dateOfReview: findReview[0].dateOfReview,
-            comment: comment
+            comment: comment,
+            username: findReview[0].username
         }
 
         const updateReview = await parkingCollection.updateOne(

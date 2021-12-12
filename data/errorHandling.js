@@ -39,9 +39,29 @@ function checkDate(date) {
     return true;
 }
 
+function checkUsername(username) {
+    if(!username) {
+        return false;
+    }
+    username = username.toLowerCase();
+    if (typeof username != "string" || username.length === 0 || username.length < 4) {
+        return false;
+    }
+    else if (/\s/.test(username)) {
+        return false;
+    }
+    let str = username
+    const checker = /[^a-z0-9]/g;
+    if(checker.test(str)) {
+        return false;
+    }
+    return true;
+}
+
 module.exports = {
     checkId,
     checkString,
     checkRating,
-    checkDate
+    checkDate,
+    checkUsername
 }
