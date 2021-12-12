@@ -1,4 +1,4 @@
-<form method="POST" id="createUserForm" action="/users/createUser">
+<form method="POST" onsubmit="createUserValidation(event);" id="createUserForm" action="/users/createUser">
 
     <div class="row mt-2">
  
@@ -25,5 +25,7 @@
     </div>
     <h3 style="color:red;">{{ error }}</h3>
     <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Create Profile</button></div>
+      <div class="alert alert-danger error" id="uiError" role="alert">
+  </div>
     <a href="/users/login">Already have an accoun? Click to login</a>
 </form>

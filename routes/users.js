@@ -213,6 +213,7 @@ router.post("/updateUser/:id", async (req, res) => {
 router.get("/createProfile", async (req, res) => {
   try {
     res.render("pages/users/createUsers", {
+      partial: "createUser",
       title: "Create Profile",
       states: stateList,
       partial: "emptyPartial",
