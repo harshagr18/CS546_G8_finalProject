@@ -15,8 +15,9 @@
         <div class="col">
             <h2>Write a review</h2>
             <form id="login-form" name ="loginForm" action="/reviews/{{parkdata._id}}" method="POST">
-            <label> Rating
-                <select name="rating" id="rating">
+            <div class="form-group">
+            <label for="exampleFormControlSelect1"> Rating
+                <select class="form-control" name="rating" id="exampleFormControlSelect1">
                     <option>1 Star </option>
                     <option>2 Stars </option>
                     <option>3 Stars </option>
@@ -24,8 +25,9 @@
                     <option>5 Stars </option>
                 </select> 
             </label><br>
-            <label>Review
-                <textarea id="comment" name="comment" rows="3" cols="30" placeholder="Enter your Review" required></textarea>
+            </div>
+            <label for="exampleFormControlTextarea1">Review
+                <textarea class="form-control" id="exampleFormControlTextarea1" name="comment" rows="3" cols="30" placeholder="Enter your Review" required></textarea>
             </label><br>
             <button class="btn btn-primary">Post a Review</button>
             </form>
