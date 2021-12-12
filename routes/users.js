@@ -109,7 +109,7 @@ router.post("/createUser", async (req, res) => {
       error: e,
       title: "Create Profile",
       states: stateList,
-      partial: "emptyPartial",
+      partial: "createUser",
     });
     return;
   }
@@ -139,7 +139,7 @@ router.post("/login", async (req, res) => {
     res.status(400).render("pages/users/login", {
       title: "Login",
       error: "Invalid UserID / Password",
-      partial: "emptyPartial",
+      partial: "login",
     });
     return;
   }
@@ -202,11 +202,13 @@ router.post("/updateUser/:id", async (req, res) => {
     );
     res.redirect("/");
   } catch (e) {
+    getData = await userData.getUser(req.params.id.toString());
     res.status(400).render("pages/users/editUser", {
       title: "Edit Profile",
       session: req.session.user.userId,
       error: e,
-      partial: "emptyPartial",
+      data: getData,
+      partial: "editParkings",
     });
     return;
   }
@@ -218,7 +220,6 @@ router.get("/createProfile", async (req, res) => {
       partial: "createUser",
       title: "Create Profile",
       states: stateList,
-      partial: "emptyPartial",
     });
     return;
   } catch (e) {
@@ -231,7 +232,7 @@ router.get("/login", async (req, res) => {
   try {
     res.render("pages/users/login", {
       title: "Login",
-      partial: "emptyPartial",
+      partial: "login",
     });
     return;
   } catch (e) {

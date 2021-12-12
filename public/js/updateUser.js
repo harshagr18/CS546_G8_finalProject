@@ -1,6 +1,4 @@
-(function ($) {
-  $("#uiError").hide();
-})(jQuery);
+(function ($) {})(jQuery);
 //form validation before submit
 const stateList = [
   "AL",
@@ -108,6 +106,14 @@ function updateUserValidation(event) {
   } else if (!emailRegex.test(email)) {
     $("#uiError").show();
     $("#uiError").html("Incorrect Email Format");
+    return false;
+  } else if (username.trim().length == 0) {
+    $("#uiError").show();
+    $("#uiError").html("Please Enter Username");
+    return false;
+  } else if (password.trim().length == 0) {
+    $("#uiError").show();
+    $("#uiError").html("Please Enter Password");
     return false;
   }
   return true;

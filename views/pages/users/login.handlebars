@@ -1,4 +1,4 @@
-<form method="POST" id="loginForm" action="/users/login">
+<form method="POST" onsubmit="createUserValidation(event);" id="loginForm" action="/users/login">
     <div class="card-body p-5 text-center">
         <div class="form-outline mb-4">
             <label class="form-label" for="username">Username</label>
@@ -10,8 +10,11 @@
             <input type="password" id="password" name="password" placeholder="password" class="form-control form-control-lg" />
         </div>
         <button class="btn btn-primary btn-lg btn-block" type="submit">Login</button>
-          <div class="alert alert-danger error" id="uiError" role="alert">
+          <div class="alert alert-danger error" id="uiError" role="alert" hidden>
   </div>
+  {{#if error}}
+  <div class="alert alert-danger error" id="uiError" role="alert">{{ error }}</div>
+  {{/if}}
         <a href="/users/createProfile">Don't have an account? Click to create an account</a>
     </div>
 </form>
