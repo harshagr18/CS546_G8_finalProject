@@ -206,6 +206,7 @@ router.post("/updateUser/:id", async (req, res) => {
     res.status(400).render("pages/users/editUser", {
       title: "Edit Profile",
       session: req.session.user.userId,
+      states: stateList,
       error: e,
       data: getData,
       partial: "editParkings",
