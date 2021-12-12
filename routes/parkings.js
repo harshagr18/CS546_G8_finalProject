@@ -233,18 +233,23 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
 
   try {
     if (
-      common.xssCheck(address) ||
-      common.xssCheck(city) ||
-      common.xssCheck(state) ||
-      common.xssCheck(zip) ||
-      common.xssCheck(latitude) ||
-      common.xssCheck(longitude) ||
-      common.xssCheck(category) ||
-      common.xssCheck(parkingType)
+      common.xssCheck(parkingPostData.address) ||
+      common.xssCheck(parkingPostData.city) ||
+      common.xssCheck(parkingPostData.state) ||
+      common.xssCheck(parkingPostData.zip) ||
+      common.xssCheck(parkingPostData.parkingType)
     ) {
       res.status(400).json({ error: "XSS Attempt" });
       return;
     }
+
+    parkingPostData.category.forEach((x) => {
+      if (common.xssCheck(x)) {
+        res.status(400).json({ error: "XSS Attempt" });
+        return;
+      }
+    });
+
     let {
       address,
       city,
@@ -418,21 +423,26 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   }
   try {
     if (
-      common.xssCheck(parkingImg) ||
-      common.xssCheck(listerId) ||
-      common.xssCheck(parkingId) ||
-      common.xssCheck(address) ||
-      common.xssCheck(city) ||
-      common.xssCheck(state) ||
-      common.xssCheck(zip) ||
-      common.xssCheck(latitude) ||
-      common.xssCheck(longitude) ||
-      common.xssCheck(category) ||
-      common.xssCheck(parkingType)
+      common.xssCheck(updatedData.parkingImg) ||
+      common.xssCheck(updatedData.listerId) ||
+      common.xssCheck(updatedData.parkingId) ||
+      common.xssCheck(updatedData.address) ||
+      common.xssCheck(updatedData.city) ||
+      common.xssCheck(updatedData.state) ||
+      common.xssCheck(updatedData.zip) ||
+      common.xssCheck(updatedData.latitude.toString()) ||
+      common.xssCheck(updatedData.longitude.toString()) ||
+      common.xssCheck(updatedData.parkingType)
     ) {
       res.status(400).json({ error: "XSS Attempt" });
       return;
     }
+    updatedData.category.forEach((x) => {
+      if (common.xssCheck(x)) {
+        res.status(400).json({ error: "XSS Attempt" });
+        return;
+      }
+    });
 
     const updatedParking = await parkingsData.updateParking(
       updatedData.parkingId,
