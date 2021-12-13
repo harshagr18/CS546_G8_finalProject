@@ -323,7 +323,7 @@ let exportedMethods = {
       throw "Review remove from the user have been failed";
 
     const updateNewReview = await userCollection.updateOne(
-      { _id: ObjectId(findReview[0].parkingId) },
+      { _id: ObjectId(findReview[0].userId) },
       { $push: { reviews: newReviewInfo } }
     );
 

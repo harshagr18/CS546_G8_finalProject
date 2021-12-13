@@ -418,7 +418,6 @@ let exportedMethods = {
     if(getListingData.booked == true) throw `Cannot update booked listing.`;
     const listingData = await this.getListing(listingId);
 
-    const listingData = await this.getListing(listingId);
     if (
       common.xssCheck(listerId) ||
       common.xssCheck(startDate) ||

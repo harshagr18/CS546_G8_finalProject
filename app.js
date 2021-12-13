@@ -140,8 +140,7 @@ app.use("/", (req, res, next) => {
   next();
 });
 
-app.use(rewriteUnsupportedBrowserMethodsPut);
-app.use(rewriteUnsupportedBrowserMethodsDelete);
+app.use(rewriteUnsupportedBrowserMethods);
 
 app.engine("handlebars", handlebarsInstance.engine);
 app.set("view engine", "handlebars");
