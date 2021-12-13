@@ -2,6 +2,8 @@
   let errormsg = $("#login-error");
   errormsg.hide();
 
+  $(".spinner").hide();
+
   $("#loginbtn").click(function (event) {
     event.preventDefault();
     let username = $("#username").val();
@@ -20,14 +22,15 @@
       url: location.href,
       data: { username: username, password: password },
     };
+    $(".spinner").show();
 
     $.ajax(requestConfig)
       .then(function (res) {
-        debugger;
-        console.log(res);
         window.location.replace("/");
       })
       .fail(function (error) {
+        $(".spinner").hide();
+
         errormsg.show();
         errormsg.html(error.responseJSON.error);
       });

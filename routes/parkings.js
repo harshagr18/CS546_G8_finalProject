@@ -243,30 +243,29 @@ router.get("/:id", async (req, res) => {
     // if (global && global.sessionStorage) {
     sessionStorage.setItem("parkingId", getData._id);
     // }
-    for(let key in getData) {
-      if(key === "parkingReviews" && Array.isArray(getData[key])) {
-        getData[key].forEach(element => {
-        if(req.session.user.userId === element.userId) {
-          console.log("inside if statement of foreach")
-          isReviewer = true;
-          element.isReviewer = true;
-        }
-        else {
-          isReviewer = false;
-          element.isReviewer = false;
-        }
-      })
+    for (let key in getData) {
+      if (key === "parkingReviews" && Array.isArray(getData[key])) {
+        getData[key].forEach((element) => {
+          if (req.session.user.userId === element.userId) {
+            console.log("inside if statement of foreach");
+            isReviewer = true;
+            element.isReviewer = true;
+          } else {
+            isReviewer = false;
+            element.isReviewer = false;
+          }
+        });
+      }
     }
-  }
-  getData.parkingReviews.reverse();
+    getData.parkingReviews.reverse();
 
-  res.render("pages/parkings/parkingDetails", {
-    partial: "emptyPartial",
-    session: req.session.user.userId,
-    parkdata: getData,
-    title: "Parking Details",
-    userLoggedIn: true,
-  });
+    res.render("pages/parkings/parkingDetails", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      parkdata: getData,
+      title: "Parking Details",
+      userLoggedIn: true,
+    });
   } catch (error) {
     res.status(404).json({ message: error });
   }

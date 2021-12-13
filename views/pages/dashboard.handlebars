@@ -122,9 +122,14 @@
     </div>
 
   {{else}}
-    <div class="alert alert-info" role="alert">
+    <div class="alert alert-info error-show" role="alert">
       <p>Search for parking using the filters!</p>
     </div>
 
+  {{/if}}
+  {{#if notfound}}
+    <div class="alert alert-info error-notfound" role="alert">
+      <p>Sorry we couldn't find any parkings with that search!</p>
+    </div>
   {{/if}}
 </div>
