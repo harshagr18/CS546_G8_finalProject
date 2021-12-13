@@ -86,6 +86,7 @@ function editParkingValidation(event) {
     {
       event.preventDefault();
       $("#uiError").show();
+      $(".successmsg").hide();
       $("#uiError").html("Vehicle category should be atleast  2 selections!");
       return false;
     }
@@ -97,6 +98,8 @@ function editParkingValidation(event) {
   ) {
     event.preventDefault();
     $("#uiError").show();
+    $(".successmsg").hide();
+
     $("#uiError").html(
       "Address contains random characters or length is less than 4"
     );
@@ -104,6 +107,8 @@ function editParkingValidation(event) {
   } else if (!cityRegex.test(city) || city.length > 30) {
     event.preventDefault();
     $("#uiError").show();
+    $(".successmsg").hide();
+
     $("#uiError").html(
       "City contains random characters or length is greater than 30"
     );
@@ -111,20 +116,28 @@ function editParkingValidation(event) {
   } else if (stateList.indexOf(state) == -1) {
     event.preventDefault();
     $("#uiError").show();
+    $(".successmsg").hide();
+
     $("#uiError").html("State not found");
     return false;
   } else if (!zipRegex.test(zip)) {
     event.preventDefault();
     $("#uiError").show();
+    $(".successmsg").hide();
+
     $("#uiError").html("Zip contains random characters");
     return false;
   } else if (!vehicleType.includes(...category)) {
     event.preventDefault();
     $("#uiError").show();
+    $(".successmsg").hide();
+
     $("#uiError").html("Vehicle category not found");
     return false;
   } else if (!parkingType.indexOf(pType) == -1) {
     event.preventDefault();
+    $(".successmsg").hide();
+
     $("#uiError").show();
     $("#uiError").html("Parking Type not found");
     return false;
