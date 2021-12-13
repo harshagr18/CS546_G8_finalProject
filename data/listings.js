@@ -134,9 +134,7 @@ let exportedMethods = {
 
   async getListing(listingId) {
     common.checkObjectId(listingId);
-    listingId = ObjectId(listingId);
-    listingId = listingId.trim();
-    if (common.xssCheck(listerId)) {
+    if (common.xssCheck(listingId)) {
       throw `XSS Attempt`;
     }
     listingId = ObjectId(listingId);
