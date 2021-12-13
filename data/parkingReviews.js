@@ -12,20 +12,19 @@ const updateRating = (checkParking, rating) => {
     avgRating += element.rating;
   });
 
-  avgRating = Number(
-    avgRating / (checkParking.parkingReviews.length + 1)
-  ).toFixed(2);
+  avgRating = Number(avgRating/(checkParking.parkingReviews.length + 1)).toFixed(1);
   return avgRating;
 };
 
 let exportedMethods = {
-  async createReview(parkingId, userId, rating, dateOfReview, comment) {
+  async createReview(parkingId, userId, rating, dateOfReview, comment, username) {
     if (
       common.xssCheck(parkingId) ||
       common.xssCheck(userId) ||
       common.xssCheck(rating) ||
       common.xssCheck(dateOfReview) ||
-      common.xssCheck(comment)
+      common.xssCheck(comment) ||
+      common.xssCheck(username)
     ) {
       throw `XSS Attempt`;
     }
@@ -57,6 +56,7 @@ let exportedMethods = {
       rating: rating,
       dateOfReview: dateOfReview,
       comment: comment,
+      username: username
     };
 
     const ratingUpdate = await parkingCollection.updateOne(
@@ -111,6 +111,7 @@ let exportedMethods = {
             rating: data.rating,
             dateOfReview: data.dateOfReview,
             comment: data.comment,
+            username: data.username
           };
         }
       });
@@ -131,7 +132,6 @@ let exportedMethods = {
     });
 
     if (parking === null) throw "No parking found with that ID";
-
     return parking.parkingReviews;
   },
 
@@ -158,6 +158,7 @@ let exportedMethods = {
             rating: data.rating,
             dateOfReview: data.dateOfReview,
             comment: data.comment,
+            username: data.username
           };
         }
       });
@@ -206,7 +207,7 @@ let exportedMethods = {
     if (getParkingData.parkingReviews.length !== 0) {
       avgRating = Number(
         avgRating / getParkingData.parkingReviews.length
-      ).toFixed(2);
+      ).toFixed(1);
     } else {
       avgRating = 0;
     }
@@ -284,7 +285,7 @@ let exportedMethods = {
     if (getParkingData.parkingReviews.length !== 0) {
       avgRating = Number(
         avgRating / (getParkingData.parkingReviews.length + 1)
-      ).toFixed(2);
+      ).toFixed(1);
     } else {
       avgRating = rating;
     }
@@ -296,6 +297,7 @@ let exportedMethods = {
       rating: rating,
       dateOfReview: findReview[0].dateOfReview,
       comment: comment,
+      username: findReview[0].username
     };
 
     const updateReview = await parkingCollection.updateOne(
@@ -320,8 +322,8 @@ let exportedMethods = {
     if (!extractUserReview.matchedCount && !extractUserReview.modifiedCount)
       throw "Review remove from the user have been failed";
 
-    const updateNewReview = await parkingCollection.updateOne(
-      { _id: ObjectId(findReview[0].parkingId) },
+    const updateNewReview = await userCollection.updateOne(
+      { _id: ObjectId(findReview[0].userId) },
       { $push: { reviews: newReviewInfo } }
     );
 

@@ -18,7 +18,6 @@ let exportedMethods = {
     ) {
       throw `XSS Attempt`;
     }
-
     let booked = false;
     let bookerId = null;
     let numberPlate = null;
@@ -135,11 +134,9 @@ let exportedMethods = {
     common.checkObjectId(listingId);
     // listingId = ObjectId(listingId);
     // listingId = listingId.trim();
-
     if (common.xssCheck(listerId)) {
       throw `XSS Attempt`;
     }
-
     listingId = ObjectId(listingId);
     const parkingsCollection = await parkings();
     let parkingsList = await parkingsCollection.find({}).toArray();
@@ -431,7 +428,6 @@ let exportedMethods = {
     ) {
       throw `XSS Attempt`;
     }
-
     //Pending: validation for start date with ed date after updating
     if (startDate == "" || startDate == null) startDate = listingData.startDate;
     else {
@@ -499,8 +495,7 @@ let exportedMethods = {
       },
       { $pull: { listing: removeListing } }
     );
-    if (removeListings.modifiedCount !== 0) {
-      // check correct param for remove listing
+    if (removeListings.modifiedCount !== 0) {   // check correct param for remove listing
       const updatedListings = await parkingsCollection.updateOne(
         {
           _id: ObjectId(listerId),
@@ -580,8 +575,7 @@ let exportedMethods = {
       },
       { $pull: { listing: removeListing } }
     );
-    if (removeListings.modifiedCount !== 0) {
-      // check correct param for remove listing
+    if (removeListings.modifiedCount !== 0) {   // check correct param for remove listing
       const updatedListings = await parkingsCollection.updateOne(
         {
           _id: ObjectId(listerId),
@@ -603,6 +597,82 @@ let exportedMethods = {
     } else {
       throw `Could not book listing successfully.`;
     }
+  },
+
+  async reportListing(listingId, bookerId, comment) {
+    console.log("Before xss check in report listing");
+    common.checkObjectId(listingId);
+    common.checkObjectId(bookerId);
+    common.checkIsProperString(comment);
+
+    if (
+      common.xssCheck(listerId) ||
+      common.xssCheck(bookerId) ||
+      common.xssCheck(comment)
+    ) {
+      throw `XSS Attempt`;
+    }
+
+    console.log("After xss checks in report listing");
+    let par;
+    const parkingsCollection = await parkings();
+    const parkingList = await parkingsCollection.find().toArray();
+
+    parkingList.forEach((element) => {
+      element.listing.forEach((x) => {
+        if(x._id.toString() === listingId.toString()) {
+          par = element;
+        }
+      });
+    });
+
+    if(!par) throw 'No listing found with that ID';
+    console.log("BEfore printing par");
+    console.log("parkingID" , par._id);
+    console.log("BookerId ", bookerId);
+
+    par.listing.forEach((element) => {
+      if(element.bookerId !== null && element.booked === true) {
+        if(element.bookerId.toString() === bookerId.toString()) {
+          element.booked = false
+          element.bookerId = null
+          element.numberPlate = null;
+        }
+      }
+    });
+
+    const pullListing = await parkingsCollection.updateOne(
+      {_id: ObjectId(par._id)},
+      {$pull: {listing: {}}}
+      );
+
+    console.log("After pulling all records of booker");
+    if (!pullListing.matchedCount && !pullListing.modifiedCount)
+      throw "Pulling of all booking has failed";
+    
+    const extractListing = await parkingsCollection.updateOne(
+      {_id: ObjectId(par._id)},
+      {$set: par }
+    );
+
+    console.log("After Extracting all records of booker");
+    if (!extractListing.matchedCount && !extractListing.modifiedCount)
+      throw "Update of booking has failed";
+
+    const getParkingData = await parkingsCollection.findOne(
+      {_id: ObjectId(par._id)});
+
+    if (getParkingData === null) throw "No parking found with that ID";
+
+    const userCollection = await users();
+    const listerDetails = await userCollection.findOne(
+      {_id: ObjectId(par.listerId)}
+    )
+
+    if (listerDetails === null) throw "No user found with that ID";
+
+    this.sendReportingMail(listerDetails.email, listerDetails.username, comment);
+    return getParkingData;
   },
 
   async storeListingInCaseOfError(userId, listing) {
@@ -630,9 +700,9 @@ let exportedMethods = {
 
     let mailDetails = {
       from: "noreply.myparkingassistant@gmail.com",
-      to: "cakemeberry@gmail.com",
+      to: email,
       subject: "You have been reported",
-      text: "You have been reported for: comment, by reported",
+      text: `You have been reported for: ${comment}, by ${fromUser}`,
       // html: "<b>Hello world?</b>", // html body
     };
 
@@ -643,7 +713,41 @@ let exportedMethods = {
         console.log("Email sent successfully");
       }
     });
-  }
-}
+  },
+
+  // async listingDetail(bookerId, startDate, endDate, startTime, endTime, booked, numberPlate, price) {
+  //   if (
+  //     !bookerId ||
+  //     !startDate ||
+  //     !endDate ||
+  //     !startTime ||
+  //     !endTime ||
+  //     !booked ||
+  //     !numberPlate ||
+  //     !price
+  //   ) {
+  //     throw `Missing parameter`;
+  //   }
+
+  //   common.checkIsProperString(bookerId);
+  //   common.checkInputDate(startDate);
+  //   common.checkInputDate(endDate);
+  //   common.checkInputTime(startTime);
+  //   common.checkInputTime(endTime);
+  //   common.checkIsProperBoolean(booked);
+  //   common.checkIsProperNumber(price);
+  //   common.checkNumberPlate(numberPlate);
+
+  //   const parkingsCollection = await parkings();
+  //   let listingIdObj = await parkingsCollection.findOne({
+  //     _id: ObjectId(id),
+  //   });
+  //   if (listingIdObj === null) throw `No listings found.`;
+  //   listingIdObj._id = listingIdObj._id.toString();
+  //   return listingIdObj;
+  // }
+};
+  
+
 
 module.exports = exportedMethods;

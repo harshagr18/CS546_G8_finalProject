@@ -111,6 +111,7 @@ router.post("/createListing", async (req, res) => {
     });
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", {
+      partial: "emptyPartial",
       error: e,
       partial: "createListing",
       session: req.session.user,
@@ -599,5 +600,65 @@ router.put("/bookListing/:id", async (req, res) => {
     });
   }
 });
+
+router.delete("/reportListing", async (req, res) => {
+  try {
+      reportListingInfo = req.body;
+      
+      const data = await listingsData.reportListing(reportListingInfo._id, reportListingInfo.bookerId, reportListingInfo.comment);
+
+      const parkingData = await listingsData.getAllListings(data._id.toString());
+      if (!parkingData) {
+        res.status(404).render("pages/parkings/listings", {
+        partial: "emptyPartial",
+        error: "Error 404 :No data found.",
+      });
+      return;
+      }
+      res.render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      getData: parkingData,
+      title: "Listing",
+    });
+  }
+  catch (e) {
+    console.log(e);
+    res.status(400).render("users/login", {partial: "emptyPartial", error: e });  
+  }
+});
+
+// router.put("/updateByUser/:id", async (req, res) => {
+//     const requestBody = req.body;
+//     let parkingId;
+
+//     try {
+//       const userData = await usersData.getUser(req.session.user.userId);
+//       parkingId = userData.parkingId.toString();
+//     } catch (e) {
+//       res.status(400).render("users/login", { error: e });
+//     }
+
+//     let startDate = requestBody.startDate;
+//     let endDate = requestBody.endDate;
+//     let startTime = requestBody.startTime;
+//     let endTime = requestBody.endTime;
+//     let price = requestBody.price;
+
+//     try {
+//       const data = await listingsData.updateListingByLister(
+//         parkingId,
+//         req.params.id,
+//         startDate,
+//         endDate,
+//         startTime,
+//         endTime,
+//         //   userCarCategory,
+//         price
+//       );
+//       res.render("users/login", { data: data, title: "Create Listing" });
+//     } catch (e) {
+//       res.status(400).render("users/login", { error: e });
+//     }
+//   });
 
 module.exports = router;
