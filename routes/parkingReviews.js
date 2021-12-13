@@ -5,8 +5,6 @@ const parkingsData = data.parkings;
 const reviewData = data.parkingReviews;
 const common = require("../data/common");
 const errorCheck = require("../data/errorHandling");
-const { ObjectId } = require("mongodb");
-const moment = require("moment");
 
 router.get("/:id", async (req, res) => {
   if (common.xssCheck(req.params.id)) {
@@ -85,10 +83,14 @@ router.post("/:id", async (req, res) => {
     return res.redirect("/users/login");
   }
   let reviewInfo = req.body;
-  reviewInfo.dateOfReview = moment(
-    reviewInfo.dateOfReview,
-    "YYYY/MM/DD"
-  ).format("MM/DD/YYYY");
+
+  const currentDate = new Date();
+  const dateOfReview = currentDate.getMonth() +
+            1 + '/' +
+            currentDate.getDate() + '/' +
+            currentDate.getFullYear()
+
+  console.log(dateOfReview);
   reviewInfo.rating = parseInt(reviewInfo.rating);
 
   if (!errorCheck.checkId(req.params.id.trim())) {
@@ -106,7 +108,7 @@ router.post("/:id", async (req, res) => {
     return;
   }
 
-  if (!errorCheck.checkDate(reviewInfo.dateOfReview.trim())) {
+  if (!errorCheck.checkDate(dateOfReview.trim())) {
     res.status(400).json({
       error:
         "Date provided is not in proper format. Also please enter today's date",
@@ -115,6 +117,13 @@ router.post("/:id", async (req, res) => {
   }
 
   try {
+    if (
+      common.xssCheck(reviewInfo.rating) ||
+      common.xssCheck(reviewInfo.comment)
+    ) {
+      res.status(400).json({ error: "XSS Attempt" });
+      return;
+    }
     await parkingsData.getParking(req.params.id);
   } catch (e) {
     res.status(404).json({ error: "Parking not found" });
@@ -126,8 +135,9 @@ router.post("/:id", async (req, res) => {
       req.params.id,
       req.session.user.userId.trim(),
       reviewInfo.rating,
-      reviewInfo.dateOfReview.trim(),
-      reviewInfo.comment.trim()
+      dateOfReview.trim(),
+      reviewInfo.comment.trim(),
+      req.session.user.username.trim()
     );
     const redirectUrl = "/parkings/" + req.params.id;
     res.redirect(redirectUrl);
@@ -165,6 +175,7 @@ router.put("/updateReview/", async (req, res) => {
     return res.redirect("/users/login");
   }
   let updateReviewInfo = req.body;
+  console.log("Inside update review ", updateReviewInfo.reviewId);
   updateReviewInfo.rating = parseInt(updateReviewInfo.rating);
 
   if (!errorCheck.checkId(updateReviewInfo.reviewId.trim())) {
@@ -201,7 +212,8 @@ router.put("/updateReview/", async (req, res) => {
     const updatedReview = await reviewData.updateReview(
       updateReviewInfo.reviewId,
       updateReviewInfo.rating,
-      updateReviewInfo.comment
+      updateReviewInfo.comment,
+      req.session.user.username
     );
     res.redirect("/parkings/" + updatedReview.parkingId);
   } catch (e) {
@@ -233,9 +245,7 @@ router.delete("/deleteReview/:id", async (req, res) => {
     const deletedReview = await reviewData.removeReview(req.params.id);
     res.redirect("/parkings/" + deletedReview.parkingId);
   } catch (e) {
-    res
-      .status(404)
-      .json({ error: "Review cannot be deleted due to some error" });
+    res.status(404).json({ error: "Review cannot be deleted due to some error" });
   }
 });
 

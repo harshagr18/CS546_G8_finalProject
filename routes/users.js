@@ -133,15 +133,10 @@ router.post("/login", async (req, res) => {
 
     let user = await userData.checkUser(userInfo.username, userInfo.password);
     req.session.user = { username: user.username, userId: user._id.toString() };
-    res.redirect("/");
+    return res.json("success");
   } catch (e) {
     console.log(e);
-    res.status(400).render("pages/users/login", {
-      title: "Login",
-      error: "Invalid UserID / Password",
-      partial: "login",
-    });
-    return;
+    return res.status(400).json({ error: e });
   }
 });
 

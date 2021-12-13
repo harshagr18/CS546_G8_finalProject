@@ -62,7 +62,6 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
   // let the next middleware run:
   next();
 };
-
 app.use(
   session({
     name: "AuthCookie",

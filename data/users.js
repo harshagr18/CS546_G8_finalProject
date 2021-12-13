@@ -79,6 +79,13 @@ let exportedMethods = {
       throw `Missing parameter`;
     }
 
+    const usersCollection = await users();
+
+    const uniqueIndex = await usersCollection.createIndex(
+      { username: 1 },
+      { unique: true }
+    );
+
     username = username.toLowerCase();
 
     if (
@@ -203,7 +210,12 @@ let exportedMethods = {
     };
 
     const userCollection = await users();
-    const insertInfo = await userCollection.insertOne(newUser);
+
+    const insertInfo = await userCollection
+      .insertOne(newUser)
+      .catch(function (e) {
+        throw "Username already exists";
+      });
     if (insertInfo.insertedCount === 0) throw `Could not add user`;
 
     return insertInfo.insertedId.toString();
@@ -248,6 +260,13 @@ let exportedMethods = {
     ) {
       throw `Missing parameter`;
     }
+
+    const usersCollection = await users();
+
+    const uniqueIndex = await usersCollection.createIndex(
+      { username: 1 },
+      { unique: true }
+    );
 
     username = username.toLowerCase();
 
@@ -376,10 +395,11 @@ let exportedMethods = {
 
     const userCollection = await users();
 
-    const updateUser = await userCollection.updateOne(
-      { _id: userId },
-      { $set: updatedUser }
-    );
+    const updateUser = await userCollection
+      .updateOne({ _id: userId }, { $set: updatedUser })
+      .catch(function (e) {
+        throw "Username already exists";
+      });
     if (updateUser.modifiedCount === 0) throw "Parking could not be updated";
 
     const newUser = await this.getUser(userId.toString());
