@@ -6,6 +6,7 @@ const common = require("./common");
 
 async function get(username) {
   const userCollection = await users();
+  username = username.toLowerCase();
   const user = await userCollection.findOne({
     username: username,
   });
@@ -77,6 +78,15 @@ let exportedMethods = {
     ) {
       throw `Missing parameter`;
     }
+
+    const usersCollection = await users();
+
+    const uniqueIndex = await usersCollection.createIndex(
+      { username: 1 },
+      { unique: true }
+    );
+
+    username = username.toLowerCase();
 
     if (
       common.xssCheck(firstName) ||
@@ -200,7 +210,12 @@ let exportedMethods = {
     };
 
     const userCollection = await users();
-    const insertInfo = await userCollection.insertOne(newUser);
+
+    const insertInfo = await userCollection
+      .insertOne(newUser)
+      .catch(function (e) {
+        throw "Username already exists";
+      });
     if (insertInfo.insertedCount === 0) throw `Could not add user`;
 
     return insertInfo.insertedId.toString();
@@ -245,6 +260,15 @@ let exportedMethods = {
     ) {
       throw `Missing parameter`;
     }
+
+    const usersCollection = await users();
+
+    const uniqueIndex = await usersCollection.createIndex(
+      { username: 1 },
+      { unique: true }
+    );
+
+    username = username.toLowerCase();
 
     validateID(userId);
     checkIsProperString(firstName);
@@ -371,10 +395,11 @@ let exportedMethods = {
 
     const userCollection = await users();
 
-    const updateUser = await userCollection.updateOne(
-      { _id: userId },
-      { $set: updatedUser }
-    );
+    const updateUser = await userCollection
+      .updateOne({ _id: userId }, { $set: updatedUser })
+      .catch(function (e) {
+        throw "Username already exists";
+      });
     if (updateUser.modifiedCount === 0) throw "Parking could not be updated";
 
     const newUser = await this.getUser(userId.toString());
@@ -404,6 +429,8 @@ let exportedMethods = {
 
   //modified by sv user checks for password equal to 6 not accepting
   async checkUser(username, password) {
+    username = username.toLowerCase();
+
     if (common.xssCheck(username) || common.xssCheck(password)) {
       throw `XSS attempt`;
     }

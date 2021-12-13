@@ -41,13 +41,15 @@
               <li class="nav-item active">
                 <a class="nav-link" href="/parkings">My Parkings</a>
               </li>
+                          <li class="nav-item">
+              <a style="color:white" class="nav-link" href="/listings/getMyListings">My Listings</a>
+            </li>
+
               <li class="nav-item active">
-                <a class="nav-link" href="/users/{{session}}">My profile</a>
-              </li>
-              <li class="nav-item active">
-                <a class="nav-link" href="#">My Bookings</a>
+                <a class="nav-link" href="/listings/getMyBookings">My Bookings</a>
               </li>
             </ul>
+            <a style = "color:white" class="nav-link" href="/users/{{session}}">My profile</a>
             <a class="nav-link logout" aria-label="logout" href="/users/logout">Logout
               <i class="fa fa-sign-out"></i>
             </a>
