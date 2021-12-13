@@ -31,7 +31,7 @@ router.post("/search", async (req, res) => {
   citySearch = citySearch.trim().toLowerCase();
   stateSearch = stateSearch.trim();
   zipSearch = zipSearch.trim();
-  parkingType = parkingType.trim();
+  parkingType = parkingType.trim();gi
 
   if (stateSearch === "Select State") {
     stateSearch = "";
