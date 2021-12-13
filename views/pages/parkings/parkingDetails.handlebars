@@ -9,7 +9,8 @@
             <p>Zip</p>
             <p class="zip">{{parkdata.zip}}</p>
             <p>OverallRating</p>
-            <p class="overallRating">{{parkdata.overallRating}}</p>
+            <span class="star">&#11088;</span>
+            <span class="rating">{{parkdata.overallRating}}</span>
         </div>
         
         <div class="col">
@@ -35,12 +36,8 @@
             {{#each parkdata.parkingReviews}}
                 <div class = "reviews">
                     <div class = "card-full">
-                        <div class="reviewHeading">
-                            <div class="reviewerRating">
-                                <h3 class="username">Username: {{username}}</h3>
-                                <h4 class = "rating">Rating: {{rating}}</h4>
-                            </div>
-                        </div>
+                        <h3 class="username">Username: {{username}}</h3>
+                        <h4 class = "rating">Rating: {{rating}}</h4>
                         <p>{{comment}}<br>
                         {{dateOfReview}}</p>
 

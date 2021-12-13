@@ -56,17 +56,28 @@ const rewriteUnsupportedBrowserMethods = (req, res, next) => {
     req.method = "DELETE";
   }
 
-  if (req.url == "/listings/removeListing/") {
-    req.method = "DELETE";
-  }
-
-  if (req.url.startsWith("/parkings/delete/")) {
+  if (req.url.startsWith("/listings/reportListing/")) {
     req.method = "DELETE";
   }
   // let the next middleware run:
   next();
 };
+// Pending: put and delete and update listing url in below methods
+const rewriteUnsupportedBrowserMethodsDelete = (req, res, next) => {
+  // If the user posts to the server with a property called _method, rewrite the request's method
+  // To be that method; so if they post _method=PUT you can now allow browsers to POST to a route that gets
+  // rewritten in this middleware to a PUT route
+  // if (req.body && req.body._method) {
+  //   req.method = req.body._method;
+  //   delete req.body._method;
+  // }
 
+  if (req.url.startsWith("/parkings/delete/") || req.url.startsWith("/listings/removeListing/")) {
+    req.method = "DELETE";
+  }
+  // let the next middleware run:
+  next();
+};
 app.use(
   session({
     name: "AuthCookie",
@@ -111,6 +122,21 @@ app.use("/", (req, res, next) => {
   next();
 });
 
+app.use("/listings/bookListing/:id", (req,res,next) => {
+    req.method = 'put';
+    next();
+});
+
+app.use("/listings/updateListingData/:id", (req,res,next) => {
+  req.method = 'put';
+  next();
+});
+
+app.use("/listings/removeListing/:id", (req,res,next) => {
+  req.method = 'delete';
+  next();
+});
+
 app.use("/", (req, res, next) => {
   if (
     req.session.user &&
@@ -124,7 +150,8 @@ app.use("/", (req, res, next) => {
   next();
 });
 
-app.use(rewriteUnsupportedBrowserMethods);
+app.use(rewriteUnsupportedBrowserMethodsPut);
+app.use(rewriteUnsupportedBrowserMethodsDelete);
 
 app.engine("handlebars", handlebarsInstance.engine);
 app.set("view engine", "handlebars");

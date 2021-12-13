@@ -213,7 +213,7 @@ router.get("/:id", async (req, res) => {
     partial: "emptyPartial",
     session: req.session.user.userId,
     parkdata: getData,
-    title: "Parking",
+    title: "Parking Details",
     userLoggedIn: true,
   });
   } catch (error) {

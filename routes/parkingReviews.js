@@ -5,8 +5,6 @@ const parkingsData = data.parkings;
 const reviewData = data.parkingReviews;
 const common = require("../data/common");
 const errorCheck = require("../data/errorHandling");
-const { ObjectId } = require("mongodb");
-const moment = require("moment");
 
 router.get("/:id", async (req, res) => {
   if (common.xssCheck(req.params.id)) {
@@ -119,6 +117,13 @@ router.post("/:id", async (req, res) => {
   }
 
   try {
+    if (
+      common.xssCheck(reviewInfo.rating) ||
+      common.xssCheck(reviewInfo.comment)
+    ) {
+      res.status(400).json({ error: "XSS Attempt" });
+      return;
+    }
     await parkingsData.getParking(req.params.id);
   } catch (e) {
     res.status(404).json({ error: "Parking not found" });
@@ -240,9 +245,7 @@ router.delete("/deleteReview/:id", async (req, res) => {
     const deletedReview = await reviewData.removeReview(req.params.id);
     res.redirect("/parkings/" + deletedReview.parkingId);
   } catch (e) {
-    res
-      .status(404)
-      .json({ error: "Review cannot be deleted due to some error" });
+    res.status(404).json({ error: "Review cannot be deleted due to some error" });
   }
 });
 

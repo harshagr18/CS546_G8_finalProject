@@ -322,7 +322,7 @@ let exportedMethods = {
     if (!extractUserReview.matchedCount && !extractUserReview.modifiedCount)
       throw "Review remove from the user have been failed";
 
-    const updateNewReview = await parkingCollection.updateOne(
+    const updateNewReview = await userCollection.updateOne(
       { _id: ObjectId(findReview[0].parkingId) },
       { $push: { reviews: newReviewInfo } }
     );

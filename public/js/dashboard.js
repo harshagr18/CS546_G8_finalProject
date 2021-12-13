@@ -53,10 +53,3 @@ function searchValidation(event) {
   }
   return true;
 }
-
-function bookform(id) {
-  document.myform.action = "/listings/bookListing/" + id;
-}
-function reportform() {
-  document.myform.action = "/listings/reportListing";
-}

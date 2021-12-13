@@ -89,6 +89,7 @@ router.post("/createListing", async (req, res) => {
     });
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", {
+      partial: "emptyPartial",
       error: e,
       session: req.session.user,
     });
@@ -155,7 +156,7 @@ router.get("/getListing/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listingDetail", { error: e });
   }
-})
+});
 
 //Pending: pop up to ask if they are sure to delete listing
 router.delete("/removeListing/:id", async (req, res) => {
@@ -299,10 +300,10 @@ router.put("/bookListing/:id", async (req, res) => {
 router.delete("/reportListing", async (req, res) => {
   try {
       reportListingInfo = req.body;
+      
+      const data = await listingsData.reportListing(reportListingInfo._id, reportListingInfo.bookerId, reportListingInfo.comment);
 
-      const data = await listingsData.removeListing(reportListingInfo.listingId, reportListingInfo.bookerId);
-
-      const parkingData = await listingsData.getAllListings(data.parkingId);
+      const parkingData = await listingsData.getAllListings(data._id.toString());
       if (!parkingData) {
         res.status(404).render("pages/parkings/listings", {
         partial: "emptyPartial",
@@ -317,7 +318,8 @@ router.delete("/reportListing", async (req, res) => {
     });
   }
   catch (e) {
-    res.status(400).render("users/login", { error: e });  
+    console.log(e);
+    res.status(400).render("users/login", {partial: "emptyPartial", error: e });  
   }
 });
 
