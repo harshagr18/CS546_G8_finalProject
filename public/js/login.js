@@ -15,7 +15,6 @@
       $("#uiError").html("Please Enter Password");
       return false;
     }
-    debugger;
     var requestConfig = {
       method: "POST",
       url: location.href,

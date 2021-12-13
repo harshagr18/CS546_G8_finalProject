@@ -133,7 +133,7 @@ router.post("/login", async (req, res) => {
 
     let user = await userData.checkUser(userInfo.username, userInfo.password);
     req.session.user = { username: user.username, userId: user._id.toString() };
-    return res.send(user);
+    return res.json("success");
   } catch (e) {
     console.log(e);
     return res.status(400).json({ error: e });
