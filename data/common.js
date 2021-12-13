@@ -1,10 +1,10 @@
 const { ObjectId } = require("mongodb");
-const moment = require('moment');
+const moment = require("moment");
 
 var xss = require("xss");
 
 function xssCheck(str) {
-  if (xss(str.trim()) == str.trim()) {
+  if (xss(str) == str) {
     return false;
   } else {
     return true;
@@ -173,40 +173,74 @@ function checkNumberPlate(val) {
   if (re.test(val)) throw `Number plate should be alpanumeric`;
 }
 
+// function timeSlotFunc(startTime, endTime, startDate, endDate) {
+
+//   // let numberOfDays = Math.round(
+//   //   Math.abs((new Date(endDate) - new Date(startDate)) / 24)
+//   // );
+
+//   // let startDateTemp = startDate;
+//   // let endDateTemp = startDate;
+
+//   let hourDiff = parseInt(endTime) - parseInt(startTime);
+//   if (hourDiff < 0 ) throw `Invalid start and end date`;    // && numberOfDays == 0
+//   // else hourDiff = 24 * numberOfDays + hourDiff;
+
+//   let timeSlots = [];
+//   let tempStart = parseInt(startTime);
+//   let tempEnd = tempStart + 1;
+//   for (let i = 0; i < hourDiff; i++) {
+//     if (tempStart == 23){
+//       // Pending: change date here
+//       tempEnd = 0;
+//       timeSlots.push(tempStart + ":00 - " + tempEnd + ":00");
+//       throw `Only same day entries allowed.`
+//     }
+//     timeSlots.push(tempStart + ":00 - " + tempEnd + ":00");
+
+//     // if (tempStart.toString().startsWith("00:00") || tempStart.toString().startsWith("0:00")) {
+//     //   startDateTemp.setDate(startDateTemp.getDate() + 1);
+//     //   endDateTemp.setDate(endDateTemp.getDate() + 1);
+//     // }
+//     // if ((new Date(endDateTemp)).getTime() > (new Date(endDate)).getTime())
+//     //   throw `Invalid Date and time, increment date or reduce time.`;
+
+//     tempStart = tempEnd;
+//     tempEnd = tempEnd + 1;
+//   }
+//   return timeSlots;
+// }
+
 function timeSlotFunc(startTime, endTime, startDate, endDate) {
-  
-  // let numberOfDays = Math.round(
-  //   Math.abs((new Date(endDate) - new Date(startDate)) / 24)
-  // );
-
-  // let startDateTemp = startDate;
-  // let endDateTemp = startDate;
-
-  let hourDiff = parseInt(endTime) - parseInt(startTime);
-  if (hourDiff < 0 ) throw `Invalid start and end date`;    // && numberOfDays == 0
-  // else hourDiff = 24 * numberOfDays + hourDiff;
+  startTime = parseInt(startTime);
+  endTime = parseInt(endTime);
+  let numberOfDays = Math.round(
+    Math.abs((new Date(endDate) - new Date(startDate)) / 86400000)
+  );
+  let hourDiff = endTime - startTime;
+  if (hourDiff < 0 && numberOfDays == 0) throw `Invalid start and end date`;
+  else hourDiff = 24 * numberOfDays + hourDiff;
 
   let timeSlots = [];
-  let tempStart = parseInt(startTime);
-  let tempEnd = tempStart + 1;
+  let tempEndTime = startTime+1;
   for (let i = 0; i < hourDiff; i++) {
-    if (tempStart == 23){
-      // Pending: change date here
-      tempEnd = 0;
-      timeSlots.push(tempStart + ":00 - " + tempEnd + ":00");
-      throw `Only same day entries allowed.`
+    let timeDateObj = {};
+    if(startTime == 23){
+      tempEndTime = 0;
+    } 
+    if(startTime == 0){
+      startDate = moment(startDate, "YYYY-MM-DD").add(1, 'days');
+      startDate = startDate.format("YYYY-MM-DD");
+      // console.log(moment(startDate._d).format("YYYY-MM-DD"));
     }
-    timeSlots.push(tempStart + ":00 - " + tempEnd + ":00");
-
-    // if (tempStart.toString().startsWith("00:00") || tempStart.toString().startsWith("0:00")) {
-    //   startDateTemp.setDate(startDateTemp.getDate() + 1);
-    //   endDateTemp.setDate(endDateTemp.getDate() + 1);
-    // }
-    // if ((new Date(endDateTemp)).getTime() > (new Date(endDate)).getTime())
-    //   throw `Invalid Date and time, increment date or reduce time.`;
-
-    tempStart = tempEnd;
-    tempEnd = tempEnd + 1;
+    timeDateObj.time = startTime + ":00 - " + tempEndTime + ":00";
+    timeDateObj.date = startDate;
+    timeDateObj.startTime = startTime;
+    timeDateObj.endTime = tempEndTime;
+    
+    timeSlots.push(timeDateObj);
+    startTime = tempEndTime;
+    tempEndTime += 1;
   }
   return timeSlots;
 }
