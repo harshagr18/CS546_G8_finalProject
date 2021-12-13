@@ -3,7 +3,7 @@ A parking booking application designed to list and rent out parking spaces.
 
 ## Setup
 - Run 'npm install' to install the required dependencies for the project.  
-- Then run 'npm seed' to run the task of seeding the database.
+- Then run 'npm run seed' to run the task of seeding the database.
 - Then run "npm start" to run the application on http://localhost:3000/
 
 ## Working
