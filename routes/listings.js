@@ -6,29 +6,40 @@ const common = require("../data/common");
 let { ObjectId } = require("mongodb");
 const session = require("express-session");
 const sessionStorage = require("sessionstorage");
-// const window = require("window");
+
+const timeSlot = [
+  00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+  19, 20, 21, 22, 23, 24,
+];
 
 router.get("/createListingPage", async (req, res) => {
   try {
     res.render("pages/parkings/createListing", {
       partial: "emptyPartial",
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
       session: req.session.user,
+      title: "Create Listing",
     });
-  } catch (e) {}
+  } catch (e) {
+    res.status(400).render("pages/parkings/createListing", {
+      error: e,
+      session: req.session.user,
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
+      hasErrors: true,
+      title: "Create Listing",
+      partial: "emptyPartial",
+    });
+  }
 });
 
-// Pending: Change the render page url for all
 router.post("/createListing", async (req, res) => {
-  // Body empty issue resolved by removing enctype in form
   const requestBody = req.body;
   let parkingId;
-  // let listerCarCategory;
-
-  // Pending: Testing
-  // user id will be in session
-  // make a db call to get the lister id from user id
 
   parkingId = sessionStorage.getItem("parkingId");
+  userId = req.session.user.userId;
 
   let startDate = requestBody.startDate;
   let endDate = requestBody.endDate;
@@ -38,6 +49,7 @@ router.post("/createListing", async (req, res) => {
 
   try {
     if (
+      !userId ||
       !parkingId ||
       !startDate ||
       !endDate ||
@@ -49,25 +61,29 @@ router.post("/createListing", async (req, res) => {
     }
 
     common.checkObjectId(parkingId);
-    // var today = new Date();
-    // common.checkInputDate(startDate, endDate);
-    common.checkInputDate(startDate);
-    common.checkInputDate(endDate);
-    // common.checkInputTime(startTime, endTime);
+    common.checkObjectId(userId);
+    var today = new Date();
+    common.checkInputDate(today, startDate, 1);
+    common.checkInputDate(startDate, endDate, 0);
     common.checkInputTime(startTime);
     common.checkInputTime(endTime);
     common.checkIsProperNumber(price);
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", {
-      partial: "emptyPartial",
+      partial: "createListing",
       session: req.session.user,
+      hasErrors: true,
       error: e,
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
+      title: "Create Listing",
     });
     return;
   }
 
   try {
     const data = await listingsData.createListing(
+      userId,
       parkingId,
       startDate,
       endDate,
@@ -75,23 +91,108 @@ router.post("/createListing", async (req, res) => {
       endTime,
       price
     );
-    // if (!data) {
-    //   res
-    //     .status(404)
-    //     .render("users/login", { error: "Error 404 :No data found." });
-    //   return;
-    // }
-    res.render("pages/parkings/createListing", {
-      partial: "emptyPartial",
+    if (!data) {
+      res.status(404).render("pages/parkings/createListing", {
+        partial: "createListing",
+        session: req.session.user,
+        error: "Could not create listing",
+        title: "Create Listing",
+        startTimeVal: timeSlot,
+        endTimeVal: timeSlot,
+        hasErrors: true,
+      });
+      return;
+    }
+    res.render("pages/parkings/listings", {
+      partial: "createListing",
       session: req.session.user,
-      data: data,
-      title: "Create Listing",
+      getData: data,
+      title: "Listing",
     });
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", {
       partial: "emptyPartial",
       error: e,
+      partial: "createListing",
       session: req.session.user,
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
+      hasErrors: true,
+      title: "Create Listing",
+    });
+  }
+});
+
+router.get("/getMyBookings", async (req, res) => {
+  userId = req.session.user.userId;
+  try {
+    if (!userId) {
+      throw `Missing parameter`;
+    }
+    common.checkObjectId(userId);
+  } catch (e) {
+    res.status(400).render("pages/parkings/showBookings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "My Bookings",
+    });
+    return;
+  }
+
+  try {
+    const data = await listingsData.getMyBookings(userId);
+    res.render("pages/parkings/showBookings", {
+      partial: "emptyPartial",
+      bookingdata: data,
+      session: req.session.user.userId,
+      title: "My Bookings",
+    });
+  } catch (e) {
+    res.status(400).render("pages/parkings/showBookings", {
+      partial: "emptyPartial",
+      error: e,
+      session: req.session.user,
+      hasErrors: true,
+      title: "My Bookings",
+    });
+  }
+});
+
+router.get("/getMyListings", async (req, res) => {
+  userId = req.session.user.userId;
+  try {
+    if (!userId) {
+      throw `Missing parameter`;
+    }
+    common.checkObjectId(userId);
+  } catch (e) {
+    res.status(400).render("pages/parkings/showListings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "My Listings",
+    });
+    return;
+  }
+
+  try {
+    const data = await listingsData.getMyListings(userId);
+    res.render("pages/parkings/showListings", {
+      partial: "emptyPartial",
+      bookingdata: data,
+      session: req.session.user.userId,
+      title: "My Listings",
+    });
+  } catch (e) {
+    res.status(400).render("pages/parkings/showListings", {
+      partial: "emptyPartial",
+      error: e,
+      session: req.session.user,
+      hasErrors: true,
+      title: "My Listings",
     });
   }
 });
@@ -99,29 +200,32 @@ router.post("/createListing", async (req, res) => {
 router.get("/getAllListing/:id", async (req, res) => {
   let parkingId = req.params.id;
   sessionStorage.setItem("parkingId", parkingId);
-  // try {
-  //   const userData = await usersData.getUser(req.session.user.userId);
-  //   parkingId = userData.parkingId.toString();
-  // } catch (e) {
-  //   res
-  //     .status(400)
-  //     .render("pages/parkings/listings", { error: e, partial: "emptyPartial" });
-  // }
 
-  // try {
-  //   if (!parkingId) throw `Missing parameter`;
-  //   common.checkObjectId(parkingId);
-  // } catch (e) {
-  //   res.status(400).render("pages/parkings/listings", { error: e });
-  //   return;
-  // }
+  try {
+    if (!parkingId) {
+      throw `Missing parameter`;
+    }
+    common.checkObjectId(parkingId);
+  } catch (e) {
+    res.status(400).render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "Listing",
+    });
+    return;
+  }
 
   try {
     const data = await listingsData.getAllListings(parkingId);
     if (!data) {
       res.status(404).render("pages/parkings/listings", {
         partial: "emptyPartial",
-        error: "Error 404 :No data found.",
+        error: "No data found.",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Listing",
       });
       return;
     }
@@ -129,22 +233,47 @@ router.get("/getAllListing/:id", async (req, res) => {
       partial: "emptyPartial",
       getData: data,
       title: "Listing",
+      session: req.session.user,
     });
   } catch (e) {
-    res.status(400).render("pages/parkings/listings", { error: e });
+    res
+      .status(400)
+      .render("pages/parkings/listings", {
+        error: e,
+        partial: "emptyPartial",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Listing",
+      });
   }
 });
 
-// Pending: List out only the slots whose booked value is 'false'
-// if slot is available for 2 hours and user booked it only for 1 hr then list out
-// new slot in the list as well with the available time
 router.get("/getListing/:id", async (req, res) => {
-  console.log("listing id: ", req.params.id);
+  let listingId = req.params.id;
   try {
-    const data = await listingsData.getListing(req.params.id);
+    if (!listingId) {
+      throw `Missing parameter`;
+    }
+    common.checkObjectId(listingId);
+  } catch (e) {
+    res.status(400).render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "Listing",
+    });
+    return;
+  }
+  try {
+    const data = await listingsData.getListing(listingId);
     if (!data) {
-      res.status(404).render("pages/parkings/listingDetail", {
-        error: "Error 404 :No data found.",
+      res.status(404).render("pages/parkings/listings", {
+        partial: "emptyPartial",
+        error: "No data found.",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Listing",
       });
       return;
     }
@@ -152,62 +281,177 @@ router.get("/getListing/:id", async (req, res) => {
       partial: "emptyPartial",
       data: data,
       title: "Book Listing",
+      session: req.session.user,
     });
   } catch (e) {
-    res.status(400).render("pages/parkings/listingDetail", { error: e });
+    res
+      .status(400)
+      .render("pages/parkings/listingDetail", {
+        error: e,
+        partial: "emptyPartial",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Book Listing",
+      });
   }
 });
 
-//Pending: pop up to ask if they are sure to delete listing
 router.delete("/removeListing/:id", async (req, res) => {
+  let userId = req.session.user.userId;
+  let listingId = req.params.id;
   try {
-    // Window.confirm("Are you sure?");
-    // if (confirm("Are you sure?")) {
-    // txt = "Yes";
-    // try {
-    const data = await listingsData.removeListing(req.params.id);
+    if (!userId || !listingId) {
+      throw `Missing parameter`;
+    }
+    common.checkObjectId(userId);
+    common.checkObjectId(listingId);
+  } catch (e) {
+    res.status(400).render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "Listing",
+    });
+    return;
+  }
+
+  try {
+    const data = await listingsData.removeListing(userId, listingId);
+    if (!data) {
+      res.status(404).render("pages/parkings/listings", {
+        partial: "emptyPartial",
+        error: "No data found.",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Listing",
+      });
+      return;
+    }
     res.render("pages/parkings/listings", {
       partial: "emptyPartial",
-      data: data,
-      title: "Create Listing",
+      getData: data,
+      title: "Listing",
+      session: req.session.user,
     });
-    // } catch (e) {
-    //   res.status(400).render("users/login", { error: e });
-    // }
-    // } else {
-    //   // txt = "No";
-    //   return;
-    // }
   } catch (e) {
-    res.status(400).render("users/login", { error: e });
+    res
+      .status(400)
+      .render("pages/parkings/listings", {
+        error: e,
+        partial: "emptyPartial",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Listing",
+      });
   }
 });
 
 router.get("/updateListing/:id", async (req, res, next) => {
+  let listingId = req.params.id;
   try {
-    sessionStorage.setItem("listingId", req.params.id);
+    if (!listingId) {
+      throw `Missing parameter`;
+    }
+    common.checkObjectId(listingId);
+  } catch (e) {
+    res.status(400).render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "Listing",
+    });
+    return;
+  }
+
+  try {
+    sessionStorage.setItem("listingId", listingId);
     res.render("pages/parkings/listingUpdate", {
       partial: "emptyPartial",
-      id: req.params.id,
+      id: listingId,
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
       title: "Update Listing",
+      session: req.session.user,
     });
-
-    // next();
   } catch (e) {
-    res.status(400).render("pages/parkings/listingUpdate", {
+    return res.status(400).render("pages/parkings/listings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "Listing",
+    });
+  }
+});
+
+router.put("/cancelBooking/:id", async (req, res) => {
+  let parkingId;
+  let userId;
+  let listingId;
+  // parkingId = sessionStorage.getItem("parkingId");
+  userId = req.session.user.userId;
+  listingId = req.params.id;
+
+  try {
+    if (!userId || !listingId) {
+      throw `Missing parameter`;
+    }
+    common.checkObjectId(userId);
+    common.checkObjectId(listingId);
+  } catch (e) {
+    res.status(400).render("pages/parkings/showBookings", {
+      partial: "emptyPartial",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      title: "My Bookings",
+    });
+    return;
+  }
+
+  try {
+    // if (parkingId == req.session.user.userId) { // update by lister
+    const data = await listingsData.cancelBooking(
+      // parkingId,
+      userId,
+      listingId
+    );
+    if (!data) {
+      res.status(404).render("pages/parkings/showBookings", {
+        partial: "emptyPartial",
+        error: "No data found.",
+        session: req.session.user,
+        hasErrors: true,
+        title: "My Bookings",
+      });
+      return;
+    }
+    res.render("pages/parkings/showBookings", {
+      partial: "emptyPartial",
+      bookingdata: data,
+      title: "My Bookings",
+      session: req.session.user,
+      successMsg: "Booking Cancelled!."
+    });
+    return;
+  } catch (e) {
+    res.status(400).render("pages/parkings/showBookings", {
       partial: "emptyPartial",
       error: e,
+      session: req.session.user,
+      hasErrors: true,
+      title: "My Bookings",
     });
-    // next();
-    // res.status(400).send({ error: e });
   }
 });
 
 router.put("/updateListingData/:id", async (req, res) => {
   const requestBody = req.body;
   let parkingId;
-  console.log("user in session", req.session.user.userId);
   parkingId = sessionStorage.getItem("parkingId");
+  let userId = req.session.user.userId;
 
   let startDate = requestBody.startDate;
   let endDate = requestBody.endDate;
@@ -215,43 +459,73 @@ router.put("/updateListingData/:id", async (req, res) => {
   let endTime = requestBody.endTime;
   let price = parseInt(requestBody.price);
 
-  // Pending: error handling for params that are not null, i.e.
-  // whose values has been passed to be updated rest can be ignored
   try {
-    // if (parkingId == req.session.user.userId) { // update by lister
+// PENDING
+    common.checkObjectId(parkingId);
+    common.checkObjectId(userId);
+    var today = new Date();
+    if(startDate != '' && startDate != null) 
+      common.checkInputDate(today, startDate, 1);
+    if(endDate != "" && endDate != null) 
+      common.checkInputDate(today, endDate, 1);
+    if(startTime != 'Select Start Time' && startTime != "" && startTime != null) 
+      common.checkInputTime(startTime);
+    if(endTime != 'Select End Time' && endTime != "" && endTime != null) 
+      common.checkInputTime(endTime);
+    if(price != "" || price != null) 
+      common.checkIsProperNumber(price);
+
+  } catch (e) {
+    res.status(400).render("pages/parkings/listingUpdate", {
+      partial: "listingUpdate",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
+      title: "Update Listing",
+    });
+    return;
+  }
+  
+  try {
     const data = await listingsData.updateListingByLister(
+      userId,
       parkingId,
       req.params.id,
       startDate,
       endDate,
       startTime,
       endTime,
-      //   userCarCategory,
       price
     );
-    res.render("pages/parkings/listingUpdate", {
-      partial: "emptyPartial",
-      data: data,
-      title: "Create Listing",
+    if (!data) {
+      res.status(404).render("pages/parkings/listingUpdate", {
+        partial: "listingUpdate",
+        error: "No data found.",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Listing",
+      });
+      return;
+    }
+    res.render("pages/parkings/listings", {
+      partial: "listingUpdate",
+      getData: data,
+      session: req.session.user,
+      title: "Update Listing",
     });
     return;
-    // } else if(false) {
-    //   // update by user
-    // } else {
-    //   res.render("pages/parkings/listingUpdate", {
-    //     errorMessage: "Cannot update the parking.",
-    //   });
-    //   return;
-    // }
   } catch (e) {
     res.status(400).render("pages/parkings/listingUpdate", {
-      partial: "emptyPartial",
+      partial: "listingUpdate",
       error: e,
+      session: req.session.user,
+      title: "Update Listing",
+      hasErrors: true,
     });
   }
 });
-
-// Pending: all render should send session key with any value, "" also works
 
 router.put("/bookListing/:id", async (req, res) => {
   const requestBody = req.body;
@@ -259,40 +533,70 @@ router.put("/bookListing/:id", async (req, res) => {
   let bookerId;
   let numberPlate;
   let listingId = req.params.id;
-  // Pending: get bookerId and number plate from req and send
-  // it to book listing db function to add in db
 
-  console.log("user session data", req.session.user.userId);
   parkingId = sessionStorage.getItem("parkingId");
   bookerId = req.session.user.userId;
   numberPlate = requestBody.numberPlate;
+  userId = req.session.user.userId;
 
-  // Pending: error handling for params that are not null, i.e.
-  // whose values has been passed to be updated rest can be ignored
   try {
-    // if (parkingId != req.session.user.userId) {
+    if (
+      !userId ||
+      !parkingId ||
+      !numberPlate
+    ) {
+      throw `Missing parameter`;
+    }
+
+    common.checkObjectId(parkingId);
+    common.checkObjectId(userId);
+    common.checkNumberPlate(numberPlate);
+
+  } catch (e) {
+    res.status(400).render("pages/parkings/listingDetail", {
+      partial: "listingDetail",
+      session: req.session.user,
+      hasErrors: true,
+      error: e,
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
+      title: "Book Listing",
+    });
+    return;
+  }
+
+  try {
     const data = await listingsData.bookListing(
+      userId,
       parkingId,
       listingId,
       bookerId,
       numberPlate
     );
-    res.render("pages/parkings/listingDetail", {
-      partial: "emptyPartial",
-      data: data,
+    if (!data) {
+      res.status(404).render("pages/parkings/listingDetail", {
+        partial: "listingDetail",
+        error: "No data found.",
+        session: req.session.user,
+        hasErrors: true,
+        title: "Listing",
+      });
+      return;
+    }
+    res.render("pages/parkings/listings", {
+      partial: "listingDetail",
+      getData: data,
       title: "Listing Detail",
+      session: req.session.user,
     });
     return;
-    // } else {
-    //   res.render("pages/parkings/listing", {
-    //     errorMessage: "Lister cannot book the parking.",
-    //   });
-    //   return;
-    // }
   } catch (e) {
     res.status(400).render("pages/parkings/listingDetail", {
-      partial: "emptyPartial",
+      partial: "listingDetail",
       error: e,
+      session: req.session.user,
+      hasErrors: true,
+      title: "Book Listing",
     });
   }
 });

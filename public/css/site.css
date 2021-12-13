@@ -34,3 +34,70 @@ input[type="text"] {
 input[type="password"] {
   display: block;
 }
+
+.inputFields {
+  display: block;
+  text-align: center;
+  text-align-last: center;
+  margin: auto;
+  margin-bottom: 15px;
+  width: 75%;
+  color: #001514;
+  font-weight: bold;
+  font-size: medium;
+  letter-spacing: 1px;
+  background-color: rgba(136, 126, 126, 0.04);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  outline: none;
+  box-sizing: border-box;
+  border: 2px solid rgba(0, 0, 0, 0.02);
+}
+.star {
+  font-size: 50px;
+  position: absolute;
+  right: 5px;
+  bottom: 71px;
+}
+.rating {
+  position: absolute;
+  right: 29px;
+  bottom: 92px;
+}
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+div[role="alert"] {
+  text-align: center;
+}
+#citySearch {
+  width: 150px;
+}
+#zipSearch {
+  width: 150px;
+}
+#stateSearch {
+  width: 150px;
+}
+#parkingType {
+  width: 150px;
+}
+.navigators {
+  height: 40px;
+  font-weight: 500;
+}
+.fa,
+.logout {
+  color: white !important;
+}
+.logout:hover {
+  text-decoration: underline;
+}
+.nav-link:hover {
+  text-decoration: underline;
+}
+.dashboardFilter {
+  margin-bottom: 30px;
+}

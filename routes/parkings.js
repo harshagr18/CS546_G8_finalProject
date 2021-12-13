@@ -5,6 +5,7 @@ const parkingsData = require("../data/parkings");
 const common = require("../data/common");
 const path = require("path");
 const sessionStorage = require("sessionstorage");
+const listingsData = require("../data/listings");
 
 //added by sv
 
@@ -52,6 +53,7 @@ router.get("/", async (req, res) => {
       return;
     }
     //username calls user table and fetches lister id to get parkings from logged in user
+    //await listingsData.sendReportingMail();
     const getData = await parkingsData.getParkingsOfLister(listerId);
     res.render("pages/parkings/getParkings", {
       partial: "emptyPartial",

@@ -23,9 +23,9 @@
         <div class="col-md-4"><label class="labels">Zip Code</label><input type="number" class="form-control" placeholder="zip code" name="zip" id="zip"></div>
  
     </div>
-    <h3 style="color:red;">{{ error }}</h3>
-    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Create Profile</button></div>
-      <div class="alert alert-danger error" id="uiError" role="alert">
-  </div>
-    <a href="/users/login">Already have an accoun? Click to login</a>
+    {{#if error}}
+  <div class="alert alert-danger error" id="uiError" role="alert">{{ error }}</div>
+  {{/if}}
+  <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Create Profile</button></div>
+    <a href="/users/login">Already have an account? Click to login</a>
 </form>

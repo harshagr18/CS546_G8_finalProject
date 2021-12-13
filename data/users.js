@@ -6,6 +6,7 @@ const common = require("./common");
 
 async function get(username) {
   const userCollection = await users();
+  username = username.toLowerCase();
   const user = await userCollection.findOne({
     username: username,
   });
@@ -77,6 +78,8 @@ let exportedMethods = {
     ) {
       throw `Missing parameter`;
     }
+
+    username = username.toLowerCase();
 
     if (
       common.xssCheck(firstName) ||
@@ -246,6 +249,8 @@ let exportedMethods = {
       throw `Missing parameter`;
     }
 
+    username = username.toLowerCase();
+
     validateID(userId);
     checkIsProperString(firstName);
     checkIsProperString(lastName);
@@ -404,6 +409,8 @@ let exportedMethods = {
 
   //modified by sv user checks for password equal to 6 not accepting
   async checkUser(username, password) {
+    username = username.toLowerCase();
+
     if (common.xssCheck(username) || common.xssCheck(password)) {
       throw `XSS attempt`;
     }
