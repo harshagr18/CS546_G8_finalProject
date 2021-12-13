@@ -4,24 +4,10 @@ const common = require("./common");
 const parkingsData = require("./parkings");
 const sessionStorage = require("sessionstorage");
 
-let exportedMethods = {
-  async createListing(
-    userId,
-    listerId,
-    startDate,
-    endDate,
-    startTime,
-    endTime,
-    price
-  ) {
 const nodemailer = require("nodemailer");
 
-// const mongoCollections = require("../config/mongoCollections");
-// const parkings = mongoCollections.parkings;
-
-// Pending: show parking details on listing page
 let exportedMethods = {
-  async createListing(listerId, startDate, endDate, startTime, endTime, price) {
+  async createListing(userId, listerId, startDate, endDate, startTime, endTime, price) {
     if (
       common.xssCheck(listerId) ||
       common.xssCheck(startDate) ||
@@ -541,7 +527,7 @@ let exportedMethods = {
     const parkingData = await parkingsData.getParking(listerId);
     if (userId === parkingData.listerId.toString())
       throw `Cannot book your own parking.`;
-
+    if (
       common.xssCheck(listerId) ||
       common.xssCheck(listingId) ||
       common.xssCheck(bookerId) ||
@@ -629,38 +615,8 @@ let exportedMethods = {
       listing.endTime,
       listing.price
     );
-  // async listingDetail(bookerId, startDate, endDate, startTime, endTime, booked, numberPlate, price) {
-  //   if (
-  //     !bookerId ||
-  //     !startDate ||
-  //     !endDate ||
-  //     !startTime ||
-  //     !endTime ||
-  //     !booked ||
-  //     !numberPlate ||
-  //     !price
-  //   ) {
-  //     throw `Missing parameter`;
-  //   }
-
-  //   common.checkIsProperString(bookerId);
-  //   common.checkInputDate(startDate);
-  //   common.checkInputDate(endDate);
-  //   common.checkInputTime(startTime);
-  //   common.checkInputTime(endTime);
-  //   common.checkIsProperBoolean(booked);
-  //   common.checkIsProperNumber(price);
-  //   common.checkNumberPlate(numberPlate);
-
-  //   const parkingsCollection = await parkings();
-  //   let listingIdObj = await parkingsCollection.findOne({
-  //     _id: ObjectId(id),
-  //   });
-  //   if (listingIdObj === null) throw `No listings found.`;
-  //   listingIdObj._id = listingIdObj._id.toString();
-  //   return listingIdObj;
-  // }
-
+  },
+  
   //mailing module
   //reused from https://www.geeksforgeeks.org/how-to-send-email-with-nodemailer-using-gmail-account-in-node-js/
   async sendReportingMail(to, why, whom) {
@@ -687,7 +643,7 @@ let exportedMethods = {
         console.log("Email sent successfully");
       }
     });
-  },
-};
+  }
+}
 
 module.exports = exportedMethods;
