@@ -5,7 +5,6 @@ const parkingsData = require("../data/parkings");
 const common = require("../data/common");
 const path = require("path");
 const sessionStorage = require("sessionstorage");
-const listingsData = require("../data/listings");
 
 //added by sv
 
