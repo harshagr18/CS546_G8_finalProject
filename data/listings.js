@@ -3,11 +3,19 @@ const { ObjectId } = require("mongodb");
 const common = require("./common");
 const parkingsData = require("./parkings");
 const sessionStorage = require("sessionstorage");
-
+const moment = require("moment");
 const nodemailer = require("nodemailer");
 
 let exportedMethods = {
-  async createListing(userId, listerId, startDate, endDate, startTime, endTime, price) {
+  async createListing(
+    userId,
+    listerId,
+    startDate,
+    endDate,
+    startTime,
+    endTime,
+    price
+  ) {
     if (
       common.xssCheck(listerId) ||
       common.xssCheck(startDate) ||
@@ -44,9 +52,6 @@ let exportedMethods = {
     common.checkInputDate(today, startDate, 1);
     common.checkInputDate(startDate, endDate, 0);
 
-    let timeSlots = [];
-    timeSlots = common.timeSlotFunc(startTime, endTime, startDate, endDate);
-
     const parkingsCollection = await parkings();
     const usersCollection = await users();
 
@@ -62,32 +67,28 @@ let exportedMethods = {
 
     if (constUserId === null) throw `No user with that id.`;
 
-    let createdListing;
+    let timeSlots = [];
+    timeSlots = common.timeSlotFunc(startTime, endTime, startDate, endDate);
 
-    // let numberOfDays = Math.round(Math.abs((new Date(endDate) - new Date(startDate)) / 24));
-    // let hourDiff = parseInt(endTime) - parseInt(startTime);
-    // let startDateTemp = startDate;
-    // let endDateTemp = startDate;
+    console.log(timeSlots);
+    if (!moment(endDate).isSame(timeSlots[timeSlots.length - 1].date))
+      throw `End date is invalid according to time selected.`;
+
+    let createdListing;
+    // array.forEach(timeSlots => {
+
     for (let i = 0; i < timeSlots.length; i++) {
-      
-      // if(timeSlots[i].startsWith("00:00") || timeSlots[i].startsWith("0:00")) {
-      //   startDateTemp.setDate(startDateTemp.getDate() + 1);
-      //   endDateTemp.setDate(endDateTemp.getDate() + 1);
-      // }
-      
       let newListing = {
         _id: ObjectId(),
-        // startDate: startDateTemp,
-        // endDate: endDateTemp,
-        startDate: startDate,
-        endDate: endDate,
-        startTime: startTime,
-        endTime: endTime,
-        timeSlots: timeSlots[i],
+        startDate: timeSlots[i].date,
+        endDate: timeSlots[i].date,
+        startTime: timeSlots[i].startTime,
+        endTime: timeSlots[i].endTime,
+        timeSlots: timeSlots[i].time,
         price: price,
         booked: booked,
         bookerId: bookerId,
-        numberPlate: numberPlate
+        numberPlate: numberPlate,
       };
 
       const addListing = {
@@ -127,6 +128,7 @@ let exportedMethods = {
         createdListing.listing = createdListingArr;
       }
     }
+    // });
     return createdListing;
   },
 
@@ -178,8 +180,8 @@ let exportedMethods = {
     common.checkObjectId(listingId);
 
     const getListingData = await this.getListing(listingId);
-    if(getListingData.booked == true) throw `Cannot delete booked listing.`;
-      
+    if (getListingData.booked == true) throw `Cannot delete booked listing.`;
+
     const parkingsCollection = await parkings();
     const usersCollection = await users();
     let constUserId = await usersCollection.findOne({
@@ -301,7 +303,6 @@ let exportedMethods = {
     userId,
     listingId
   ) {
-
     const parkingsCollection = await parkings();
     const usersCollection = await users();
 
@@ -411,13 +412,12 @@ let exportedMethods = {
     common.checkObjectId(listerId);
     common.checkObjectId(listingId);
 
-
     const parkingData = await parkingsData.getParking(listerId);
     if (userId !== parkingData.listerId.toString())
       throw `Not authorized to update.`;
 
     const getListingData = await this.getListing(listingId);
-    if(getListingData.booked == true) throw `Cannot update booked listing.`;
+    if (getListingData.booked == true) throw `Cannot update booked listing.`;
     const listingData = await this.getListing(listingId);
 
     if (
@@ -441,26 +441,43 @@ let exportedMethods = {
       common.checkInputDate(startDate, endDate, 0);
     } else common.checkInputDate(startDate, endDate, 0);
 
-    if ((new Date(startDate)).getTime() != (new Date(endDate)).getTime())
+    if (new Date(startDate).getTime() != new Date(endDate).getTime())
       throw `Only same day updates allowed.`;
 
-    if (startTime == 'Select Start Time' || startTime == "" || startTime == null) startTime = listingData.startTime;
+    if (
+      startTime == "Select Start Time" ||
+      startTime == "" ||
+      startTime == null
+    )
+      startTime = listingData.startTime;
     else common.checkInputTime(startTime);
-    if (endTime == 'Select End Time' || endTime == "" || endTime == null) endTime = listingData.endTime;
+    if (endTime == "Select End Time" || endTime == "" || endTime == null)
+      endTime = listingData.endTime;
     else common.checkInputTime(endTime);
     if (price == "" || price == null) price = listingData.price;
     else common.checkIsProperNumber(price);
 
-
     let timeSlots;
-    let numberOfDays = Math.round(Math.abs((new Date(endDate) - new Date(startDate)) / 24));
+    // let numberOfDays = Math.round(
+    //   Math.abs((new Date(endDate) - new Date(startDate)) / 24)
+    // );
     // if(numberOfDays !== 0)
     //   throw `Changes only for one day.`;
-    if((parseInt(startTime)==24 && parseInt(endTime)==0) || 
-      (Math.abs(parseInt(endTime) - parseInt(startTime)) != 1))
+    // if((parseInt(startTime)==24 && parseInt(endTime)==0) ||
+    //   (Math.abs(parseInt(endTime) - parseInt(startTime)) != 1))
+    //   throw `Only hourly updates allowed.`;
+    // else
+    //   timeSlots = startTime + ":00 - " + endTime + ":00";
+
+    if(parseInt(endTime) == 0)
+      endTime = "24";
+    
+    if (Math.abs(parseInt(endTime) - parseInt(startTime)) != 1)
       throw `Only hourly updates allowed.`;
-    else
-      timeSlots = startTime + ":00 - " + endTime + ":00";
+    
+    if(endTime == 24)
+      endTime = "0";
+      
 
     const updateListing = {
       _id: ObjectId(listingData._id), //listingData[i]._id
@@ -507,14 +524,13 @@ let exportedMethods = {
       if (updatedListings.modifiedCount === 0)
         throw `Could not update listing successfully.`;
 
-      return await parkingsData.getParking(listerId);;
+      return await parkingsData.getParking(listerId);
     } else {
       throw `Could not update listing successfully.`;
     }
   },
 
   async bookListing(userId, listerId, listingId, bookerId, numberPlate) {
-
     common.checkObjectId(userId);
     common.checkObjectId(listerId);
     common.checkObjectId(listingId);
@@ -541,7 +557,7 @@ let exportedMethods = {
       startTime: getListingData.startTime,
       endTime: getListingData.endTime,
       timeSlots: getListingData.timeSlots,
-      price: getListingData.price, 
+      price: getListingData.price,
       booked: true,
       bookerId: ObjectId(bookerId),
       numberPlate: numberPlate,
@@ -688,7 +704,7 @@ let exportedMethods = {
       listing.price
     );
   },
-  
+
   //mailing module
   //reused from https://www.geeksforgeeks.org/how-to-send-email-with-nodemailer-using-gmail-account-in-node-js/
   async sendReportingMail(email, fromUser, comment) {
@@ -717,39 +733,6 @@ let exportedMethods = {
     });
   },
 
-  // async listingDetail(bookerId, startDate, endDate, startTime, endTime, booked, numberPlate, price) {
-  //   if (
-  //     !bookerId ||
-  //     !startDate ||
-  //     !endDate ||
-  //     !startTime ||
-  //     !endTime ||
-  //     !booked ||
-  //     !numberPlate ||
-  //     !price
-  //   ) {
-  //     throw `Missing parameter`;
-  //   }
-
-  //   common.checkIsProperString(bookerId);
-  //   common.checkInputDate(startDate);
-  //   common.checkInputDate(endDate);
-  //   common.checkInputTime(startTime);
-  //   common.checkInputTime(endTime);
-  //   common.checkIsProperBoolean(booked);
-  //   common.checkIsProperNumber(price);
-  //   common.checkNumberPlate(numberPlate);
-
-  //   const parkingsCollection = await parkings();
-  //   let listingIdObj = await parkingsCollection.findOne({
-  //     _id: ObjectId(id),
-  //   });
-  //   if (listingIdObj === null) throw `No listings found.`;
-  //   listingIdObj._id = listingIdObj._id.toString();
-  //   return listingIdObj;
-  // }
 };
-  
-
 
 module.exports = exportedMethods;

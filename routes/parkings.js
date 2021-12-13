@@ -5,7 +5,6 @@ const parkingsData = require("../data/parkings");
 const common = require("../data/common");
 const path = require("path");
 const sessionStorage = require("sessionstorage");
-const listingsData = require("../data/listings");
 
 //added by sv
 
@@ -47,9 +46,14 @@ router.get("/", async (req, res) => {
     const listerId = req.session.user.userId;
     let validId = validate(listerId);
     if (!validId) {
-      res
-        .status(400)
-        .json({ error: "Id must be a valid string and an Object Id" });
+      res.status(400).render("pages/parkings/getParkings", {
+        partial: "emptyPartial",
+        session: req.session.user.userId,
+        title: "My Parkings",
+        states: stateList,
+        success: false,
+        errmsg: `<div class="container alert alert-alert"><p class="empty">Id must be a valid object Id</p></div>`,
+      });
       return;
     }
     //username calls user table and fetches lister id to get parkings from logged in user
@@ -65,15 +69,20 @@ router.get("/", async (req, res) => {
       successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
     });
   } catch (error) {
-    res.status(404).json({ message: "Page not found" });
+    res.status(500).render("pages/parkings/getParkings", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "My Parkings",
+      states: stateList,
+      success: false,
+      errmsg: `<div class="container alert alert-alert"><p class="empty">${error}</p></div>`,
+    });
+    return;
   }
 });
 
 router.get("/create", async (req, res) => {
   try {
-    // if (req.session.username) {
-    //   return res.redirect("/private");
-    // }
     res.render("pages/parkings/createParkings", {
       partial: "createParking",
       session: req.session.user.userId,
@@ -81,7 +90,12 @@ router.get("/create", async (req, res) => {
       states: stateList,
     });
   } catch (error) {
-    res.status(404).json({ message: "Page not found" });
+    res.status(404).render("pages/error", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "Error",
+      errmsg: `<div class="container alert alert-alert"><p class="empty">Page Not found</p></div>`,
+    });
   }
 });
 
@@ -90,25 +104,41 @@ router.get("/edit/:id", async (req, res) => {
     let validId = validate(req.params.id);
 
     if (common.xssCheck(req.params.id)) {
-      res.status(400).json({ error: "XSS Attempt" });
+      res.status(400).render("pages/parkings/editParkings", {
+        partial: "editParkings",
+        session: req.session.user.userId,
+        title: "Edit Parking",
+        error: true,
+        errormsg: "XSS violations found",
+      });
       return;
     }
 
     if (!validId) {
-      res
-        .status(400)
-        .json({ error: "Id must be a valid string and an Object Id" });
+      res.status(400).render("pages/parkings/editParkings", {
+        partial: "editParkings",
+        session: req.session.user.userId,
+        title: "Edit Parking",
+        error: true,
+        errormsg: "Id must be a valid string and an Object Id",
+      });
       return;
     }
+
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
+
     const listerId = req.session.user.userId;
     let validListerId = validate(listerId);
     if (!validListerId) {
-      res
-        .status(400)
-        .json({ error: "Id must be a valid string and an Object Id" });
+      res.status(400).render("pages/parkings/editParkings", {
+        partial: "editParkings",
+        session: req.session.user.userId,
+        title: "Edit Parking",
+        error: true,
+        errormsg: "Id must be a valid string and an Object Id",
+      });
       return;
     }
 
@@ -126,6 +156,7 @@ router.get("/edit/:id", async (req, res) => {
         optionVehicleType += `<option>${x}</option>`;
       }
     });
+
     let optionStateList = "";
     stateList.forEach((x) => {
       if (getData.state.includes(x)) {
@@ -163,29 +194,46 @@ router.get("/edit/:id", async (req, res) => {
       error: true,
       errormsg: "No data found",
     });
+    return;
   }
 });
 
 //get parkings
 router.get("/:id", async (req, res) => {
-  if (common.xssCheck(req.params.id)) {
-    res.status(400).json({ error: "XSS Attempt" });
-    return;
-  }
-
-  console.log("parking id: ", req.params.id);
-  isReviewer = false;
-  console.log(req.session.user.userId, isReviewer);
+  let isReviewer = false;
   if (!req.params.id) {
-    res.status(400).json({ error: "You must supply a parking Id" });
+    res.status(400).render("pages/parkings/parkingDetails", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "Parking Details",
+      error: true,
+      errormsg: "You must supply a parking Id",
+    });
     return;
   }
-
   let validId = validate(req.params.id);
   if (!validId) {
-    res
-      .status(400)
-      .json({ error: "Id must be a valid string and an Object Id" });
+    res.status(400).render("pages/parkings/parkingDetails", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "Parking Details",
+      error: true,
+      errormsg: "Id must be a valid string and an Object Id",
+    });
+    return;
+  }
+
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).render("pages/parkings/parkingDetails", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "Parking Details",
+      isReviewer: true,
+      userLoggedIn: true,
+      error: true,
+      errormsg: "XSS violations found",
+    });
+
     return;
   }
 
@@ -226,28 +274,72 @@ router.get("/:id", async (req, res) => {
 //post parkings route
 router.post("/post", upload.single("parkingImg"), async function (req, res) {
   const parkingPostData = req.body;
+  let error = false;
+
   if (!parkingPostData.address) {
-    res.status(400).json({ error: "You must provide address" });
+    res.status(400).render("pages/parkings/createParkings", {
+      partial: "createParking",
+      session: req.session.user.userId,
+      title: "Create Parking",
+      states: stateList,
+      error: true,
+      errmsg: "You must provide address",
+    });
     return;
   }
   if (!parkingPostData.city) {
-    res.status(400).json({ error: "You must provide city" });
+    res.status(400).render("pages/parkings/createParkings", {
+      partial: "createParking",
+      session: req.session.user.userId,
+      title: "Create Parking",
+      states: stateList,
+      error: true,
+      errmsg: "You must provide city",
+    });
     return;
   }
   if (!parkingPostData.state) {
-    res.status(400).json({ error: "You must provide state" });
+    res.status(400).render("pages/parkings/createParkings", {
+      partial: "createParking",
+      session: req.session.user.userId,
+      title: "Create Parking",
+      states: stateList,
+      error: true,
+      errmsg: "You must provide state",
+    });
     return;
   }
   if (!parkingPostData.zip) {
-    res.status(400).json({ error: "You must provide zip" });
+    res.status(400).render("pages/parkings/createParkings", {
+      partial: "createParking",
+      session: req.session.user.userId,
+      title: "Create Parking",
+      states: stateList,
+      error: true,
+      errmsg: "You must provide zip",
+    });
     return;
   }
   if (!parkingPostData.category) {
-    res.status(400).json({ error: "You must provide category" });
+    res.status(400).render("pages/parkings/createParkings", {
+      partial: "createParking",
+      session: req.session.user.userId,
+      title: "Create Parking",
+      states: stateList,
+      error: true,
+      errmsg: "You must provide category",
+    });
     return;
   }
   if (!parkingPostData.parkingType) {
-    res.status(400).json({ error: "You must provide parking type" });
+    res.status(400).render("pages/parkings/createParkings", {
+      partial: "createParking",
+      session: req.session.user.userId,
+      title: "Create Parking",
+      states: stateList,
+      error: true,
+      errmsg: "You must provide parking type",
+    });
     return;
   }
 
@@ -259,13 +351,27 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       common.xssCheck(parkingPostData.zip) ||
       common.xssCheck(parkingPostData.parkingType)
     ) {
-      res.status(400).json({ error: "XSS Attempt" });
+      res.status(400).render("pages/parkings/createParkings", {
+        partial: "createParking",
+        session: req.session.user.userId,
+        title: "Create Parking",
+        states: stateList,
+        error: true,
+        errmsg: "XSS violations found",
+      });
       return;
     }
 
     parkingPostData.category.forEach((x) => {
       if (common.xssCheck(x)) {
-        res.status(400).json({ error: "XSS Attempt" });
+        res.status(400).render("pages/parkings/createParkings", {
+          partial: "createParking",
+          session: req.session.user.userId,
+          title: "Create Parking",
+          states: stateList,
+          error: true,
+          errmsg: "XSS violations found",
+        });
         return;
       }
     });
@@ -296,7 +402,14 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     );
 
     if (validateString != undefined) {
-      res.status(400).json({ error: validateString });
+      res.status(400).render("pages/parkings/createParkings", {
+        partial: "createParking",
+        session: req.session.user.userId,
+        title: "Create Parking",
+        states: stateList,
+        error: true,
+        errmsg: validateString,
+      });
       return;
     }
 
@@ -307,9 +420,14 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     const listerId = req.session.user.userId;
     let validListerId = validate(listerId);
     if (!validListerId) {
-      res
-        .status(400)
-        .json({ error: "Id must be a valid string and an Object Id" });
+      res.status(400).render("pages/parkings/createParkings", {
+        partial: "createParking",
+        session: req.session.user.userId,
+        title: "Create Parking",
+        states: stateList,
+        error: true,
+        errmsg: "Id must be a valid string and an Object Id",
+      });
       return;
     }
 
@@ -350,7 +468,15 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     });
     return;
   } catch (e) {
-    res.status(500).json({ error: e });
+    res.status(500).render("pages/parkings/createParkings", {
+      partial: "createParking",
+      session: req.session.user.userId,
+      title: "Create Parking",
+      states: stateList,
+      error: true,
+      errmsg: e,
+    });
+    return;
   }
 });
 
@@ -358,10 +484,15 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
 router.put("/update", upload.single("parkingImg"), async (req, res) => {
   const updatedData = req.body;
   let validListerId = validate(updatedData.listerId);
+  let error = false;
   if (!validListerId) {
-    res
-      .status(400)
-      .json({ error: "Lister Id must be a valid string and an Object Id" });
+    res.status(400).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      partial: "editParkings",
+      session: req.session.user.userId,
+      error: true,
+      errormsg: "Lister Id must be a valid string and an Object Id",
+    });
     return;
   }
   if (!req.file) {
@@ -381,7 +512,13 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     !updatedData.category ||
     !updatedData.parkingType
   ) {
-    res.status(400).json({ error: "You must supply all fields" });
+    res.status(400).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      partial: "editParkings",
+      session: req.session.user.userId,
+      error: true,
+      errormsg: "You must supply all fields",
+    });
     return;
   }
 
@@ -396,7 +533,13 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   );
 
   if (validateString != undefined) {
-    res.status(400).json({ error: validateString });
+    res.status(400).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      partial: "editParkings",
+      session: req.session.user.userId,
+      error: true,
+      errormsg: validateString,
+    });
     return;
   }
 
@@ -454,12 +597,24 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       common.xssCheck(updatedData.longitude.toString()) ||
       common.xssCheck(updatedData.parkingType)
     ) {
-      res.status(400).json({ error: "XSS Attempt" });
+      res.status(400).render("pages/parkings/editParkings", {
+        title: "Edit Parking",
+        partial: "editParkings",
+        session: req.session.user.userId,
+        error: true,
+        errormsg: "XSS violations found",
+      });
       return;
     }
     updatedData.category.forEach((x) => {
       if (common.xssCheck(x)) {
-        res.status(400).json({ error: "XSS Attempt" });
+        res.status(400).render("pages/parkings/editParkings", {
+          title: "Edit Parking",
+          partial: "editParkings",
+          session: req.session.user.userId,
+          error: true,
+          errormsg: "XSS violations found",
+        });
         return;
       }
     });
@@ -477,6 +632,7 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       updatedData.category,
       updatedData.parkingType.toLowerCase()
     );
+
     let vehicleType = [
       "sedan",
       "suv",
@@ -525,36 +681,64 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
       parkingtype: optionParkingType,
       vehicleType: optionVehicleType,
     });
+    return;
   } catch (e) {
-    res.status(500).json({ error: e });
+    res.status(500).render("pages/parkings/editParkings", {
+      title: "Edit Parking",
+      partial: "editParkings",
+      session: req.session.user.userId,
+      error: true,
+      errormsg: e,
+    });
+    return;
   }
 });
 
 //delete parkings
 router.delete("/delete/:id", async (req, res) => {
   if (common.xssCheck(req.params.id)) {
-    res.status(400).json({ error: "XSS Attempt" });
+    res.status(400).render("pages/parkings/getParkings", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "My Parkings",
+      success: false,
+      errmsg: `<div class="container alert alert-danger"><p class="empty">XSS Attempt</p></div>`,
+    });
     return;
   }
 
   if (!req.params.id) {
-    res.status(400).json({ error: "You must supply a parking Id" });
+    res.status(400).render("pages/parkings/getParkings", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "My Parkings",
+      success: false,
+      errmsg: `<div class="container alert alert-danger"><p class="empty">You must supply a parking Id</p></div>`,
+    });
     return;
   }
   let validResult = validate(req.params.id);
   if (!validResult) {
-    res
-      .status(400)
-      .json({ error: "Id must be a valid string and an Object Id" });
+    res.status(400).render("pages/parkings/getParkings", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "My Parkings",
+      success: false,
+      errmsg: `<div class="container alert alert-danger"><p class="empty">Id must be a valid string and an Object Id</p></div>`,
+    });
     return;
   }
   try {
     const listerId = req.session.user.userId;
     let validListerId = validate(listerId);
     if (!validListerId) {
-      res
-        .status(400)
-        .json({ error: "Id must be a valid string and an Object Id" });
+      res.status(400).render("pages/parkings/getParkings", {
+        partial: "emptyPartial",
+        session: req.session.user.userId,
+        title: "My Parkings",
+        success: false,
+        errmsg: `<div class="container alert alert-danger"><p class="empty">Id must be a valid string and an Object Id</p></div>`,
+      });
       return;
     }
 
@@ -574,12 +758,20 @@ router.delete("/delete/:id", async (req, res) => {
         partial: "emptyPartial",
         session: req.session.user.userId,
         title: "My Parkings",
-        successmsg: `<div class="container alert alert-danger"><p class="empty">Parking could not be deleted</p></div>`,
+        success: false,
+        successmsg: `<div class="container alert alert-danger successmsg"><p class="empty">Parking could not be deleted</p></div>`,
       });
       return;
     }
   } catch (error) {
-    res.status(404).json({ message: "Data not found " });
+    res.status(404).render("pages/parkings/getParkings", {
+      partial: "emptyPartial",
+      session: req.session.user.userId,
+      title: "My Parkings",
+      success: false,
+      errmsg: `<div class="container alert alert-danger"><p class="empty">Data not found</p></div>`,
+    });
+    return;
   }
 });
 

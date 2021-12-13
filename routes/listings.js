@@ -18,13 +18,13 @@ router.get("/createListingPage", async (req, res) => {
       partial: "emptyPartial",
       startTimeVal: timeSlot,
       endTimeVal: timeSlot,
-      session: req.session.user,
+      session: req.session.user.userId,
       title: "Create Listing",
     });
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", {
       error: e,
-      session: req.session.user,
+      session: req.session.user.userId,
       startTimeVal: timeSlot,
       endTimeVal: timeSlot,
       hasErrors: true,
@@ -71,7 +71,7 @@ router.post("/createListing", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/createListing", {
       partial: "createListing",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       startTimeVal: timeSlot,
@@ -94,7 +94,7 @@ router.post("/createListing", async (req, res) => {
     if (!data) {
       res.status(404).render("pages/parkings/createListing", {
         partial: "createListing",
-        session: req.session.user,
+        session: req.session.user.userId,
         error: "Could not create listing",
         title: "Create Listing",
         startTimeVal: timeSlot,
@@ -105,7 +105,7 @@ router.post("/createListing", async (req, res) => {
     }
     res.render("pages/parkings/listings", {
       partial: "createListing",
-      session: req.session.user,
+      session: req.session.user.userId,
       getData: data,
       title: "Listing",
     });
@@ -114,7 +114,7 @@ router.post("/createListing", async (req, res) => {
       partial: "emptyPartial",
       error: e,
       partial: "createListing",
-      session: req.session.user,
+      session: req.session.user.userId,
       startTimeVal: timeSlot,
       endTimeVal: timeSlot,
       hasErrors: true,
@@ -133,7 +133,7 @@ router.get("/getMyBookings", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/showBookings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "My Bookings",
@@ -153,7 +153,7 @@ router.get("/getMyBookings", async (req, res) => {
     res.status(400).render("pages/parkings/showBookings", {
       partial: "emptyPartial",
       error: e,
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       title: "My Bookings",
     });
@@ -170,7 +170,7 @@ router.get("/getMyListings", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/showListings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "My Listings",
@@ -190,7 +190,7 @@ router.get("/getMyListings", async (req, res) => {
     res.status(400).render("pages/parkings/showListings", {
       partial: "emptyPartial",
       error: e,
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       title: "My Listings",
     });
@@ -209,7 +209,7 @@ router.get("/getAllListing/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "Listing",
@@ -223,7 +223,7 @@ router.get("/getAllListing/:id", async (req, res) => {
       res.status(404).render("pages/parkings/listings", {
         partial: "emptyPartial",
         error: "No data found.",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Listing",
       });
@@ -233,7 +233,7 @@ router.get("/getAllListing/:id", async (req, res) => {
       partial: "emptyPartial",
       getData: data,
       title: "Listing",
-      session: req.session.user,
+      session: req.session.user.userId,
     });
   } catch (e) {
     res
@@ -241,7 +241,7 @@ router.get("/getAllListing/:id", async (req, res) => {
       .render("pages/parkings/listings", {
         error: e,
         partial: "emptyPartial",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Listing",
       });
@@ -258,7 +258,7 @@ router.get("/getListing/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "Listing",
@@ -272,7 +272,7 @@ router.get("/getListing/:id", async (req, res) => {
       res.status(404).render("pages/parkings/listings", {
         partial: "emptyPartial",
         error: "No data found.",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Listing",
       });
@@ -284,7 +284,7 @@ router.get("/getListing/:id", async (req, res) => {
       partial: "emptyPartial",
       data: data,
       title: "Book Listing",
-      session: req.session.user,
+      session: req.session.user.userId,
     });
   } catch (e) {
     res
@@ -292,7 +292,7 @@ router.get("/getListing/:id", async (req, res) => {
       .render("pages/parkings/listingDetail", {
         error: e,
         partial: "emptyPartial",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Book Listing",
       });
@@ -311,7 +311,7 @@ router.delete("/removeListing/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "Listing",
@@ -325,7 +325,7 @@ router.delete("/removeListing/:id", async (req, res) => {
       res.status(404).render("pages/parkings/listings", {
         partial: "emptyPartial",
         error: "No data found.",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Listing",
       });
@@ -335,7 +335,7 @@ router.delete("/removeListing/:id", async (req, res) => {
       partial: "emptyPartial",
       getData: data,
       title: "Listing",
-      session: req.session.user,
+      session: req.session.user.userId,
     });
   } catch (e) {
     res
@@ -343,7 +343,7 @@ router.delete("/removeListing/:id", async (req, res) => {
       .render("pages/parkings/listings", {
         error: e,
         partial: "emptyPartial",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Listing",
       });
@@ -360,7 +360,7 @@ router.get("/updateListing/:id", async (req, res, next) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "Listing",
@@ -376,12 +376,12 @@ router.get("/updateListing/:id", async (req, res, next) => {
       startTimeVal: timeSlot,
       endTimeVal: timeSlot,
       title: "Update Listing",
-      session: req.session.user,
+      session: req.session.user.userId,
     });
   } catch (e) {
     return res.status(400).render("pages/parkings/listings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "Listing",
@@ -406,7 +406,7 @@ router.put("/cancelBooking/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/showBookings", {
       partial: "emptyPartial",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       title: "My Bookings",
@@ -425,7 +425,7 @@ router.put("/cancelBooking/:id", async (req, res) => {
       res.status(404).render("pages/parkings/showBookings", {
         partial: "emptyPartial",
         error: "No data found.",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "My Bookings",
       });
@@ -435,7 +435,7 @@ router.put("/cancelBooking/:id", async (req, res) => {
       partial: "emptyPartial",
       bookingdata: data,
       title: "My Bookings",
-      session: req.session.user,
+      session: req.session.user.userId,
       successMsg: "Booking Cancelled!."
     });
     return;
@@ -443,7 +443,7 @@ router.put("/cancelBooking/:id", async (req, res) => {
     res.status(400).render("pages/parkings/showBookings", {
       partial: "emptyPartial",
       error: e,
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       title: "My Bookings",
     });
@@ -481,7 +481,7 @@ router.put("/updateListingData/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listingUpdate", {
       partial: "listingUpdate",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       startTimeVal: timeSlot,
@@ -506,16 +506,18 @@ router.put("/updateListingData/:id", async (req, res) => {
       res.status(404).render("pages/parkings/listingUpdate", {
         partial: "listingUpdate",
         error: "No data found.",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Listing",
+        startTimeVal: timeSlot,
+        endTimeVal: timeSlot,
       });
       return;
     }
     res.render("pages/parkings/listings", {
       partial: "listingUpdate",
       getData: data,
-      session: req.session.user,
+      session: req.session.user.userId,
       title: "Update Listing",
     });
     return;
@@ -523,9 +525,11 @@ router.put("/updateListingData/:id", async (req, res) => {
     res.status(400).render("pages/parkings/listingUpdate", {
       partial: "listingUpdate",
       error: e,
-      session: req.session.user,
+      session: req.session.user.userId,
       title: "Update Listing",
       hasErrors: true,
+      startTimeVal: timeSlot,
+      endTimeVal: timeSlot,
     });
   }
 });
@@ -558,7 +562,7 @@ router.put("/bookListing/:id", async (req, res) => {
   } catch (e) {
     res.status(400).render("pages/parkings/listingDetail", {
       partial: "listingDetail",
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       error: e,
       startTimeVal: timeSlot,
@@ -580,7 +584,7 @@ router.put("/bookListing/:id", async (req, res) => {
       res.status(404).render("pages/parkings/listingDetail", {
         partial: "listingDetail",
         error: "No data found.",
-        session: req.session.user,
+        session: req.session.user.userId,
         hasErrors: true,
         title: "Listing",
       });
@@ -590,14 +594,14 @@ router.put("/bookListing/:id", async (req, res) => {
       partial: "listingDetail",
       getData: data,
       title: "Listing Detail",
-      session: req.session.user,
+      session: req.session.user.userId,
     });
     return;
   } catch (e) {
     res.status(400).render("pages/parkings/listingDetail", {
       partial: "listingDetail",
       error: e,
-      session: req.session.user,
+      session: req.session.user.userId,
       hasErrors: true,
       title: "Book Listing",
     });
