@@ -266,6 +266,7 @@ router.get("/getListing/:id", async (req, res) => {
     return;
   }
   try {
+    console.log("Before get listing");
     const data = await listingsData.getListing(listingId);
     if (!data) {
       res.status(404).render("pages/parkings/listings", {
@@ -277,6 +278,8 @@ router.get("/getListing/:id", async (req, res) => {
       });
       return;
     }
+    console.log("After get listing function call");
+    console.log(data);
     res.render("pages/parkings/listingDetail", {
       partial: "emptyPartial",
       data: data,
@@ -601,11 +604,12 @@ router.put("/bookListing/:id", async (req, res) => {
   }
 });
 
-router.delete("/reportListing", async (req, res) => {
+router.put("/reportListing", async (req, res) => {
   try {
       reportListingInfo = req.body;
       
-      const data = await listingsData.reportListing(reportListingInfo._id, reportListingInfo.bookerId, reportListingInfo.comment);
+      console.log(reportListingInfo)
+      const data = await listingsData.reportListing(reportListingInfo._id, reportListingInfo.bookerId);
 
       const parkingData = await listingsData.getAllListings(data._id.toString());
       if (!parkingData) {
@@ -622,8 +626,7 @@ router.delete("/reportListing", async (req, res) => {
     });
   }
   catch (e) {
-    console.log(e);
-    res.status(400).render("users/login", {partial: "emptyPartial", error: e });  
+    res.status(404).json({ message: "Data not found " });  
   }
 });
 
