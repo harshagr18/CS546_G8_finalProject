@@ -61,7 +61,7 @@ const main = async () => {
 
     let createParking1 = await parkings.createParkings(
       user1,
-      "public/images/parkingImg-1639283850869.jpg",
+      "public/images/1.jpg",
       "105 Sherman Ave",
       "Jersey City",
       "NJ",
@@ -73,7 +73,7 @@ const main = async () => {
     );
     let createParking2 = await parkings.createParkings(
       user1,
-      "public/images/parkingImg-1639283850869.jpg",
+      "public/images/2.jpg",
       "123 Saint Pauls Ave",
       "Jersey City",
       "NJ",
@@ -84,8 +84,8 @@ const main = async () => {
       "open"
     );
     let createParking3 = await parkings.createParkings(
-      user2,
-      "public/images/parkingImg-1639283850869.jpg",
+      user1,
+      "public/images/3.jpg",
       "50 Beach St.",
       "Jersey City",
       "NJ",
@@ -98,13 +98,39 @@ const main = async () => {
 
     let createParking4 = await parkings.createParkings(
       user2,
-      "public/images/parkingImg-1639283850869.jpg",
+      "public/images/4.jpg",
       "121 Congress St.",
       "Jersey City",
       "NJ",
       "07300",
       "-74.04623571755381",
       "40.751064743459",
+      ["sedan", "suv"],
+      "open"
+    );
+
+    let createParking5 = await parkings.createParkings(
+      user2,
+      "public/images/5.jpg",
+      "33rd St.",
+      "New York",
+      "NY",
+      "07300",
+      "-73.99537621738884",
+      "40.75235302226383",
+      ["sedan", "suv"],
+      "open"
+    );
+
+    let createParking6 = await parkings.createParkings(
+      user2,
+      "public/images/parkingImg-1638473263834.jpg",
+      "E 161 St.",
+      "New York",
+      "NY",
+      "07300",
+      "-73.92631858638019",
+      "40.82974684316919",
       ["sedan", "suv"],
       "open"
     );
