@@ -605,11 +605,11 @@ router.put("/bookListing/:id", async (req, res) => {
   }
 });
 
-router.delete("/reportListing", async (req, res) => {
+router.put("/reportListing", async (req, res) => {
   try {
       reportListingInfo = req.body;
       
-      const data = await listingsData.reportListing(reportListingInfo._id, reportListingInfo.bookerId, reportListingInfo.comment);
+      const data = await listingsData.reportListing(reportListingInfo._id, reportListingInfo.bookerId);
 
       const parkingData = await listingsData.getAllListings(data._id.toString());
       if (!parkingData) {
@@ -626,8 +626,7 @@ router.delete("/reportListing", async (req, res) => {
     });
   }
   catch (e) {
-    console.log(e);
-    res.status(400).render("users/login", {partial: "emptyPartial", error: e });  
+    res.status(404).json({ message: "Data not found " });  
   }
 });
 

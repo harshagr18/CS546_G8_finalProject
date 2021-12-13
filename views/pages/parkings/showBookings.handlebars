@@ -22,9 +22,16 @@
             <a
               onclick="return confirm('Are you sure?')"
               href="/listings/cancelBooking/{{_id}}"
-              id="getParkingsDelete_{{_id}}"
               class="btn btn-danger"
             >Cancel</a>
+            <form action="/listings/reportListing/" method="POST">
+            <input type="text" name="_id" value="{{_id}}" hidden />
+            <input type="text" name="bookerId" value="{{bookerId}}" hidden />
+            <input type="submit" value="Report"
+              onclick="return confirm('Are you sure?')"
+              class="btn btn-danger"
+            >
+            </form>
             {{!-- Pending: call listing update for updating booked, booker id
             remove from users bookings list --}}
 

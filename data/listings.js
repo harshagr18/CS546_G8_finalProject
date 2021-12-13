@@ -134,10 +134,7 @@ let exportedMethods = {
 
   async getListing(listingId) {
     common.checkObjectId(listingId);
-
-
     if (common.xssCheck(listingId)) {
-
       throw `XSS Attempt`;
     }
     listingId = ObjectId(listingId);
@@ -149,6 +146,7 @@ let exportedMethods = {
         if (listing._id.toString() == listingId) {
           flag = 0;
           listing = common.convertObjectIdToString(listing);
+          console.log("Listing data : ", listing);
           return listing;
         }
       }
@@ -259,6 +257,7 @@ let exportedMethods = {
       listingData = await this.getListing(constUserId.bookings[i].toString());
       listingArr.push(listingData);
     }
+    
     return listingArr;
   },
 
@@ -616,21 +615,17 @@ let exportedMethods = {
     }
   },
 
-  async reportListing(listingId, bookerId, comment) {
-    console.log("Before xss check in report listing");
+  async reportListing(listingId, bookerId) {
     common.checkObjectId(listingId);
     common.checkObjectId(bookerId);
-    common.checkIsProperString(comment);
 
     if (
-      common.xssCheck(listerId) ||
-      common.xssCheck(bookerId) ||
-      common.xssCheck(comment)
+      common.xssCheck(listingId) ||
+      common.xssCheck(bookerId)
     ) {
       throw `XSS Attempt`;
     }
 
-    console.log("After xss checks in report listing");
     let par;
     const parkingsCollection = await parkings();
     const parkingList = await parkingsCollection.find().toArray();
@@ -643,10 +638,10 @@ let exportedMethods = {
       });
     });
 
+    if (par.listerId.toString() === bookerId.toString())
+      throw `Cannot book your own parking.`;
+
     if(!par) throw 'No listing found with that ID';
-    console.log("BEfore printing par");
-    console.log("parkingID" , par._id);
-    console.log("BookerId ", bookerId);
 
     par.listing.forEach((element) => {
       if(element.bookerId !== null && element.booked === true) {
@@ -663,7 +658,6 @@ let exportedMethods = {
       {$pull: {listing: {}}}
       );
 
-    console.log("After pulling all records of booker");
     if (!pullListing.matchedCount && !pullListing.modifiedCount)
       throw "Pulling of all booking has failed";
     
@@ -672,7 +666,6 @@ let exportedMethods = {
       {$set: par }
     );
 
-    console.log("After Extracting all records of booker");
     if (!extractListing.matchedCount && !extractListing.modifiedCount)
       throw "Update of booking has failed";
 
@@ -686,9 +679,15 @@ let exportedMethods = {
       {_id: ObjectId(par.listerId)}
     )
 
-    if (listerDetails === null) throw "No user found with that ID";
+    if (listerDetails === null) throw "No lister found with that ID";
 
-    this.sendReportingMail(listerDetails.email, listerDetails.username, comment);
+    const custDetails = await userCollection.findOne(
+      {_id: ObjectId(bookerId)}
+    )
+
+    if (custDetails === null) throw "No user found with that ID";
+
+    this.sendReportingMail(listerDetails.email, custDetails.username);
     return getParkingData;
   },
 
@@ -706,7 +705,7 @@ let exportedMethods = {
 
   //mailing module
   //reused from https://www.geeksforgeeks.org/how-to-send-email-with-nodemailer-using-gmail-account-in-node-js/
-  async sendReportingMail(to, why, whom) {
+  async sendReportingMail(email, fromUser, comment) {
     let mailTransporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -719,7 +718,7 @@ let exportedMethods = {
       from: "noreply.myparkingassistant@gmail.com",
       to: email,
       subject: "You have been reported",
-      text: `You have been reported for: ${comment}, by ${fromUser}`,
+      text: `You have been reported by: ${fromUser}`,
       // html: "<b>Hello world?</b>", // html body
     };
 
