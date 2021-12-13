@@ -1,12 +1,21 @@
 <div class="container">
-  <a href="/parkings/create" id="createParkings" class="">Create a new parking</a>
+  <div class="row navigators">
+
+    <a href="/parkings/create" id="createParkings" class="">Create a new parking</a>
+  </div>
   <div class="row">
     {{#each parkdata}}
       <div class="col-sm-4">
         <div class="card">
-          <img src={{parkingImg}} class="card-img-top" alt="Parking Image" />
+          <img
+            src={{parkingImg}}
+            onerror="this.onerror=null;this.src='../public/images/no_image.jpg';"
+            class="card-img-top"
+            alt="Parking Image"
+          />
+
           <div class="card-body">
-            <h5 class="card-title">{{address}}</h5>
+            <p class="card-title">{{address}}</p>
             <span class="star">&#11088;</span>
             <span class="rating">{{overallRating}}</span>
 
@@ -37,6 +46,8 @@
     {{/each}}
     {{#if success}}
       {{{successmsg}}}
+    {{else}}
+      {{errmsg}}
     {{/if}}
   </div>
 </div>

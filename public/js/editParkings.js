@@ -82,6 +82,14 @@ function editParkingValidation(event) {
     category[i] = $(this).text();
   });
 
+  if (category.length < 2) {
+    {
+      event.preventDefault();
+      $("#uiError").show();
+      $("#uiError").html("Vehicle category should be atleast  2 selections!");
+      return false;
+    }
+  }
   if (
     !addressRegex.test(address) ||
     address.length < 4 ||
@@ -96,7 +104,9 @@ function editParkingValidation(event) {
   } else if (!cityRegex.test(city) || city.length > 30) {
     event.preventDefault();
     $("#uiError").show();
-    $("#uiError").html("City contains random characters");
+    $("#uiError").html(
+      "City contains random characters or length is greater than 30"
+    );
     return false;
   } else if (stateList.indexOf(state) == -1) {
     event.preventDefault();

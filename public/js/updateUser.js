@@ -1,6 +1,4 @@
-(function ($) {
-  $("#uiError").hide();
-})(jQuery);
+(function ($) {})(jQuery);
 //form validation before submit
 const stateList = [
   "AL",
@@ -56,41 +54,25 @@ const stateList = [
   "WI",
   "WY",
 ];
-const vehicleType = [
-  "sedan",
-  "suv",
-  "hatchback",
-  "station wagon",
-  "coupe",
-  "minivan",
-  "pickup truck",
-];
-const parkingType = ["open", "close"];
 
-function createParkingValidation(event) {
+function updateUserValidation(event) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
   const addressRegex = /[A-Za-z0-9'\.\-\s\,]/;
   const cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
+  const phoneRegex = /^\d{10}$/im;
+  const emailRegex =
+    /^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
+  let firstName = $("#firstName").val();
+  let lastName = $("#lastName").val();
+  let username = $("#username").val();
+  let password = $("#password").val();
+  let email = $("#email").val();
+  let phoneNumber = $("#phoneNumber").val();
   let address = $("#address").val();
   let city = $("#city").val();
   let state = $("#state").find(":selected").text();
-  let pType = $("#parkingType").find(":selected").text();
   let zip = $("#zip").val();
-  var category = new Array();
-  $("#category > option:selected").each(function (i) {
-    category[i] = $(this).text();
-  });
-
-  if (category.length < 2) {
-    {
-      event.preventDefault();
-      $("#uiError").show();
-      $("#uiError").html("Vehicle category should be atleast  2 selections!");
-      return false;
-    }
-  }
-
   if (
     !addressRegex.test(address) ||
     address.length < 4 ||
@@ -117,15 +99,21 @@ function createParkingValidation(event) {
     $("#uiError").show();
     $("#uiError").html("Zip contains random characters");
     return false;
-  } else if (!vehicleType.includes(...category)) {
-    event.preventDefault();
+  } else if (!phoneRegex.test(phoneNumber)) {
     $("#uiError").show();
-    $("#uiError").html("Vehicle category not found");
+    $("#uiError").html("Incorect Phone Number Format");
     return false;
-  } else if (!parkingType.indexOf(pType) == -1) {
-    event.preventDefault();
+  } else if (!emailRegex.test(email)) {
     $("#uiError").show();
-    $("#uiError").html("Parking Type not found");
+    $("#uiError").html("Incorrect Email Format");
+    return false;
+  } else if (username.trim().length == 0) {
+    $("#uiError").show();
+    $("#uiError").html("Please Enter Username");
+    return false;
+  } else if (password.trim().length == 0) {
+    $("#uiError").show();
+    $("#uiError").html("Please Enter Password");
     return false;
   }
   return true;

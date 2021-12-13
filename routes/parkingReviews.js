@@ -3,11 +3,16 @@ const router = express.Router();
 const data = require("../data");
 const parkingsData = data.parkings;
 const reviewData = data.parkingReviews;
+const common = require("../data/common");
 const errorCheck = require("../data/errorHandling");
 const { ObjectId } = require("mongodb");
 const moment = require("moment");
 
 router.get("/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+    return;
+  }
   if (!req.session.user) {
     return res.redirect("/users/login");
   }
@@ -25,6 +30,11 @@ router.get("/:id", async (req, res) => {
 });
 
 router.get("/userreviews/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+    return;
+  }
+
   if (!req.session.user) {
     return res.redirect("/users/login");
   }
@@ -43,6 +53,10 @@ router.get("/userreviews/:id", async (req, res) => {
 });
 
 router.get("/parkingreviews/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+    return;
+  }
   if (!req.session.user) {
     return res.redirect("/users/login");
   }
@@ -63,6 +77,10 @@ router.get("/parkingreviews/:id", async (req, res) => {
 });
 
 router.post("/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+    return;
+  }
   if (!req.session.user) {
     return res.redirect("/users/login");
   }
@@ -171,6 +189,15 @@ router.put("/updateReview/", async (req, res) => {
     return;
   }
   try {
+    if (
+      common.xssCheck(updateReviewInfo.reviewId) ||
+      common.xssCheck(updateReviewInfo.rating) ||
+      common.xssCheck(updateReviewInfo.comment)
+    ) {
+      res.status(400).json({ error: "XSS Attempt" });
+      return;
+    }
+
     const updatedReview = await reviewData.updateReview(
       updateReviewInfo.reviewId,
       updateReviewInfo.rating,
@@ -183,6 +210,11 @@ router.put("/updateReview/", async (req, res) => {
 });
 
 router.delete("/deleteReview/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+    return;
+  }
+
   if (!req.session.user) {
     return res.redirect("/users/login");
   }

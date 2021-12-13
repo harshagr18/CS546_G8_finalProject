@@ -14,6 +14,25 @@ let exportedMethods = {
     endTime,
     price
   ) {
+const nodemailer = require("nodemailer");
+
+// const mongoCollections = require("../config/mongoCollections");
+// const parkings = mongoCollections.parkings;
+
+// Pending: show parking details on listing page
+let exportedMethods = {
+  async createListing(listerId, startDate, endDate, startTime, endTime, price) {
+    if (
+      common.xssCheck(listerId) ||
+      common.xssCheck(startDate) ||
+      common.xssCheck(endDate) ||
+      common.xssCheck(startTime) ||
+      common.xssCheck(endTime) ||
+      common.xssCheck(price)
+    ) {
+      throw `XSS Attempt`;
+    }
+
     let booked = false;
     let bookerId = null;
     let numberPlate = null;
@@ -129,6 +148,13 @@ let exportedMethods = {
   async getListing(listingId) {
     common.checkObjectId(listingId);
     // listingId = ObjectId(listingId);
+    // listingId = listingId.trim();
+
+    if (common.xssCheck(listerId)) {
+      throw `XSS Attempt`;
+    }
+
+    listingId = ObjectId(listingId);
     const parkingsCollection = await parkings();
     let parkingsList = await parkingsCollection.find({}).toArray();
     let flag = 1;
@@ -407,8 +433,18 @@ let exportedMethods = {
 
     const getListingData = await this.getListing(listingId);
     if(getListingData.booked == true) throw `Cannot update booked listing.`;
-
     const listingData = await this.getListing(listingId);
+
+    if (
+      common.xssCheck(listerId) ||
+      common.xssCheck(startDate) ||
+      common.xssCheck(endDate) ||
+      common.xssCheck(startTime) ||
+      common.xssCheck(endTime) ||
+      common.xssCheck(price)
+    ) {
+      throw `XSS Attempt`;
+    }
 
     //Pending: validation for start date with ed date after updating
     if (startDate == "" || startDate == null) startDate = listingData.startDate;
@@ -478,6 +514,7 @@ let exportedMethods = {
       { $pull: { listing: removeListing } }
     );
     if (removeListings.modifiedCount !== 0) {
+      // check correct param for remove listing
       const updatedListings = await parkingsCollection.updateOne(
         {
           _id: ObjectId(listerId),
@@ -504,6 +541,14 @@ let exportedMethods = {
     const parkingData = await parkingsData.getParking(listerId);
     if (userId === parkingData.listerId.toString())
       throw `Cannot book your own parking.`;
+
+      common.xssCheck(listerId) ||
+      common.xssCheck(listingId) ||
+      common.xssCheck(bookerId) ||
+      common.xssCheck(numberPlate)
+    ) {
+      throw `XSS Attempt`;
+    }
 
     let getListingData = await this.getListing(listingId);
     const updateListing = {
@@ -550,6 +595,7 @@ let exportedMethods = {
       { $pull: { listing: removeListing } }
     );
     if (removeListings.modifiedCount !== 0) {
+      // check correct param for remove listing
       const updatedListings = await parkingsCollection.updateOne(
         {
           _id: ObjectId(listerId),
@@ -583,6 +629,64 @@ let exportedMethods = {
       listing.endTime,
       listing.price
     );
+  // async listingDetail(bookerId, startDate, endDate, startTime, endTime, booked, numberPlate, price) {
+  //   if (
+  //     !bookerId ||
+  //     !startDate ||
+  //     !endDate ||
+  //     !startTime ||
+  //     !endTime ||
+  //     !booked ||
+  //     !numberPlate ||
+  //     !price
+  //   ) {
+  //     throw `Missing parameter`;
+  //   }
+
+  //   common.checkIsProperString(bookerId);
+  //   common.checkInputDate(startDate);
+  //   common.checkInputDate(endDate);
+  //   common.checkInputTime(startTime);
+  //   common.checkInputTime(endTime);
+  //   common.checkIsProperBoolean(booked);
+  //   common.checkIsProperNumber(price);
+  //   common.checkNumberPlate(numberPlate);
+
+  //   const parkingsCollection = await parkings();
+  //   let listingIdObj = await parkingsCollection.findOne({
+  //     _id: ObjectId(id),
+  //   });
+  //   if (listingIdObj === null) throw `No listings found.`;
+  //   listingIdObj._id = listingIdObj._id.toString();
+  //   return listingIdObj;
+  // }
+
+  //mailing module
+  //reused from https://www.geeksforgeeks.org/how-to-send-email-with-nodemailer-using-gmail-account-in-node-js/
+  async sendReportingMail(to, why, whom) {
+    let mailTransporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "noreply.myparkingassistant@gmail.com",
+        pass: "Myparking@1234#",
+      },
+    });
+
+    let mailDetails = {
+      from: "noreply.myparkingassistant@gmail.com",
+      to: "cakemeberry@gmail.com",
+      subject: "You have been reported",
+      text: "You have been reported for: comment, by reported",
+      // html: "<b>Hello world?</b>", // html body
+    };
+
+    mailTransporter.sendMail(mailDetails, function (err, data) {
+      if (err) {
+        console.log("Error Occurs");
+      } else {
+        console.log("Email sent successfully");
+      }
+    });
   },
 };
 

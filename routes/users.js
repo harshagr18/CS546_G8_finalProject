@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const data = require("../data");
+const common = require("../data/common");
 const userData = data.users;
 const parkingData = data.parkings;
 const { ObjectId } = require("mongodb");
@@ -74,6 +75,21 @@ router.post("/createUser", async (req, res) => {
   let userInfo = req.body;
   console.log(userInfo);
   try {
+    if (
+      common.xssCheck(userInfo.firstName) ||
+      common.xssCheck(userInfo.lastName) ||
+      common.xssCheck(userInfo.email) ||
+      common.xssCheck(userInfo.phoneNumber) ||
+      common.xssCheck(userInfo.username) ||
+      common.xssCheck(userInfo.password) ||
+      common.xssCheck(userInfo.address) ||
+      common.xssCheck(userInfo.city) ||
+      common.xssCheck(userInfo.state) ||
+      common.xssCheck(userInfo.zip)
+    ) {
+      throw `XSS attempt`;
+    }
+
     const newUser = await userData.createUser(
       userInfo.firstName,
       userInfo.lastName,
@@ -93,8 +109,9 @@ router.post("/createUser", async (req, res) => {
       error: e,
       title: "Create Profile",
       states: stateList,
-      partial: "emptyPartial",
+      partial: "createUser",
     });
+    return;
   }
 });
 
@@ -106,21 +123,35 @@ router.get("/logout", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     let userInfo = req.body;
+
+    if (
+      common.xssCheck(userInfo.username) ||
+      common.xssCheck(userInfo.password)
+    ) {
+      throw `XSS attempt`;
+    }
+
     let user = await userData.checkUser(userInfo.username, userInfo.password);
     req.session.user = { username: user.username, userId: user._id.toString() };
     res.redirect("/");
   } catch (e) {
     console.log(e);
     res.status(400).render("pages/users/login", {
-      title: "Create Profile",
-      error: e,
-      partial: "emptyPartial",
+      title: "Login",
+      error: "Invalid UserID / Password",
+      partial: "login",
     });
+    return;
   }
 });
 
 router.get("/updateUser/:id", async (req, res) => {
   try {
+    if (req.params.id != req.session.user.userId) {
+      res.redirect("/");
+      return;
+    }
+
     let validId = validate(req.params.id);
     if (!validId) {
       res.status(400).json({ error: "Id must be valid" });
@@ -136,14 +167,36 @@ router.get("/updateUser/:id", async (req, res) => {
     });
     return;
   } catch (e) {
-    console.log(e);
     res.status(404).json({ error: "Internal error" });
+    return;
   }
 });
 
 router.post("/updateUser/:id", async (req, res) => {
   try {
+    if (req.params.id != req.session.user.userId) {
+      res.redirect("/");
+      return;
+    }
+
     const userInfo = req.body;
+
+    if (
+      common.xssCheck(req.params.id.toString()) ||
+      common.xssCheck(userInfo.firstName) ||
+      common.xssCheck(userInfo.lastName) ||
+      common.xssCheck(userInfo.email) ||
+      common.xssCheck(userInfo.phoneNumber) ||
+      common.xssCheck(userInfo.username) ||
+      common.xssCheck(userInfo.password) ||
+      common.xssCheck(userInfo.address) ||
+      common.xssCheck(userInfo.city) ||
+      common.xssCheck(userInfo.state) ||
+      common.xssCheck(userInfo.zip)
+    ) {
+      throw `XSS attempt`;
+    }
+
     updatedUser = await userData.updateUser(
       req.params.id.toString(),
       userInfo.firstName,
@@ -159,26 +212,30 @@ router.post("/updateUser/:id", async (req, res) => {
     );
     res.redirect("/");
   } catch (e) {
-    console.log(e);
+    getData = await userData.getUser(req.params.id.toString());
     res.status(400).render("pages/users/editUser", {
       title: "Edit Profile",
       session: req.session.user.userId,
+      states: stateList,
       error: e,
-      partial: "emptyPartial",
+      data: getData,
+      partial: "editParkings",
     });
+    return;
   }
 });
 
 router.get("/createProfile", async (req, res) => {
   try {
     res.render("pages/users/createUsers", {
+      partial: "createUser",
       title: "Create Profile",
       states: stateList,
-      partial: "emptyPartial",
     });
+    return;
   } catch (e) {
-    console.log(e);
     res.status(404).json({ error: "Internal error" });
+    return;
   }
 });
 
@@ -186,16 +243,22 @@ router.get("/login", async (req, res) => {
   try {
     res.render("pages/users/login", {
       title: "Login",
-      partial: "emptyPartial",
+      partial: "login",
     });
+    return;
   } catch (e) {
-    console.log(e);
     res.status(404).json({ error: "Internal Error" });
+    return;
   }
 });
 
 router.get("/:id", async (req, res) => {
   try {
+    if (req.params.id != req.session.user.userId) {
+      res.redirect("/");
+      return;
+    }
+
     let user = await userData.getUser(req.params.id);
     let parkings = await parkingData.getParkingsOfLister(req.params.id);
     console.log(parkings);
@@ -210,10 +273,16 @@ router.get("/:id", async (req, res) => {
   } catch (e) {
     console.log(e);
     res.status(404).json({ error: "User not found" });
+    return;
   }
 });
 
 router.get("/delete/:id", async (req, res) => {
+  if (req.params.id != req.session.user.userId) {
+    res.redirect("/");
+    return;
+  }
+
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a user Id" });
     return;
@@ -229,8 +298,8 @@ router.get("/delete/:id", async (req, res) => {
     const deleteData = await userData.deleteUser(req.params.id);
     res.redirect("/users/logout");
   } catch (error) {
-    console.log(error);
     res.status(404).json({ message: "Data not found " });
+    return;
   }
 });
 

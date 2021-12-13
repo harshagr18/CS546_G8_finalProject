@@ -27,7 +27,9 @@
     "moment": "^2.29.1",
     "mongodb": "^4.1.4",
     "multer": "^1.4.3",
+    "nodemailer": "^6.7.2",
     "sessionstorage": "^0.1.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "xss": "^1.0.10"
   }
 }

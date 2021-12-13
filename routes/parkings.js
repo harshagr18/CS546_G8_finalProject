@@ -2,8 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { ObjectId } = require("bson");
 const parkingsData = require("../data/parkings");
+const common = require("../data/common");
 const path = require("path");
 const sessionStorage = require("sessionstorage");
+const listingsData = require("../data/listings");
 
 //added by sv
 
@@ -39,6 +41,9 @@ router.get("/", async (req, res) => {
     if (!req.session.user) {
       return res.redirect("/users/login");
     }
+    if (!req.query.deleted) {
+      req.query.deleted = false;
+    }
     const listerId = req.session.user.userId;
     let validId = validate(listerId);
     if (!validId) {
@@ -48,6 +53,7 @@ router.get("/", async (req, res) => {
       return;
     }
     //username calls user table and fetches lister id to get parkings from logged in user
+    //await listingsData.sendReportingMail();
     const getData = await parkingsData.getParkingsOfLister(listerId);
     res.render("pages/parkings/getParkings", {
       partial: "emptyPartial",
@@ -55,6 +61,8 @@ router.get("/", async (req, res) => {
       session: req.session.user.userId,
       title: "My Parkings",
       states: stateList,
+      success: req.query.deleted,
+      successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
     });
   } catch (error) {
     res.status(404).json({ message: "Page not found" });
@@ -80,6 +88,12 @@ router.get("/create", async (req, res) => {
 router.get("/edit/:id", async (req, res) => {
   try {
     let validId = validate(req.params.id);
+
+    if (common.xssCheck(req.params.id)) {
+      res.status(400).json({ error: "XSS Attempt" });
+      return;
+    }
+
     if (!validId) {
       res
         .status(400)
@@ -154,6 +168,11 @@ router.get("/edit/:id", async (req, res) => {
 
 //get parkings
 router.get("/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+    return;
+  }
+
   console.log("parking id: ", req.params.id);
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
@@ -205,14 +224,6 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
     res.status(400).json({ error: "You must provide zip" });
     return;
   }
-  // if (!parkingPostData.longitude) {
-  //   res.status(400).json({ error: "You must provide longitude" });
-  //   return;
-  // }
-  // if (!parkingPostData.latitude) {
-  //   res.status(400).json({ error: "You must provide latitude" });
-  //   return;
-  // }
   if (!parkingPostData.category) {
     res.status(400).json({ error: "You must provide category" });
     return;
@@ -223,6 +234,24 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
   }
 
   try {
+    if (
+      common.xssCheck(parkingPostData.address) ||
+      common.xssCheck(parkingPostData.city) ||
+      common.xssCheck(parkingPostData.state) ||
+      common.xssCheck(parkingPostData.zip) ||
+      common.xssCheck(parkingPostData.parkingType)
+    ) {
+      res.status(400).json({ error: "XSS Attempt" });
+      return;
+    }
+
+    parkingPostData.category.forEach((x) => {
+      if (common.xssCheck(x)) {
+        res.status(400).json({ error: "XSS Attempt" });
+        return;
+      }
+    });
+
     let {
       address,
       city,
@@ -234,15 +263,18 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
       parkingType,
     } = parkingPostData;
 
+    let parkingImg = !req.file
+      ? "public/images/no_image.jpg"
+      : req.file.path.split("\\").join("/");
+
     let validateString = validateArguments(
       address,
       city,
       state,
       zip,
-      // longitude,
-      // latitude,
       category,
-      parkingType
+      parkingType,
+      parkingImg
     );
 
     if (validateString != undefined) {
@@ -262,8 +294,6 @@ router.post("/post", upload.single("parkingImg"), async function (req, res) {
         .json({ error: "Id must be a valid string and an Object Id" });
       return;
     }
-
-    let parkingImg = !req.file ? "public\\images\\no_image.jpg" : req.file.path;
 
     //Get geolocation information
     let geoAddress =
@@ -319,10 +349,10 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
   if (!req.file) {
     updatedData.parkingImg =
       updatedData.parkingImghidden == ""
-        ? "public\\images\\no_image.jpg"
+        ? "public/images/no_image.jpg"
         : updatedData.parkingImghidden;
   } else {
-    updatedData.parkingImg = req.file.path;
+    updatedData.parkingImg = req.file.path.split("\\").join("/");
   }
 
   if (
@@ -330,8 +360,6 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     !updatedData.city ||
     !updatedData.state ||
     !updatedData.zip ||
-    // !updatedData.longitude ||
-    // !updatedData.latitude ||
     !updatedData.category ||
     !updatedData.parkingType
   ) {
@@ -344,10 +372,9 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     updatedData.city,
     updatedData.state,
     updatedData.zip,
-    // updatedData.longitude,
-    // updatedData.latitude,
     updatedData.category,
-    updatedData.parkingType
+    updatedData.parkingType,
+    updatedData.parkingImg
   );
 
   if (validateString != undefined) {
@@ -397,6 +424,28 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
     return;
   }
   try {
+    if (
+      common.xssCheck(updatedData.parkingImg) ||
+      common.xssCheck(updatedData.listerId) ||
+      common.xssCheck(updatedData.parkingId) ||
+      common.xssCheck(updatedData.address) ||
+      common.xssCheck(updatedData.city) ||
+      common.xssCheck(updatedData.state) ||
+      common.xssCheck(updatedData.zip) ||
+      common.xssCheck(updatedData.latitude.toString()) ||
+      common.xssCheck(updatedData.longitude.toString()) ||
+      common.xssCheck(updatedData.parkingType)
+    ) {
+      res.status(400).json({ error: "XSS Attempt" });
+      return;
+    }
+    updatedData.category.forEach((x) => {
+      if (common.xssCheck(x)) {
+        res.status(400).json({ error: "XSS Attempt" });
+        return;
+      }
+    });
+
     const updatedParking = await parkingsData.updateParking(
       updatedData.parkingId,
       updatedData.listerId,
@@ -465,6 +514,11 @@ router.put("/update", upload.single("parkingImg"), async (req, res) => {
 
 //delete parkings
 router.delete("/delete/:id", async (req, res) => {
+  if (common.xssCheck(req.params.id)) {
+    res.status(400).json({ error: "XSS Attempt" });
+    return;
+  }
+
   if (!req.params.id) {
     res.status(400).json({ error: "You must supply a parking Id" });
     return;
@@ -493,13 +547,19 @@ router.delete("/delete/:id", async (req, res) => {
     );
 
     const deleteData = await parkingsData.deleteParking(req.params.id);
-    res.render("pages/parkings/getParkings", {
-      partial: "emptyPartial",
-      session: req.session.user.userId,
-      title: "My Parkings",
-      success: true,
-      successmsg: `<div class="container alert alert-success"><p class="empty">Parking Deleted</p></div>`,
-    });
+
+    if (deleteData.deleted) {
+      const getParkingData = await parkingsData.getParkingsOfLister(listerId);
+      return res.redirect("/parkings?deleted=true");
+    } else {
+      res.status(500).render("pages/parkings/getParkings", {
+        partial: "emptyPartial",
+        session: req.session.user.userId,
+        title: "My Parkings",
+        successmsg: `<div class="container alert alert-danger"><p class="empty">Parking could not be deleted</p></div>`,
+      });
+      return;
+    }
   } catch (error) {
     res.status(404).json({ message: "Data not found " });
   }
@@ -521,26 +581,41 @@ function validateArguments(
   city,
   state,
   zip,
-  // longitude,
-  // latitude,
   category,
-  parkingType
+  parkingType,
+  parkingImg
 ) {
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
-  var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
-
-  //string and trim length checks
-  //      typeof parkingImg != "string" ||
+  const addressRegex = /[A-Za-z0-9'\.\-\s\,]/;
+  const cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
 
   if (
     typeof address != "string" ||
     typeof city != "string" ||
-    typeof state != "string"
+    typeof state != "string" ||
+    typeof parkingImg != "string"
   ) {
     return "Parameter of defined type not found";
     //        parkingImg.length === 0 ||
-  } else if (address.length === 0 || city.length === 0 || state.length === 0) {
+  } else if (
+    address.trim().length === 0 ||
+    city.trim().length === 0 ||
+    state.trim().length === 0 ||
+    parkingImg.trim().length === 0
+  ) {
     return "Parameter cannot be blank spaces or empty values";
+  }
+
+  if (
+    !addressRegex.test(address) ||
+    address.length < 4 ||
+    address.length > 35
+  ) {
+    return "Address contains random characters or length is less than 4";
+  }
+
+  if (!cityRegex.test(city) || city.length > 30) {
+    return "City contains random characters or length is greater than 30";
   }
 
   //state validator
@@ -549,18 +624,17 @@ function validateArguments(
       return "State not found";
     }
   }
+  if (!/\.(jpg)$/i.test(parkingImg)) {
+    return "Picture not defined or only jpg files allowed";
+  }
 
   //zip code validator
   if (!zipRegex.test(zip)) {
     return "Incorrect zip code";
   }
-  // commented for now
-  //   if (typeof longitude != "number" || typeof latitude != "number") {
-  //     throw "longitude and latitude should be numbers";
-  //   }
 
   //vehicletype validator
-  if (Array.isArray(category) && category.length >= 1) {
+  if (Array.isArray(category) && category.length > 1) {
     const isString = (x) => typeof x == "string" && x.trim().length != 0;
     if (!category.every(isString)) {
       return "vehicletype must contain strings!";
@@ -570,7 +644,7 @@ function validateArguments(
       return "vehicle type must contain values from dropdown";
     }
   } else {
-    return "vehicletype must be an array having atleast 1 string!";
+    return "vehicletype must be an array having atleast 2 string!";
   }
 
   //parkingtype validator

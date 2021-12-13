@@ -29,7 +29,7 @@ const handlebarsInstance = exphbs.create({
   partialsDir: ["views/partials/"],
 });
 
-const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
+const rewriteUnsupportedBrowserMethods = (req, res, next) => {
   // If the user posts to the server with a property called _method, rewrite the request's method
   // To be that method; so if they post _method=PUT you can now allow browsers to POST to a route that gets
   // rewritten in this middleware to a PUT route
@@ -55,24 +55,14 @@ const rewriteUnsupportedBrowserMethodsPut = (req, res, next) => {
   if (req.url.startsWith("/reviews/deleteReview/")) {
     req.method = "DELETE";
   }
-  // let the next middleware run:
-  next();
-};
-// Pending: put and delete and update listing url in below methods
-const rewriteUnsupportedBrowserMethodsDelete = (req, res, next) => {
-  // If the user posts to the server with a property called _method, rewrite the request's method
-  // To be that method; so if they post _method=PUT you can now allow browsers to POST to a route that gets
-  // rewritten in this middleware to a PUT route
-  // if (req.body && req.body._method) {
-  //   req.method = req.body._method;
-  //   delete req.body._method;
-  // }
 
   if (req.url.startsWith("/parkings/delete/") || req.url.startsWith("/listings/removeListing/")) {
     req.method = "DELETE";
   }
+  // let the next middleware run:
   next();
 };
+
 app.use(
   session({
     name: "AuthCookie",
@@ -151,8 +141,7 @@ app.use("/", (req, res, next) => {
   next();
 });
 
-app.use(rewriteUnsupportedBrowserMethodsPut);
-app.use(rewriteUnsupportedBrowserMethodsDelete);
+app.use(rewriteUnsupportedBrowserMethods);
 
 app.engine("handlebars", handlebarsInstance.engine);
 app.set("view engine", "handlebars");

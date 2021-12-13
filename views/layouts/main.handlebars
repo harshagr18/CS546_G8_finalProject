@@ -1,8 +1,5 @@
-{{! <!DOCTYPE html> }}
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<html>
+<!DOCTYPE html> 
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -14,6 +11,10 @@
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
       crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"
     />
 
     <link rel="stylesheet" href="../../public/css/site.css" />
@@ -33,23 +34,28 @@
         >
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarCollapse">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="/parkings">Parkings</a>
-            </li>
-            <li class="nav-item">
+        {{#if session}}
+
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active">
+                <a class="nav-link" href="/parkings">My Parkings</a>
+              </li>
+                          <li class="nav-item">
               <a class="nav-link" href="/listings/getMyListings">My Listings</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/listings/getMyBookings">My Bookings</a>
-            </li>
-          </ul>
-          {{#if session}}
-          <a class="nav-link" href="/users/{{ session }}">My profile</a>
-          <a class="nav-link" href="/users/logout">Logout</a>
-          {{/if}}
-        </div>
+
+              <li class="nav-item active">
+                <a class="nav-link" href="/listings/getMyBookings">My Bookings</a>
+              </li>
+            </ul>
+            <a style = "color:white" class="nav-link" href="/users/{{session}}">My profile</a>
+            <a class="nav-link logout" aria-label="logout" href="/users/logout">Logout
+              <i class="fa fa-sign-out"></i>
+            </a>
+          </div>
+        {{/if}}
+
       </nav>
     </header>
 
@@ -76,7 +82,6 @@
     ></script>
     <script src="../../public/js/dashboard.js" async defer></script>
     {{> (lookup . 'partial') }}
-
 
   </body>
 </html>

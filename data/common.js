@@ -1,5 +1,16 @@
 const { ObjectId } = require("mongodb");
 const moment = require('moment');
+
+var xss = require("xss");
+
+function xssCheck(str) {
+  if (xss(str.trim()) == str.trim()) {
+    return false;
+  } else {
+    return true;
+  }
+}
+
 // function checkIsProperString(val, typeData) {
 //   if (!val) {
 //     throw `No input passed`;
@@ -210,4 +221,5 @@ module.exports = {
   convertObjectIdToString,
   checkObjectId,
   timeSlotFunc,
+  xssCheck,
 };

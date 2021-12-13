@@ -6,6 +6,7 @@ const settings = require("../config/settings.json");
 const { json } = require("body-parser");
 const apikey = settings.apikey;
 const geocodingKey = settings.geocodingKey;
+const common = require("./common");
 
 //get distance from google
 async function getDistance(p1, p2) {
@@ -43,6 +44,15 @@ async function getParkingsByCityStateZip(
   zipcode,
   parkingType = checkParameters()
 ) {
+  if (
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zipcode) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
   let q = {};
   q["$and"] = [];
 
@@ -145,6 +155,7 @@ async function getParkingsOfLister(id = checkParameters()) {
 //get Parking based on id
 async function getParking(id = checkParameters()) {
   id = id.trim();
+  validateID(id);
   id = ObjectId(id);
 
   const parkingCollection = await parkings();
@@ -196,7 +207,7 @@ async function createParkings(
     listerId: listerId,
     listing: [],
     parkingImg,
-    overallRating: 0.0,
+    overallRating: "0.0",
     address,
     city,
     zip,
@@ -271,7 +282,7 @@ async function updateParking(
     zip: zip,
     longitude: longitude,
     latitude: latitude,
-    category: category,
+    vehicleType: category,
     parkingType: parkingType,
   };
 
@@ -280,7 +291,7 @@ async function updateParking(
     { _id: parkingId },
     { $set: updateParkingObj }
   );
-  if (updateParking.modifiedCount === 0) throw "Parking could not be updated";
+  if (!updateParking) throw "Parking could not be updated";
 
   const newParking = await getParking(parkingId.toString());
 
@@ -289,6 +300,10 @@ async function updateParking(
 
 //delete parkings with id
 async function deleteParking(parkingId = checkParameters()) {
+  if (common.xssCheck(parkingId)) {
+    throw `XSS Attempt`;
+  }
+
   validateID(parkingId);
   parkingId = parkingId.trim();
   let result = {};
@@ -323,8 +338,29 @@ function validate(
   category,
   parkingType
 ) {
+  if (
+    common.xssCheck(parkingImg) ||
+    common.xssCheck(address) ||
+    common.xssCheck(city) ||
+    common.xssCheck(state) ||
+    common.xssCheck(zip) ||
+    common.xssCheck(latitude) ||
+    common.xssCheck(longitude) ||
+    common.xssCheck(parkingType)
+  ) {
+    throw `XSS Attempt`;
+  }
+
+  category.forEach((x) => {
+    if (common.xssCheck(x)) {
+      throw `XSS Attempt`;
+    }
+  });
+
   const zipRegex = /(^\d{5}$)|(^\d{5}-\d{4}$)/;
-  var longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0).{1}d{1,6}");
+  const longLatRegex = new RegExp("^-?([1-8]?[1-9]|[1-9]0)\\.{1}\\d{1,6}");
+  const addressRegex = /[A-Za-z0-9'\.\-\s\,]/;
+  const cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
 
   //string and trim length checks
   if (
@@ -332,15 +368,21 @@ function validate(
     typeof address != "string" ||
     typeof city != "string" ||
     typeof state != "string" ||
-    typeof parkingType != "string"
+    typeof parkingType != "string" ||
+    typeof longitude != "string" ||
+    typeof latitude != "string" ||
+    typeof parkingImg != "string"
   ) {
     throw "Parameter of defined type not found";
   } else if (
-    parkingImg.length === 0 ||
-    address.length === 0 ||
-    city.length === 0 ||
-    state.length === 0 ||
-    parkingType.length === 0
+    parkingImg.trim().length === 0 ||
+    address.trim().length === 0 ||
+    city.trim().length === 0 ||
+    state.trim().length === 0 ||
+    parkingType.trim().length === 0 ||
+    longitude.trim().length === 0 ||
+    latitude.trim().length === 0 ||
+    parkingImg.trim().length === 0
   ) {
     throw "Parameter cannot be blank spaces or empty values";
   }
@@ -352,29 +394,37 @@ function validate(
     }
   }
 
+  if (
+    !addressRegex.test(address) ||
+    address.length < 4 ||
+    address.length > 35
+  ) {
+    throw "Address contains random characters or length is less than 4";
+  }
+
+  if (!cityRegex.test(city) || city.length > 30) {
+    throw "City contains random characters or length is greater than 30";
+  }
+
   //zip code validator
   if (!zipRegex.test(zip)) {
     throw "Incorrect zip code";
   }
-  // commented for now
-  //   if (typeof longitude != "number" || typeof latitude != "number") {
-  //     throw "longitude and latitude should be numbers";
-  //   }
 
-  //vehicle type validator
-  // if (typeof category == "object") {
-  //   if (
-  //     Array.isArray(category.vehicleType) &&
-  //     category.vehicleType.length > 0
-  //   ) {
-  //     category.vehicleType.forEach((x) => {
-  //       if (typeof x !== "string") throw "vehicle type must be a string";
-  //     });
-  //   } else throw "vehicle type must be array of length atleast 1";
-  // } else throw "category must be an object";
+  if (!longLatRegex.test(latitude)) {
+    throw "Incorrect latitude";
+  }
 
-  //vehicletype validator
-  if (Array.isArray(category)) {
+  if (!longLatRegex.test(longitude)) {
+    throw "Incorrect longitude";
+  }
+
+  if (!/\.(jpg)$/i.test(parkingImg)) {
+    throw "Picture not defined or only jpg files allowed";
+  }
+
+  if (Array.isArray(category) && category.length > 1) {
+    //vehicletype validator
     category.forEach((x) => {
       if (typeof x != "string") throw "Vehicle type must be a string";
       if (x.trim().length === 0) throw "Vehicle type cannot be empty or blanks";
@@ -382,6 +432,8 @@ function validate(
     category = category.map((X) => X.toLowerCase());
 
     if (!vehicleType.includes(...category)) throw "Vehicle type not found";
+  } else {
+    throw "Vehicle type must be an array having atleast 2 string!";
   }
 
   //parkingtype validator
