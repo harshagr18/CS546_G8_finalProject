@@ -4,6 +4,11 @@
     method="post"
     id="listBooking"
   >
+  {{#if hasErrors}}
+      <div class="alert alert-danger error" role="alert">
+        {{error}}
+      </div>
+    {{/if}}
     <div class="form-row">
       <div class="form-group col-md-6">
         <label for="startDate">Start date</label>
@@ -26,7 +31,16 @@
         />
       </div>
       <div class="form-group col-md-6">
-        <label for="startTime">Start time</label>
+        <label for="timeSlots">Time Slot</label>
+        <input
+          type="text"
+          class="form-control"
+          id="timeSlots"
+          name="timeSlots"
+          value="{{data.timeSlots}}"
+          readonly
+        />
+        {{!-- <label for="startTime">Start time</label>
         <input
           type="text"
           class="form-control"
@@ -43,7 +57,7 @@
           name="endTime"
           value="{{data.endTime}}"
           readonly
-        />
+        /> --}}
       </div>
       <div class="form-group col-md-6">
         <label for="price">Hourly Price</label>
@@ -69,4 +83,6 @@
     </div>
     <input type="submit" value="Book" />
   </form>
+  <div class="alert alert-danger error" id="uiError" role="alert">
+  </div>
 </div>

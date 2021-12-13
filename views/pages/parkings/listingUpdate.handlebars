@@ -1,10 +1,15 @@
 <div class="container">
     <form action="/listings/updateListingData/{{id}}", method="post" id="listBooking">
+    {{#if hasErrors}}
+      <div class="alert alert-danger error" role="alert">
+        {{error}}
+      </div>
+    {{/if}}
         <div class="form-row">
             <div class="form-group col-md-6">
                 <label for="startDate">Start date</label>
                 <input
-                type="text"
+                type="date"
                 class="form-control"
                 id="startDate"
                 name="startDate"
@@ -12,7 +17,7 @@
                 />
                 <label for="endDate">End date</label>
                 <input
-                type="text"
+                type="date"
                 class="form-control"
                 id="endDate"
                 name="endDate"
@@ -21,26 +26,49 @@
             </div>
             <div class="form-group col-md-6">
                 <label for="startTime">Start time</label>
-                <input
-                type="text"
-                class="form-control"
+                <select
                 id="startTime"
                 name="startTime"
-                value="{{data.startTime}}"
-                />
+                class="form-control mr-sm-2"
+                >
+                {{!-- Pending if part, send these values when rendering back to this page --}}
+                    {{!-- {{#if startTimeSelected}}
+                        {{{selectedStartTime}}}
+                    {{else}} --}}
+                        <option selected>Select Start Time</option>
+                        {{#each startTimeVal}}
+                        <option>{{this}}</option>
+                        {{/each}}
+
+                    {{!-- {{/if}} --}}
+
+                </select>
                 <label for="endTime">End time</label>
+                <select
+                id="endTime"
+                name="endTime"
+                class="form-control mr-sm-2"
+                >
+                    <option selected>Select End Time</option>
+                    {{#each endTimeVal}}
+                    <option>{{this}}</option>
+                    {{/each}}
+                </select>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="timeSlots">Time slot</label>
                 <input
                 type="text"
                 class="form-control"
-                id="endTime"
-                name="endTime"
-                value="{{data.endTime}}"
+                id="timeSlots"
+                name="timeSlots"
+                value="{{data.timeSlots}}"
+                readonly
                 />
-            </div>
-            <div class="form-group col-md-6">
                 <label for="price">Price</label>
                 <input
-                type="text"
+                type="number"
+                min="1"
                 class="form-control"
                 id="price"
                 name="price"
@@ -50,4 +78,6 @@
         </div>
         <input type="submit" value="Update">
     </form>
+    <div class="alert alert-danger error" id="uiError" role="alert">
+  </div>
 </div>

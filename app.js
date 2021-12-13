@@ -133,6 +133,11 @@ app.use("/listings/removeListing/:id", (req,res,next) => {
   next();
 });
 
+app.use("/listings/cancelBooking/:id", (req,res,next) => {
+  req.method = 'put';
+  next();
+});
+
 app.use("/", (req, res, next) => {
   if (
     req.session.user &&
