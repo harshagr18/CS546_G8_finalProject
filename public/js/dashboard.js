@@ -1,6 +1,12 @@
 (function ($) {
   //error functions
   $("#uiError").hide();
+  let errorShow = $(".error-show");
+  let errorFound = $(".error-notfound");
+
+  // if (errorFound && errorShow) {
+  //   errorShow.hide();
+  // }
 })(jQuery);
 
 function checkAlphanumerics(phrase) {
